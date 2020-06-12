@@ -1,0 +1,300 @@
+---
+title: "Quality report"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  rmdformats::material:
+  html_document:
+    code_folding: hide
+    fig_caption: yes
+    highlight: zenburn
+    theme: cerulean
+    toc: yes
+    toc_depth: 5
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    number_sections: false
+---
+
+```{r setup, include=FALSE, echo= FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load package, echo= FALSE, message = FALSE}
+# list of packages required
+#list.of.packages <- c("knitr", "DT", "ggplot2","plotly",'htmltools','rmarkdown','rmdformats', 'magrittr','yaml','png', 'here', 'htmlwidgets')
+#new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+#if (!require('sjPlot')){
+#  devtools::install_github("strengejacke/strengejacke")
+#}
+#install missing ones
+#if(length(new.packages)) install.packages(new.packages, dependencies = TRUE)
+library('knitr')
+library('plotly')
+library('rmdformats')
+library('DT')
+library('ggplot2')
+library('rmarkdown')
+library('htmltools')
+library('sjPlot')
+library('magrittr')
+library('yaml')
+library('png')
+library('here')
+library('htmlwidgets')
+options(DT.options = list(
+                         paging=TRUE, pageLength = 10, searching = TRUE, ordering=TRUE, scrollCollapse=FALSE, server = FALSE, autoWidth = TRUE,
+                         buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                         dom = 'Blfrtip',
+                         scrollX = TRUE,
+                         lengthMenu = list( c(10, 20, -1), c(10, 20, "All")),
+                          initComplete = JS(
+                            "function(settings, json) {",
+                            "$(this.api().table().header()).css({'background-color': '#3C3C3C', 'color': '#fff'});",
+                            "}")
+                    ))
+```
+
+```{r, echo= FALSE, message = FALSE}
+opts_knit$set(root.dir = snakemake@params$out_dir)
+```
+
+# Rulegraph{.tabset .tabset-fade .tabset-pills}
+```{r, echo= FALSE, message = FALSE}
+  # if we want to use dico from input on rule report
+  #print(snakemake@params$list_final)
+  #listFinal=snakemake@params$list_final
+  #print(listFinal$weesam_files)
+  #print(listFinal$weesam_files[1])
+  knitr::include_graphics(snakemake@input$dag, dpi="500")
+```
+
+# Busco{.tabset}
+
+Assessing gene space is a core aspect of knowing whether or not you have a good assembly.
+
+Benchmarking Universal Single-Copy Orthologs (BUSCO) sets are collections of orthologous groups with near-universally-distributed single-copy genes in each species, selected from OrthoDB root-level orthology delineations across arthropods, vertebrates, metazoans, fungi, and eukaryotes. BUSCO groups were selected from each major radiation of the species phylogeny requiring genes to be present as single-copy orthologs in at least 90% of the species; in others they may be lost or duplicated, and to ensure broad phyletic distribution they cannot all be missing from one sub-clade. The species that define each major radiation were selected to include the majority of OrthoDB species, excluding only those with unusually high numbers of missing or duplicated orthologs, while retaining representation from all major sub-clades. Their widespread presence means that any BUSCO can therefore be expected to be found as a single-copy ortholog in any newly-sequenced genome from the appropriate phylogenetic clade.
+
+```{r, echo=FALSE,include = FALSE}
+DT::datatable(matrix())
+plotly::ggplotly(ggplot2::ggplot())
+plotly::ggplotly(ggplot2::ggplot())
+```
+
+```{r, results='asis', echo=FALSE, message = FALSE}
+listeFastq <- snakemake@params$out_dir
+fichiers <- dir(listeFastq, include.dirs = TRUE)
+ for (i in 1:length(fichiers)) {
+    data <- read.csv(paste0(fichiers[i],"/Stats_busco.csv"),
+                          header = TRUE,
+                          row.names=1,
+                          sep=",",
+                          dec =".")
+    BUSCO <- as.data.frame(t(data))
+    BUSCO$Step = factor(BUSCO$Step, levels = c("STEP_ASSEMBLY","STEP_POLISHING_RACON","STEP_CORRECTION_NANOPOLISH", "STEP_CORRECTION_MEDAKA" ))
+    p <- ggplot(BUSCO) + aes(x = Step, y = Complete, fill = Assembler)
+    p <- p + geom_bar(stat="identity", position=position_dodge())
+    p <- p + labs(x="Steps", y = "Complete BUSCO genes", fill = "Assembler tools")
+
+    p2 <- ggplot(BUSCO) + aes(x = Step, y = Complete, color = Assembler)
+    p2 <- p2 + geom_point()
+    p2 <- p2 + labs(x="Steps", y = "Complete BUSCO genes", color = "Assembler tools")
+
+  cat(sprintf("\n\n## %s\n\n", fichiers[i]))
+  cat("\n\n")
+  cat(knitr::knit_print(
+   DT::datatable(data,
+      width = "100%",
+      options = list(
+             headerCallback = JS(
+               "function(thead, data, start, end, display){",
+               "  $(thead).remove();",
+               "}")
+      )
+   )
+  ))
+   cat("\n\n")
+   cat(knitr::knit_print(plotly::ggplotly(p)))
+   cat("\n\n")
+   cat(knitr::knit_print(plotly::ggplotly(p2)))
+}
+```
+
+# Quast{.tabset .tabset-fade .tabset-pills}
+
+QUAST is a good starting point to help evaluate the quality of assemblies. It provides many helpful contiguity statistics.
+
+```{r, results='asis', echo= FALSE, message = FALSE}
+listeFastq <- snakemake@params$out_dir
+fichiers <- dir(listeFastq, include.dirs = TRUE)
+  for (i in 1:length(fichiers)) {
+    cat(sprintf("\n\n## %s\n\n",fichiers[i]))
+    cat("\n\n")
+   # cat(knitr::knit_print(
+    #  htmltools::pre(
+     # htmltools::includeHTML(paste0(fichiers[i],'/report_quast.html'))
+     # )
+    #))
+    cat(knitr::knit_print(
+    htmltools::tags$iframe(
+           title = 'quast',
+           src=paste0(fichiers[i],'/report_quast.html'),
+           width='100%',
+           height='600'
+   )
+  ))
+}
+```
+
+```{r, results='asis', echo=FALSE, message = FALSE}
+  #config_yaml <- yaml.load_file(file.path(normalizePath(dirname('config.yaml')), 'config.yaml'))
+  #config_yaml <- yaml.load_file(paste0("../../", config_file)) # TODO: ne pas mettre en dur le chemin du config file (idem dans le snakefile)
+  config_yaml <- yaml.load_file(snakemake@input$conf)
+  Blobtools_bool = config_yaml$QUALITY$BLOBTOOLS
+  Assemblytics_bool  = config_yaml$QUALITY$ASSEMBLYTICS
+  Weesam_bool  = config_yaml$QUALITY$WEESAM
+  Kat_bool  = config_yaml$QUALITY$KAT
+  Mauve_bool  = config_yaml$MSA$MAUVE
+```
+
+```{r, results='asis', echo=FALSE, message = FALSE}
+  if (isTRUE(Blobtools_bool)){
+    cat(sprintf("\n\n# %s\n\n","Blobtools{.tabset}"))
+
+    htmltools::p("During the sequence quality assessment stage we tried to discern whether contamination was present. Sometimes this is not feasible at the read level. By plotting Contig GC content vs Contig Read Coverage we can look for clusters of contigs that share similar coverage. The appearance of multiple clusters can indicate multiple organisms. Occasionally, contigs can also be taxonomically classified, providing further evidence for contaminants.")
+
+    listeFastq <- snakemake@params$out_dir
+    fichiers <- dir(listeFastq, include.dirs = TRUE)
+    listeAssembler <-snakemake@params$liste_assembler
+    out_dir <- config_yaml$DATA$OUTPUT
+    for (i in 1:length(fichiers)) {
+        cat(sprintf("\n\n## %s\n\n",fichiers[i]))
+        cat("\n\n")
+        for (j in 1:length(listeAssembler)){
+          cat(sprintf("\n\n### %s\n\n",listeAssembler[j]))
+          cat("\n\n")
+           if (isTRUE(config_yaml$QUALITY$CORRECTION)){
+             cat("**CORRECTION STEP**")
+             cat("\n\n")
+                if (isTRUE(config_yaml$CORRECTION$NANOPOLISH)){
+                  cat("*NANOPOLISH*")
+                  cat("\n\n")
+                  cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/read_cov.png")),")"))
+                  cat("\n\n")
+                  cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/blob.png")),")"))
+                }
+                if (isTRUE(config_yaml$CORRECTION$MEDAKA)){
+                  cat("*MEDAKA*")
+                  cat("\n\n")
+                  cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/BLOBTOOLS/read_cov.png")),")"))
+                  cat("\n\n")
+                  cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/BLOBTOOLS/blob.png")),")"))
+                  cat("\n\n")
+                }
+           }
+          else if(isTRUE(config_yaml$QUALITY$POLISHING)){
+             cat("**POLISHING STEP**")
+             cat("\n\n")
+             cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING_RACON/BLOBTOOLS/read_cov.png")),")"))
+             cat("\n\n")
+             cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/blob.png")),")"))
+             cat("\n\n")
+           }
+          else if(isTRUE(config_yaml$QUALITY$ASSEMBLY)){
+             cat("**ASSEMBLY STEP**")
+             cat("\n\n")
+             cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/BLOBTOOLS/read_cov.png")),")"))
+             cat("\n\n")
+             cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/blob.png")),")"))
+             cat("\n\n")
+           }
+        }
+    }
+  }
+```
+
+```{r, results='asis', echo=FALSE, message = FALSE}
+  if (isTRUE(Assemblytics_bool)){
+      #cat(sprintf("\n\n# %s\n\n","Assemblytics{.tabset}"))
+        listeFastq <- snakemake@params$out_dir
+    fichiers <- dir(listeFastq, include.dirs = TRUE)
+    listeAssembler <-snakemake@params$liste_assembler
+    out_dir <- config_yaml$DATA$OUTPUT
+    for (i in 1:length(fichiers)) {
+        cat(sprintf("\n\n## %s\n\n",fichiers[i]))
+        cat("\n\n")
+        for (j in 1:length(listeAssembler)){
+          cat(sprintf("\n\n### %s\n\n",listeAssembler[j]))
+          cat("\n\n")
+           if (isTRUE(config_yaml$QUALITY$CORRECTION)){
+             cat("**CORRECTION STEP**")
+             cat("\n\n")
+                if (isTRUE(config_yaml$CORRECTION$NANOPOLISH)){
+                  cat("*NANOPOLISH*")
+                  cat("\n\n")
+                  cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
+                  cat("\n\n")
+                  cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"), paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
+                  cat("\n\n")
+                }
+                if (isTRUE(config_yaml$CORRECTION$MEDAKA)){
+                  cat("*MEDAKA*")
+                  cat("\n\n")
+                  cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
+                  cat("\n\n")
+                  cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"),paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
+                  cat("\n\n")
+                }
+           }
+          else if(isTRUE(config_yaml$QUALITY$POLISHING)){
+             cat("**POLISHING STEP**")
+             cat("\n\n")
+             cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
+             cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"))
+             cat(paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
+           }
+          else if(isTRUE(config_yaml$QUALITY$ASSEMBLY)){
+             cat("**ASSEMBLY STEP**")
+             cat("\n\n")
+             cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
+             cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"))
+             cat(paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
+           }
+        }
+    }
+  }
+```
+
+```{r, results='asis', echo=FALSE, message = FALSE}
+  if (isTRUE(Weesam_bool)){
+    #cat(sprintf("\n\n# %s\n\n","Weesam{.tabset}"))
+  }
+```
+
+```{r, results='asis', echo=FALSE, message = FALSE}
+  if (isTRUE(Kat_bool)){
+    #cat(sprintf("\n\n# %s\n\n","KAT{.tabset}"))
+  }
+```
+
+
+```{r, results='asis', echo=FALSE, message = FALSE}
+  if (isTRUE(Mauve_bool)){
+    #cat(sprintf("\n\n# %s\n\n","Mauve{.tabset}"))
+  }
+```
+
+<style>
+    .tocify-extend-page {
+      height: 0 !important;
+    }
+    div.main-container{
+        max-width: 100%;
+    }
+    div.tocify {
+        top: 20%;
+    }
+.footer{
+    position:absolute; top:0; right:20px; padding:30px; height:180px
+    }
+</style>

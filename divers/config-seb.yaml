@@ -1,0 +1,44 @@
+# Master sRNA_pipeline configuration file template
+# ------------------------------------------
+
+####################
+# Input output data options
+'DATA':
+    'directories':
+        #'samples_dir': "/work/chabannes/TEST/sample/"       # samples dir
+        'references_dir': "/work/chabannes/TEST/ref/"       # references dir
+        'out_dir': "/work/chabannes/TEST/TEST_SNAKE/"       # Out directory
+    'fasta_suffix': '.fasta'                                # file termination
+
+##################
+# Pipeline options
+'PIPE_OPTION':
+    'plotOption': True
+    #'size_min': "100"
+    'size_max': 25
+
+##############################
+# Location of various software
+#
+# the variable must load soft on the $PATH environement
+MODULES:
+    "SAMTOOLS": "module purge; module load bioinfo/samtools/1.9"         # use for filter reads and convert sam to bam
+    "PYTHON3": "module purge; module load system/python/3.7.3"           # Python3 >=3.6 with require libraries
+    "BWA": "module purge; module load bioinfo/bwa/0.7.15"                # for make the mapping
+
+
+############################
+# Misc. options for programs
+#
+# For advanced users. See
+# https://nanoporetech.github.io/katuali/examples.html#examples
+# for help in contructing bespoke pipelines.
+#
+# For fully specified targets, rather than predefined workflows the below can
+# be used to manipulate how each program is run. Each key acts as a shortcut
+# for a specific parameter set (as well as functioning as a target name).
+# Default parameters are given by the `""` targets
+
+# BWA
+BWA_ALN:
+    "-n": "2"

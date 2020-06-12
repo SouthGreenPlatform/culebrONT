@@ -1,0 +1,110 @@
+DATA:
+    'FASTQ': 'Data-Xoo-sub/fastq/'
+    'FAST5': 'Data-Xoo-sub/fast5/'
+    'ILLUMINA' : 'Data-Xoo-sub/illumina/'
+    'GENOME_SIZE': '4.8m'
+    'REF': 'Data-Xoo-sub/ref/BAI3_Sanger.fsa'
+    'OUTPUT': 'output_xoo_sub_CIRC/'
+    'CIRCULAR' : True
+
+############ WC ################
+ASSEMBLY:
+    CANU : False
+    FLYE : True
+    MINIASM : True
+CORRECTION:
+    NANOPOLISH : True
+    MEDAKA : False
+#by default BUSCO is launched if True in QUALITY ASSEMBLY OR/ET POLISHING OR/ET CORRECTION step is/are activated
+QUALITY:
+    ASSEMBLY : False
+    POLISHING : False
+    CORRECTION : True
+#### Others quality tools are lauched only in last assemblies
+    WEESAM: True
+    BLOBTOOLS: True
+    ASSEMBLYTICS: True
+#### Others quality softs but illumina reads are required
+    KAT: True
+#### Alignment of the various assemblies derived from a fastq file for small genomes (<10-20Mbp);
+#### lauched only in last assemblies, only activate MAUVE if you have more that 1 sample
+MSA:
+    FIXSTART: True
+    MAUVE: True
+
+
+############ PARAMS ################
+params:
+    MINIMAP2:
+        PRESET_OPTION: 'map-pb' # -x minimap2 preset option is map-pb by default (map-pb, map-ont etc)
+    CANU:
+        MAX_MEMORY: '15G'
+        OPTIONS: '-fast'
+    CIRCLATOR:
+        OPTIONS: ''
+    RACON:
+        RACON_ROUNDS: 2 #1 to 9
+    NANOPOLISH:
+        # segment length to split assembly and correct it  default=50000
+        NANOPOLISH_SEGMENT_LEN: '50000'
+        # overlap length between segments  default=200
+        NANOPOLISH_OVERLAP_LEN: '200'
+        OPTIONS: ''
+    MEDAKA:
+        # if 'MEDAKA_TRAIN_WITH_REF' is True, medaka launchs training using reference found in DATA REF param. Medaka does not take in count other medaka model parameters below.
+        MEDAKA_TRAIN_WITH_REF: True
+        MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
+    BUSCO:
+        DATABASE : 'Data-Xoo-sub/bacteria_odb10'
+        MODEL : 'genome'
+#        'SP' : 'caenorhabditis'
+        SP : ''
+    QUAST:
+        REF: 'Data-Xoo-sub/ref/BAI3_Sanger.fsa'
+        GFF: ''
+        GENOME_SIZE_PB: 48000000
+        #GENOME_SIZE_PB: 1000000
+        OPTIONS : ''
+    DIAMOND:
+        DATABASE: 'Data-Xoo-sub/testBacteria.dmnd'
+    MUMMER:
+#         -l default 20
+        MINMATCH : 100
+#         -c default 65
+        MINCLUSTER: 500
+    ASSEMBLYTICS:
+        UNIQUE_ANCHOR_LEN: 10000
+        MIN_VARIANT_SIZE: 50
+        MAX_VARIANT_SIZE: 10000
+
+# cluster with scratch temporal repertory
+SCRATCH : True
+
+## @ITROP PATH
+tools:
+## ASSEMBLERS:
+    CANU_SIMG : '/data3/projects/containers/CULEBRONT/canu-1.9.simg'
+    FLYE_SIMG : '/data3/projects/containers/CULEBRONT/Flye-2.6.simg'
+    MINIASM_SIMG : '/data3/projects/containers/CULEBRONT/miniasm-0.3.simg'
+    MINIPOLISH_SIMG : '/data3/projects/containers/3.3.0/Minipolish-0.1.2.simg'
+## CIRCULARISATION
+    CIRCLATOR_SIMG : '/data3/projects/containers/CULEBRONT/Circlator-1.5.5.simg'
+## POLISHERS:
+    RACON_SIMG : '/data3/projects/containers/CULEBRONT/racon-1.4.3.simg'
+    NANOPOLISH_SIMG : '/data3/projects/containers/CULEBRONT/nanopolish-0.11.3.simg'
+## CORRECTION
+    MEDAKA_SIMG : '/data3/projects/containers/3.3.0/medaka-0.11.5.simg'
+## QUALITY
+    BUSCO_SIMG : '/data3/projects/containers/CULEBRONT/busco-4.0.5.simg'
+    QUAST_SIMG : '/data3/projects/containers/CULEBRONT/quast-5.0.2.simg'
+    WEESAM_SIMG : '/data3/projects/containers/CULEBRONT/weesam.simg'
+    BLOBTOOLS_SIMG : '/data3/projects/containers/CULEBRONT/bloobtools-v1.1.1.simg'
+    MINIMAP2_SIMG: '/data3/projects/containers/CULEBRONT/nanopolish-0.11.3.simg'
+    DIAMOND_SIMG : '/data3/projects/containers/CULEBRONT/Diamond-0.9.30.simg'
+    MUMMER_SIMG : '/data3/projects/containers/CULEBRONT/mummer-4beta.simg'
+    ASSEMBLYTICS_SIMG : '/data3/projects/containers/CULEBRONT/Assemblytics-1.2.simg'
+    SAMTOOLS_SIMG : '/data3/projects/containers/CULEBRONT/nanopolish-0.11.3.simg'
+    KAT_SIMG : '/data3/projects/containers/CULEBRONT/kat-2.4.2.simg'
+    MINICONDA_SIMG : 'shub://vibaotram/singularity-container:cpu-guppy3.4-conda-api'
+    R_SIMG: '/data3/projects/containers/CULEBRONT/R.simg'
+

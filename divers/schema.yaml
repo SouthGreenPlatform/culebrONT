@@ -1,0 +1,50 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+description: snakemake configuration file
+detect_relations: true
+
+
+properties:
+  ##
+
+  DATA:
+    type: object
+    properties:
+      directories:
+        type: object
+        properties:
+          samples_dir:                # samples dir
+            type: string
+          references_dir:             # references dir
+            type: string
+          out_dir:                    # Out directory
+            type: string
+      fasta_suffix:
+        type: string #['fasta']        # file termination
+        default: "fasta"
+    required:
+      - samples_dir
+      - references_dir
+      - out_dir
+
+
+
+
+
+  PIPE_OPTION:
+    type: object
+    properties:
+      size_min:
+        required: false
+        type: integer
+        pattern: ^[0-9]{3}$                   # work only on string
+        title: The size_min use to pipepline
+        default: 20
+
+
+
+#required:
+  #DATA
+  #PIPE_OPTION
+  #MODULES
+
+additionalProperties: true
