@@ -9,8 +9,8 @@
 - [Parameters](#Parameters)
 - [Singularity images](#singularity)
 - [Cluster_config.yaml](#prepclusteryaml)
-- [Launching CulebrONT on HPC clusters](#sbatch)
-- [Output on CulebrONT](#output)
+- [Launching CulebrONT on Slurm HPC clusters](#sbatch)
+- [Output of CulebrONT](#output)
 - [Citation](#citation)
 - [Useful notes](#notes)
 - [License](#license)
@@ -19,50 +19,57 @@
 <a name="about-this-package"></a>
 ## About this package
 
-Using data from long reads obtained by Oxford Nanopore sequencing Technologies makes genome assembly easier, in particular to solve repeats and structural variants, in prokaryotic as well as in eukaryotic genomes, resulting in increased contiguity and accuracy. Plenty of softwares and tools are released or updated every weeks, and a lot of species see their genome assembled using those tools. That’s right, but which assembly tool could give the best results for my favorite organism? CulebrONT can help you! CulebrONT is a scalar, modulable and traceable snakemake pipeline.
+Using data from long reads obtained by Oxford Nanopore Technologies sequencing makes genome assembly easier, in particular to solve repeats and structural variants, in prokaryotic as well as in eukaryotic genomes, resulting in increased contiguity and accuracy.
 
-<a name="installation"></a> 
+Bunch of softwares and tools are released or updated every week, and a lot of species see their genome assembled using those.
+
+That’s right.
+
+"*But which assembly tool could give the best results for my favorite organism?*"
+
+**CulebrONT can help you!** CulebrONT is an open-source, scalable, modulable and traceable snakemake pipeline, able to launch multiple assembly tools in parallel and providing help for choosing the best possible assembly between all possibilities.
+
+<a name="installation"></a>
 ## Installation
 
-CulebrONT uses python >= 3.7 and Snakemake >= 5.10.0
-  
-``` bash
-# On i-Trop HPC
-module load system/singularity/3.3.0
-module load system/python/3.7.2
+### Mandatory installation
 
-# On IFB HPC
-module load singularity 
-module load python/3.7
-module load graphviz/2.40.
-```
+CulebrONT uses Python >= 3.7 and Snakemake >= 5.10.0. Singularity 3.0.0+ could be of help (see [below](#singularity))
+
 
 * Install or update CulebrONT
 
 ``` bash
 git clone https://github.com/SouthGreenPlatform/culebront_pipeline.git
+cd culebront_pipeline
 ```
+
+### Optional Installation
+
+To obtain a clear and correct report, please add also the following dependencies from R:
+ * `devtools::install_github("strengejacke/strengejacke")`
+ * 'plotly', 'dplyr', 'optparse', 'htmltools', 'rmdformats', 'magrittr', 'yaml', 'png', 'here', 'htmlwidgets'.
 
 <a name="rules"></a>
 ## Rules in Culebront
 
-Assembly, circularisation, polishing and correction steps are included in CulebrONT, and can be activated (or not) according to user’s requests. The most relevant tools commonly used for each step are integrated, as well as a lot of quality control tools. CulebrONT also generates a report compiling information obtained in every step. CulebrONT is an open source solution to help you making decisions for your own assembly.
+Assembly, circularisation, polishing and correction steps are included in CulebrONT, and can be activated (or not) according to user’s requests. The most commonly used tools in the community for each step are integrated, as well as various quality control tools. CulebrONT also generates a report compiling information obtained at every step.
 
 ### From assembly to correction
 
-CulebrONT is really flexible to assembly and circularise (or not) assembled molecules, polishing and correct assemblies. 
+CulebrONT is really flexible to assembly and circularise (or not) assembled molecules, polish and correct assemblies.
 
-For assemblies, you can launch at least one of assemblers included on culebrONT and pipe assembly with circularisation, polishing and correction steps as well as quality pipeline. 
+For assemblies, you must launch at least one of assemblers included in culebrONT and pipe assembly with circularisation, polishing and correction steps as well as with the quality control pipeline.
 
-For circularisation, you can activate/deactivate circularisation steps if need.
-If you are interested on eukaryotic organims and circularisation is not necessary use CIRCULAR=False on *config.yaml* file.
+For circularisation, you can activate/deactivate circularisation steps if needed.
+If you are interested on eukaryotic organims, thus circularisation is not necessary use CIRCULAR=False on *config.yaml* file.
 
-Dags here are showing differences between deactivated (left) and activated (right) CIRCULAR step on configuration file. 
+Directed acyclic graphs (DAGs) show the differences between deactivated (left) and activated (right) CIRCULAR step on configuration file.
 
 ![global](images/assembly_to_correction.png)
 
-##### Assembly 
-CulebrONT includes (at the moment) three usefully assemblers : Flye, Miniasm and Canu. 
+##### Assembly
+CulebrONT includes (at the moment) three recent and community-validated assemblers : Flye, Miniasm and Canu. More will be added in the future.
 
 Included tools :
 * Flye version >= 2.6 https://github.com/fenderglass/Flye
@@ -71,45 +78,46 @@ Included tools :
 
 ##### Circularisation
 
-If a assembled molecule is circular (CIRCULAR=True), this molecule is tagged and will be treated specially in pipeline. We implemented taggind and rotation of circular molecule before each racon polishing step and we fixing start position on circular genome. This could be good when multiple alignments are envisaged.  
+If an assembled molecule is circular, e.g. for bacteria (CIRCULAR=True), this molecule is tagged and will be treated specially in pipeline. We implemented tagging and rotation of circular molecule before each racon polishing step, and we fixing start position on circular genome. This is efficient when multiple genome alignments are envisaged.  
 
-* Circularisation (CIRCULAR=True) step is running activating *--plasmids* option on Flye. 
-* *Ciclator* is used to circularise assembly from Canu. Circlator will attempt to identify each circular sequence and output a linearised version of it. 
-* Circularisation to Miniasm is already insured by minipolish.
+* If Circularisation (CIRCULAR=True) step is choosen, the *--plasmids* option on Flye is activated.
+* *Ciclator* is used to circularise assembly from Canu. Circlator will attempt to identify each circular sequence and output a linearised version from each of them.
+* Circularisation for Miniasm is already performed by minipolish.
 
 Included tools :
 * Circlator version >= 1.5.5 https://github.com/sanger-pathogens/circlator
 
 ##### Polishing
-Polishing step is insured by Racon. Racon correct raw contigs generated by rapid assembly methods. Choose how many rounds of racon you would run (constrains from 1 to 9 rounds). CulebrONT will recursively do it for you. 
+Polishing step is ensured by Racon. Racon corrects raw contigs generated by rapid assembly methods with original ONT reads. Choose how many rounds of Racon you want to perform (constrains from 1 to 9 rounds), and CulebrONT will recursively do it for you. Generally 3 or 4 iterations are the best choices.
 
 Included tools :
 * Racon version >= 1.4.3 https://github.com/isovic/racon
 
-##### Correction 
-Correction can improved consensus sequence for a draft genome assembly. We have included Nanopolish and Medaka on correction steps. With CulebrONT you can now training a model Medaka and use it directly to obtain a consensus from you favorite organism. 
+##### Correction
+Correction can improve the consensus sequence for a draft genome assembly. We include Nanopolish and Medaka on correction steps. With CulebrONT you can now train a Medaka model and use it directly to obtain a consensus from you favorite organism. In addition, Medaka can use a dedicated GPU resource if indicated.
 
 Included tools :
 * Medaka Medaka-gpu version >= 0.11.5 https://github.com/nanoporetech/medaka
 * Nanopolish version >= 0.11.3 https://nanopolish.readthedocs.io/en/latest/index.html#
 
-### Checking assembly quality 
+### Checking assembly quality
 
 A variety of useful tools exist for check high accuracy assembly.
 
 ![global](images/quality.png)
 
-##### Quality tools
- Using CulebrONT, BUSCO and QUAST are launched by default. BUSCO could help to check if we have a good assembly by searching the expected single-copy ortholog in any newly-sequenced genome from a appropriate phylogenetic clade. QUAST is a good starting point to help evaluate the quality of assemblies. It provides many helpful contiguity statistics. BUSCO and QUAST results are summary on report.
-* BUSCO and QUAST statistics will be calculated by the QUALITY (ASSEMBLY, POLISHING, CORRECTION) activated steps. You must to activate at least one over three QUALITY options on *config.yaml* file.
+##### Mandatory Quality tools
+ In CulebrONT, BUSCO and QUAST are selected by default. BUSCO helps to check if you have a good assembly, by searching the expected single-copy lineage-conserved orthologs in any newly-sequenced genome from an appropriate phylogenetic clade. QUAST is a good starting point to help evaluate the quality of assemblies, providing many helpful contiguity statistics. BUSCO and QUAST statistics are summarized in the culebrONT final report.
+
+* BUSCO and QUAST statistics will be calculated by acivaiting the QUALITY (ASSEMBLY, POLISHING, CORRECTION) steps. You must activate at least one over three QUALITY options on *config.yaml* file.
 
 Included tools :
-* Busco version >= 4.0.5
-* Quast version >= 5.0.2
+* BUSCO version >= 4.0.5
+* QUAST version >= 5.0.2
 
 ##### Optional Quality tools
 
-Check also quality assembly by using Bloobtools or/and Assemblytics or/and KAT. Use Weesam to check coverage of reads over you assembly (only for small genome size). Align assemblies from several assembles (or steps : assembly, polishing, correction) and compare it using Mauve.
+CulebrONT checks also the quality of assemblies by using Bloobtools, Assemblytics or KAT, or any combination of these. Weesam can be also used to check read coverage over you assembly (for small genome only). Alignment of several assembles (or from any steps : assembly, polishing, correction) and there comparison is performed using Mauve (for small genome only).
 
 Included tools :  
 * Bloobtools version >= 1.1.1
@@ -118,54 +126,67 @@ Included tools :
 * Weesam version > 1.6
 * Mauve > 2.4.0.snapshot_2015_02_13
 
-##### Report 
-CulebrONT generates a report summary statistics from different steps of the pipeline.
+##### Report
+CulebrONT generates a report presenting the summary statistics from different steps of the pipeline.
 
-Report needs preinstalled `devtools::install_github("strengejacke/strengejacke")` R dependance and also 'plotly', 'dplyr', 'optparse', 'htmltools', 'rmdformats', 'magrittr', 'yaml', 'png', 'here', 'htmlwidgets'.
+This report has different dependencies to be preinstalled, as recomanded in the [installation step](#installation)
 
-Don't worry !! The whole of packages used to report are available on  the *R.def* singularity image that you can use from singularity hub or build from Containers repository https://github.com/SouthGreenPlatform/culebront_pipeline/tree/master/Containers if you have sudo superpowers.
+Don't worry if you do not have access to all these depedencies !! The whole packages used in the report are available in  the *R.def* Singularity image, available at the Singularity hub or build from the [culebrONT Containers repository](https://github.com/SouthGreenPlatform/culebront_pipeline/tree/master/Containers) (only if you have sudo super cowpowers).
 
 <a name="running-culebront"></a>
 ## Running CulebrONT
 
+**For IRD iTrop or IFB HPC resources users ONLY**
+``` bash
+# On i-Trop HPC
+module load system/singularity/3.3.0
+module load system/python/3.7.2
+
+# On IFB HPC
+module load singularity
+module load python/3.7
+module load graphviz/2.40.
+```
+
 ### Prepare config.yaml
 
-To run the pipeline you have to give data paths and activate/deactivate options in every step from config.yaml file.
+To run the pipeline you have to provide the data path and activate/deactivate options in every step from config.yaml file.
 
-##### 1. Give data 
+##### 1. Providing data
 
-First, give path from data in configuration file
+First, indicate the data path in the configuration file
 
 ```yaml
 DATA:
-    FASTQ: '/path/to/repertory/with/fastq/'
+    FASTQ: '/path/to/fastq/directory/'
     REF: '/path/to/referencefile.fasta'
     GENOME_SIZE: '1m'
-    FAST5: '/path/to/repertory/with/fast5/'
-    ILLUMINA: '/path/to/repertory/with/illumina/'
-    OUTPUT: '/path/to/repertory/output/'
+    FAST5: '/path/to/fast5/directory/'
+    ILLUMINA: '/path/to/illumina/directory/'
+    OUTPUT: '/path/to/output/directory/'
     CIRCULAR : True/False
 ```
 
-* FASTQ: CulebrONT takes as input a fastq repertory ('FASTQ'). Every fastq file would contain the whole of reads to be assembled. Each fastq file found in this repertory will be assembled independently. Fastq files can be compressed or not. Naming convention accepted by CulebrONT is *NAME.fastq.gz* or *NAME.fq.gz* or *NAME.fastq* or *NAME.fq*.
+* **FASTQ**: CulebrONT takes as input a FASTQ directory. Every FASTQ file should contain the whole set of reads to be assembled (meaning that multiple runs must be merged in a single FASTQ file), as each FASTQ file found in this repertory will be assembled independently. FASTQ files can be compressed or not (gzipped). Naming convention accepted by CulebrONT are: *NAME.fastq.gz* or *NAME.fq.gz* or *NAME.fastq* or *NAME.fq*.
 
-* REF: Only a reference will be used by CulebrONT. Put the reference path in the 'REF' DATA parameter.
+* **REF**: Only one REFERENCE genome file will be used by CulebrONT. This REFERENCE will be used for QC steps (QUAST and MAUVE).
 
-* GENOME_SIZE : Genome size (m,g,k) of reference.
+* **GENOME_SIZE** : Estimated genome size (m,g,k) of the assembly.
 
-* FAST5: Nanopolish needs 'FAST5' files to training steps. Please give the path of fast5 repertory in 'FAST5' DATA parameter. Inside this 'fast5' repertory, a subrepertory with same name of fastq (before.fastq.gz) is necessary. For example : if in the FASTQ repertory we have run1.fastq.gz and run2.fastq.gz culebrONT waits fast5/run1 and fast5/run2 repertories in 'FAST5' path.   
+* **FAST5**: Nanopolish needs FAST5 files to training steps. Please give the path of FAST5 repertory in the *FAST5* DATA parameter. Inside this directory, a subdirectory with the exact same name as the corresponding FASTQ (before the *.fastq.gz*) is requested. For instance, if in the *FASTQ* directory we have *run1.fastq.gz* and *run2.fastq.gz*, culebrONT is expecting the *run1/* and *run2/* subdirectories in the FAST5 main directory.   
 
-* ILLUMINA : put path to repertory with illumina fastq.gz to KAT quality. Preferentially paired end data.
+* ILLUMINA : indicate the path to the directory with *Illumina* sequence data (in fastq or fastq.gz format) to perform KAT quality. Use preferentially paired-end data.
 
-* OUTPUT: output path repertory
+* OUTPUT: output *path* directory.
 
-* CIRCULAR : True or False to activate/deactivate circularisation steps (only to procaryote)
+* CIRCULAR : Indicate *True* or *False* to activate/deactivate circularisation steps (only to procaryote).
 
 
 ##### 2. Chose assemblers, polisher and correctors
 
-Activate/deactivate assemblers and correctors. By default RACON is launched as POLISH tool after each activated assembly step. You must to activate at least a assembler and a corrector.
+Activate/deactivate assemblers and correctors as you wish. By default, Racon is launched as POLISH tool after each activated assembly step. You **must** activate at least one assembler and one corrector.
 
+Example:
 ```yaml
 ASSEMBLY:
     CANU : False
@@ -178,9 +199,11 @@ CORRECTION:
 
 ##### 3. Chose quality tools
 
-Activate/deactivate quality tools. By default BUSCO AND QUAST are launched if 'True' in QUALITY (ASSEMBLY OR/ET POLISHING OR/ET CORRECTION) steps.
- 
- You must to activate at least a QUALITY step.
+Activate/deactivate quality tools as you wish. By default, BUSCO AND QUAST are launched if 'True' in QUALITY (ASSEMBLY OR POLISHING OR CORRECTION OR both) steps.
+
+ You **must** to activate at least one QUALITY step.
+
+ Example:
 
 ```yaml
 QUALITY:
@@ -188,9 +211,9 @@ QUALITY:
     POLISHING : True
     CORRECTION : True
 ```
-Others quality tools are lauched only in *last assemblies* (BLOBTOOLS, ASSEMBLYTICS, WEESAM and KAT). 
+Others quality tools are launched only on the *final assemblies* (BLOBTOOLS, ASSEMBLYTICS, WEESAM and KAT).
 
-KAT quality tool can be activate but Illumina reads are required.
+KAT quality tool can be activate but Illumina reads are mandatory in this case.
 
 ```yaml
 #### Others quality tools
@@ -200,11 +223,11 @@ KAT quality tool can be activate but Illumina reads are required.
     KAT: True
 ```
 
-Alignment of various assemblies derived from a fastq file for small genomes (<10-20Mbp) is also possible by using mauve. This one is 
-lauched on the whole of quality steps activated by sample (fastq file).
-A Fixstart step is possible before MSA to improve alignment on circular molecules.
+Alignment of various assemblies **for small genomes (<10-20Mbp)** is also possible by using Mauve. Mauve will compared each state of the assembly (Raw, Polished and Corrected) for each assembler used.
+
+A *Fixstart* step is possible before Mauve MSA to improve alignment on circular molecules.
 * Fixstart will be deactivated if CIRCULAR is False
-* Only activate MAUVE if you have more that 1 sample and more that 1 quality step.
+* Only activate MAUVE if you have more than one sample and more than one quality step.
 
 ```yaml
 MSA:
@@ -213,14 +236,16 @@ MSA:
 ```
 
 <a name="parameters"></a>
-##### 4. Parameters in some specifics tools 
+##### 4. Parameters for some specific tools
 
 Specifically to Racon:
-* Racon can be launch recursively from 1 to 9 rounds. 
+* Racon can be launch recursively from 1 to 9 rounds. 3 or 4 are recommanded.
 
 Specifically to Medaka :
-* If 'MEDAKA_TRAIN_WITH_REF' is activated, medaka launchs training using reference found in 'DATA/REF' param. Medaka does not take in count other medaka model parameters.
-* If 'MEDAKA_TRAIN_WITH_REF' is deactivated, medaka does not launch training but use the model given in 'MEDAKA_MODEL_PATH'. If 'MEDAKA_MODEL_PATH' is empty, this param is forgotten and by default model *E.coli* is used.
+* If 'MEDAKA_TRAIN_WITH_REF' is activated, Medaka launchs training using the reference found in 'DATA/REF' param. Medaka does not take into account other medaka model parameters.
+* If 'MEDAKA_TRAIN_WITH_REF' is deactivated, Medaka does not launch training but uses instead the model provided in 'MEDAKA_MODEL_PATH'. If 'MEDAKA_MODEL_PATH' is empty, this param is not used and the default model for *E.coli* is used.
+
+Standard parameters used:
 
 ```yaml
 ############ PARAMS ################
@@ -241,9 +266,9 @@ params:
         NANOPOLISH_OVERLAP_LEN: '200'
         OPTIONS: ''
     MEDAKA:
-        # if 'MEDAKA_TRAIN_WITH_REF' is True, medaka launchs training using reference found in DATA REF param. Medaka does not take in count other medaka model parameters below.
+        # if 'MEDAKA_TRAIN_WITH_REF' is True, Medaka launchs training using the reference found in DATA REF param. Medaka does not take in count other Medaka model parameters below.
         MEDAKA_TRAIN_WITH_REF: True
-        MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
+        MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # if empty this param is not used.
     BUSCO:
         DATABASE : 'Data-Xoo-sub/bacteria_odb10'
         MODEL : 'genome'
@@ -271,12 +296,12 @@ params:
 <a name="singularity"></a>
 #### Singularity containers
 
-Give to CulebrONT the build singularity containers path from your computer or cluster.  
+To use Singularity containers, provide to CulebrONT the already build Singularity containers path on your computer or cluster.  
 
-Here singularity images found  on i-Trop HPC from SouthGreen platform.
+As an example, here are singularity images found  on the i-Trop HPC from the SouthGreen platform.
 
 ```yaml
-# cluster with scratch temporal repertory
+# cluster with scratch temporary directory
 SCRATCH = False
 ## @ITROP PATH
 tools:
@@ -307,7 +332,7 @@ tools:
     R_SIMG: '/data3/projects/containers/CULEBRONT/R.simg'
 ```
 
-If you want to recovery singularity images from the singularity Hub, please use these paths :
+If you want to recover singularity images from the Singularity Hub and build them, please use these paths :
 
 ```yaml
 # cluster with scratch temporal repertory
@@ -341,14 +366,15 @@ tools:
       R_SIMG : 'shub://SouthGreenPlatform/CulebrONT:R.simg'
 ```
 
-Available recipes from containers are available in Containers repertory and also in https://github.com/SouthGreenPlatform/CulebrONT.git. Feel free of build them in your computer (or cluster) but you need root rights.
+Available recipes from containers are available in the *Containers* folder, as well as on the main [CulebrONT repository](https://github.com/SouthGreenPlatform/CulebrONT.git). Feel free to build them on your own computer (or cluster); be careful, you need root rights to do it.
 
-### Launching CulebrONT locally
+### Launching CulebrONT on a single machine
 
 <a name="Local"></a>
 
-To launch CulebrONT on locally you should use the parameters `--use-singularity` and `--use-conda`. 
-See the example bellow: 
+To launch CulebrONT on a single machine, you should use the parameters `--use-singularity` and `--use-conda`.
+
+See the example below:
 ```
 snakemake -s Snakefile --configfile config.yaml --use-singularity  --use-conda --latency-wait 120
 ```
@@ -357,10 +383,11 @@ snakemake -s Snakefile --configfile config.yaml --use-singularity  --use-conda -
 ### Launching CulebrONT on HPC clusters
 
 <a name="prepclusteryaml"></a>
-#### Preparing cluster configuration using cluster_config.yaml
-On `cluster_config.yaml` you can add partition, memory and threads used by default for every rule. If more memory or threads are necessary, please adapt content of this file before running on cluster for every rule. For example give more memory to Canu and Medaka. 
- Here a example of configuration file used on i-Trop HPC.
- 
+#### Preparing Slurm cluster configuration using cluster_config.yaml
+On `cluster_config.yaml`, you can add partition, memory and threads to be used by default for each rule. If more memory or threads are requested, please adapt the content of this file before running on a cluster for every rule. For instance give more memory to Canu and Medaka.
+
+ Here is a example of the configuration file we used on the i-Trop HPC.
+
 ```yaml
 __default__:
     cpus-per-task : 4
@@ -383,18 +410,18 @@ run_canu:
 ```
 
 #### Profiles
-In order to run CulebrONT on HPC cluster please follow directives found on https://github.com/Snakemake-Profiles/.
+In order to run CulebrONT on HPC cluster, please follow the [recommandations found on the SnakeMake profile github](https://github.com/Snakemake-Profiles/).
 
-Here, we explain how to profile on slurm scheduler by using https://github.com/Snakemake-Profiles/slurm procedure.
+Here is an example of how to profile a Slurm scheduler using [those recommandations]( https://github.com/Snakemake-Profiles/slurm).
 
 ```
 $ mkdir -p ~/.config/snakemake
 $ cd ~/.config/snakemake
 $ pip install --user cookiecutter
 $ cookiecutter https://github.com/Snakemake-Profiles/slurm.git
-# Answer to question as well :
+# Answer to questions :
 profile_name [slurm]: slurm-culebrONT
-sbatch_defaults []: 
+sbatch_defaults []:
 cluster_config []: cluster_config.yaml
 Select advanced_argument_conversion:
 1 - no
@@ -402,7 +429,7 @@ Select advanced_argument_conversion:
 Choose from 1, 2 [1]: 2
 
 $ cp /shared/home/$USER/culebront_pipeline/cluster_config.yaml .
-# edit slurm-submit.py and upgrade this dictionay to slurm options
+# edit slurm-submit.py and upgrade this dictionary with your Slurm options
 
 RESOURCE_MAPPING = {
 	"cpus-per-task": ("cpus-per-task", "cpu"),
@@ -416,10 +443,10 @@ RESOURCE_MAPPING = {
 ```
 SLURM Profile *slurm-culebrONT* is now created on : `/shared/home/$USER/.config/snakemake/slurm-culebrONT` repertory
 
-##### submit_culebront.sh 
+##### submit_culebront.sh
 
-This is a typical launcher for using CulebrONT on a slurm cluster. You have to adapt it for configuration of you favorite cluster.
- 
+This is a typical launcher for using CulebrONT on a Slurm cluster. You have to adapt it for the configuration of your favorite cluster.
+
 ```
 #!/bin/bash
 #SBATCH --job-name culebrONT
@@ -431,20 +458,20 @@ module load system/python/3.7.2
 
 snakemake --unlock
 
-snakemake --nolock --use-singularity --use-conda --cores -p --verbose -s Snakefile \ 
---configfile config.yaml --latency-wait 60 --keep-going --restart-times 2 \ 
+snakemake --nolock --use-singularity --use-conda --cores -p --verbose -s Snakefile \
+--configfile config.yaml --latency-wait 60 --keep-going --restart-times 2 \
 --rerun-incomplete --profile slurm-culebrONT \
 ```
 
-This launcher can be launched on the cluster with:
+This launcher can be submitted to the Slurm queue typing:
 ```
-sbatch submit_culebront.sh 
+sbatch submit_culebront.sh
 ```
 
 <a name="output"></a>
 ## Output on CulebrONT
 
-Architecture of culebrONT output is showed above :
+The architecture of culebrONT output is designed as follows:
 ```
 output_example_circ/
 ├── SAMPLE-1
@@ -475,38 +502,37 @@ output_example_circ/
 └── REPORT
     └── SAMPLE-1
 ```
-* Similar Architecture observed by sample (fastq = SAMPLE-1 in example) is conserved for LOG files.
+The same Architecture per sample (fastq = SAMPLE-1 in example) is followed for LOG files.
 
-_Important_: To visualise the report created by culebrONT, transfer the whole of the repertory REPORT on your local machine before to open *report.html* on a navigator.
+_Important_: To visualise the report created by culebrONT, transfer the whole *REPORT* directory on your local machine before opening the *report.html* file with a navigator.
 
 <a name="citation"></a>
 ## Citation
 
 @Authors:
 
-Aurore Comte (IRD) and Julie Orjuela (IRD) develop culebrONT.
+Aurore Comte (IRD) and Julie Orjuela (IRD) developped culebrONT.
 
-Sebastien Ravel (CIRAD), Florian Charriat (CIRAD) help to snakemake bugs and tricks.
+Sebastien Ravel (CIRAD), Florian Charriat (CIRAD) helped on SnakeMake bugs and tricks.
 
-François Sabot (IRD) for implemented coverage tools.
+François Sabot (IRD) was involved in coverage tools implementation.
 
-Ndomassi Tando for helping on singularity containers.
+Ndomassi Tando (IRD) helped on Singularity containers creation.
 
-Sebastien Cunnac (IRD) and Tram Vi (IRD) for test on real data and circularisation improvements.
+Sebastien Cunnac (IRD) and Tram Vi (IRD) tested on real data and helped for circularisation improvements.
 
 <a name="notes"></a>
-## Usefull notes
+## Useful notes
 
-Previous to CulebrONT you could base-calling of arbitrarily multiplexed libraries across several Minion runs with sequencing quality control and gathers output files by genome for subsequent steps. For that use https://github.com/vibaotram/baseDmux.
+Before launching CulebrONT, you could base-calling of arbitrarily multiplexed libraries across several Minion runs with sequencing quality control and gather the output files by genome for subsequent steps. For that use https://github.com/vibaotram/baseDmux.
 
 #### Thanks
 
-The authors acknowledge the IRD i-Trop HPC (South Green Platform) at IRD montpellier 
+The authors acknowledge the IRD i-Trop HPC (South Green Platform) at IRD Montpellier
     for providing HPC resources that have contributed to this work.
-   https://bioinfo.ird.fr/- http://www.southgreen.fr
+   https://bioinfo.ird.fr/ - http://www.southgreen.fr
 
 <a name="licence"></a>
 ## License
 Licencied under CeCill-C (http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html) and GPLv3
-Intellectual property belongs to IRD.
-
+Intellectual property belongs to IRD and authors.
