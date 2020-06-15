@@ -340,30 +340,30 @@ SCRATCH : False
 
 tools:
 ###### ASSEMBLERS:
-      CANU_SIMG: 'shub://SouthGreenPlatform/CulebrONT:canu-1.9.def'
-      FLYE_SIMG: 'shub://SouthGreenPlatform/CulebrONT:flye-2.6.def'
-      MINIASM_SIMG : 'shub://SouthGreenPlatform/CulebrONT:miniasm-0.3.def'
-      MINIPOLISH_SIMG : 'shub://SouthGreenPlatform/CulebrONT:Minipolish-0.1.2.simg' *
+      CANU_SIMG: 'shub://SouthGreenPlatform/CulebrONT_pipeline:canu-1.9.def'
+      FLYE_SIMG: 'shub://SouthGreenPlatform/CulebrONT_pipeline:flye-2.6.def'
+      MINIASM_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:miniasm-0.3.def'
+      MINIPOLISH_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:minipolish-0.1.2.def'
 ###### CIRCULARISATION
-      CIRCLATOR_SIMG : 'shub://SouthGreenPlatform/CulebrONT:circlator-1.5.5.def'
+      CIRCLATOR_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:circlator-1.5.5.def'
 ###### POLISHERS:
-      RACON_SIMG : 'shub://SouthGreenPlatform/CulebrONT:racon-1.4.3.def'
+      RACON_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:racon-1.4.3.def'
 ###### CORRECTION
-      NANOPOLISH_SIMG : 'shub://SouthGreenPlatform/CulebrONT:nanopolish-0.11.3.def'
-      MEDAKA_SIMG : 'shub://SouthGreenPlatform/CulebrONT:medaka-cpu-0.11.5.def'
+      NANOPOLISH_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:nanopolish-0.11.3.def'
+      MEDAKA_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:medaka-gpu-0.11.5.def'
 ###### QUALITY
-      BUSCO_SIMG : 'shub://SouthGreenPlatform/CulebrONT:busco-4.def'
-      QUAST_SIMG : 'shub://SouthGreenPlatform/CulebrONT:quality.def'
-      WEESAM_SIMG : 'shub://SouthGreenPlatform/CulebrONT:quality.def'
-      BLOBTOOLS_SIMG : 'shub://SouthGreenPlatform/CulebrONT:quality.def'
-      MINIMAP2_SIMG: 'shub://SouthGreenPlatform/CulebrONT:nanopolish-0.11.3.simg' *
-      DIAMOND_SIMG : 'shub://SouthGreenPlatform/CulebrONT:quality.def'
-      MUMMER_SIMG : 'shub://SouthGreenPlatform/CulebrONT:mummer-4beta.def'
-      ASSEMBLYTICS_SIMG : 'shub://SouthGreenPlatform/CulebrONT:quality.def'
-      SAMTOOLS_SIMG : 'shub://SouthGreenPlatform/CulebrONT:nanopolish-0.11.3.simg'
-      KAT_SIMG : 'shub://SouthGreenPlatform/CulebrONT:quality.def'
-      MINICONDA_SIMG : 'shub://vibaotram/singularity-container:cpu-guppy3.4-conda-api'
-      R_SIMG : 'shub://SouthGreenPlatform/CulebrONT:R.simg'
+      BUSCO_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:busco-4.def'
+      QUAST_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:quality.def'
+      WEESAM_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:quality.def'
+      BLOBTOOLS_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:quality.def'
+      MINIMAP2_SIMG: 'shub://SouthGreenPlatform/CulebrONT_pipeline:nanopolish-0.11.3.simg'
+      DIAMOND_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:quality.def'
+      MUMMER_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:mummer-4beta.def'
+      ASSEMBLYTICS_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:quality.def'
+      SAMTOOLS_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:nanopolish-0.11.3.simg'
+      KAT_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:quality.def'
+      MINICONDA_SIMG: 'shub://vibaotram/singularity-container:cpu-guppy3.4-conda-api'
+      R_SIMG: 'shub://SouthGreenPlatform/CulebrONT_pipeline:r.def'
 ```
 
 Available recipes from containers are available in the *Containers* folder, as well as on the main [CulebrONT repository](https://github.com/SouthGreenPlatform/CulebrONT.git). Feel free to build them on your own computer (or cluster); be careful, you need root rights to do it.
