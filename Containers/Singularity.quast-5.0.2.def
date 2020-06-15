@@ -1,0 +1,31 @@
+Bootstrap: docker
+From : ubuntu:18.04
+%labels
+        quast.version 5.0.2
+        modified by <julie.orjuela@ird.fr>
+
+
+%post
+	##### System #####
+	apt update -y
+	apt upgrade -y
+	apt install -y build-essential wget zlib1g-dev pkg-config libfreetype6-dev libpng-dev perl python3-all-dev python3-pip openjdk-8-jdk python-setuptools
+
+    python3 -m pip install matplotlib
+
+	wget -P /tmp/ https://downloads.sourceforge.net/project/quast/quast-5.0.2.tar.gz
+	cd /tmp
+	tar xvzf /tmp/quast-5.0.2.tar.gz
+	rm /tmp/quast-5.0.2.tar.gz
+	if [ -d "/quast" ]; then
+		rm -rf /quast/
+	fi
+	mv /tmp/quast-5.0.2 /quast
+	cd /quast/
+	./install.sh
+
+%runscript
+	python3 /quast/quast.py $@
+
+%environment
+    export PATH=$PATH:/quast

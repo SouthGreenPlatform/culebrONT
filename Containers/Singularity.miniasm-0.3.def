@@ -1,0 +1,58 @@
+Bootstrap : docker
+From : ubuntu:18.04
+
+%labels
+    January 2020
+    maintainer Aurore Comte <aurore.comte@ird.fr>
+    Minimap2, Miniasm, Minipolish
+
+%help
+    launch minimap2 v2.17 with the command : minimap2
+    launch miniasm v0.3 with the command : miniasm
+    launch racon v1.4.3 with the command : racon
+    launch Minipolish v0.1.2 with the command : minipolish-runner.py
+
+%post
+    apt-get -y update
+    apt-get -y install sudo g++ git make cmake python3-dev python3-pip libmysqlclient-dev libssl-dev libffi-dev python3-pip python3-venv gawk zlib1g-dev build-essential wget tar bzip2 curl python3-numpy python3-scipy apt-utils dialog
+    apt-get -y install perl gnuplot liblzma-dev
+
+    curl -L https://github.com/lh3/minimap2/releases/download/v2.17/minimap2-2.17_x64-linux.tar.bz2 | tar -jxvf -
+    cd minimap2-2.17_x64-linux
+    mm=`pwd`
+    cd ..
+    PATH=$PATH:$mm
+
+    wget https://github.com/lh3/miniasm/archive/v0.3.tar.gz
+    tar -zxvf v0.3.tar.gz
+    cd miniasm-0.3
+    ma=`pwd`
+    make
+    cd ..
+    PATH=$PATH:$ma
+
+    wget https://github.com/isovic/racon/releases/download/1.4.3/racon-v1.4.3.tar.gz
+    tar -zxvf racon-v1.4.3.tar.gz
+    cd racon-v1.4.3
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    make
+    rac=`pwd`
+    cd ../..
+    PATH=$PATH:$rac
+
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade setuptools
+    python3 -m pip install edlib
+    python3 -m pip install pytest
+
+    #git clone https://github.com/rrwick/Minipolish.git
+    #python3 -m pip install ./Minipolish
+    
+    wget https://github.com/rrwick/Minipolish/archive/v0.1.2.tar.gz
+    tar -zxvf v0.1.2.tar.gz
+
+%environment
+    export PATH="/minimap2-2.17_x64-linux:/miniasm-0.3:/racon-v1.4.3/build/bin:/Minipolish-0.1.2:${PATH}"
+
