@@ -31,7 +31,6 @@ wget https://github.com/marbl/canu/archive/v1.9.tar.gz
 tar xvfz v1.9.tar.gz
 cd canu-1.9/src
 make -j 8
-
 #%runscript
 #exec /usr/local/canu-1.9/Linux-amd64/bin/canu "$@"
 
