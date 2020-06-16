@@ -41,7 +41,7 @@ CulebrONT uses Python >= 3.7 and Snakemake >= 5.10.0. Singularity 3.0.0+ could b
 
 ``` bash
 git clone https://github.com/SouthGreenPlatform/CulebrONT_pipeline.git
-cd culebront_pipeline
+cd CulebrONT_pipeline
 ```
 
 ### Optional Installation
@@ -59,7 +59,7 @@ Assembly, circularisation, polishing and correction steps are included in Culebr
 
 CulebrONT is really flexible to assembly and circularise (or not) assembled molecules, polish and correct assemblies.
 
-For assemblies, you must launch at least one of assemblers included in culebrONT and pipe assembly with circularisation, polishing and correction steps as well as with the quality control pipeline.
+For assemblies, you must launch at least one of assemblers included in CulebrONT and pipe assembly with circularisation, polishing and correction steps as well as with the quality control pipeline.
 
 For circularisation, you can activate/deactivate circularisation steps if needed.
 If you are interested on eukaryotic organims, thus circularisation is not necessary use CIRCULAR=False on *config.yaml* file.
@@ -107,7 +107,7 @@ A variety of useful tools exist for check high accuracy assembly.
 ![global](images/quality.png)
 
 ##### Mandatory Quality tools
- In CulebrONT, BUSCO and QUAST are selected by default. BUSCO helps to check if you have a good assembly, by searching the expected single-copy lineage-conserved orthologs in any newly-sequenced genome from an appropriate phylogenetic clade. QUAST is a good starting point to help evaluate the quality of assemblies, providing many helpful contiguity statistics. BUSCO and QUAST statistics are summarized in the culebrONT final report.
+ In CulebrONT, BUSCO and QUAST are selected by default. BUSCO helps to check if you have a good assembly, by searching the expected single-copy lineage-conserved orthologs in any newly-sequenced genome from an appropriate phylogenetic clade. QUAST is a good starting point to help evaluate the quality of assemblies, providing many helpful contiguity statistics. BUSCO and QUAST statistics are summarized in the CulebrONT final report.
 
 * BUSCO and QUAST statistics will be calculated by acivaiting the QUALITY (ASSEMBLY, POLISHING, CORRECTION) steps. You must activate at least one over three QUALITY options on *config.yaml* file.
 
@@ -131,7 +131,7 @@ CulebrONT generates a report presenting the summary statistics from different st
 
 This report has different dependencies to be preinstalled, as recomanded in the [installation step](#installation)
 
-Don't worry if you do not have access to all these depedencies !! The whole packages used in the report are available in  the *R.def* Singularity image, available at the Singularity hub or build from the [culebrONT Containers repository](https://github.com/SouthGreenPlatform/culebront_pipeline/tree/master/Containers) (only if you have sudo super cowpowers).
+Don't worry if you do not have access to all these depedencies !! The whole packages used in the report are available in  the *R.def* Singularity image, available at the Singularity hub or build from the [CulebrONT Containers repository](https://github.com/SouthGreenPlatform/CulebrONT_pipeline/tree/master/Containers) (only if you have sudo super cowpowers).
 
 <a name="running-culebront"></a>
 ## Running CulebrONT
@@ -173,7 +173,7 @@ DATA:
 
 * **GENOME_SIZE** : Estimated genome size (m,g,k) of the assembly.
 
-* **FAST5**: Nanopolish needs FAST5 files to training steps. Please give the path of FAST5 repertory in the *FAST5* DATA parameter. Inside this directory, a subdirectory with the exact same name as the corresponding FASTQ (before the *.fastq.gz*) is requested. For instance, if in the *FASTQ* directory we have *run1.fastq.gz* and *run2.fastq.gz*, culebrONT is expecting the *run1/* and *run2/* subdirectories in the FAST5 main directory.   
+* **FAST5**: Nanopolish needs FAST5 files to training steps. Please give the path of FAST5 repertory in the *FAST5* DATA parameter. Inside this directory, a subdirectory with the exact same name as the corresponding FASTQ (before the *.fastq.gz*) is requested. For instance, if in the *FASTQ* directory we have *run1.fastq.gz* and *run2.fastq.gz*, CulebrONT is expecting the *run1/* and *run2/* subdirectories in the FAST5 main directory.   
 
 * ILLUMINA : indicate the path to the directory with *Illumina* sequence data (in fastq or fastq.gz format) to perform KAT quality. Use preferentially paired-end data.
 
@@ -428,7 +428,7 @@ Select advanced_argument_conversion:
 2 - yes
 Choose from 1, 2 [1]: 2
 
-$ cp /shared/home/$USER/culebront_pipeline/cluster_config.yaml .
+$ cp /shared/home/$USER/CulebrONT_pipeline/cluster_config.yaml .
 # edit slurm-submit.py and upgrade this dictionary with your Slurm options
 
 RESOURCE_MAPPING = {
@@ -471,7 +471,7 @@ sbatch submit_culebront.sh
 <a name="output"></a>
 ## Output on CulebrONT
 
-The architecture of culebrONT output is designed as follows:
+The architecture of CulebrONT output is designed as follows:
 ```
 output_example_circ/
 ├── SAMPLE-1
@@ -504,14 +504,14 @@ output_example_circ/
 ```
 The same Architecture per sample (fastq = SAMPLE-1 in example) is followed for LOG files.
 
-_Important_: To visualise the report created by culebrONT, transfer the whole *REPORT* directory on your local machine before opening the *report.html* file with a navigator.
+_Important_: To visualise the report created by CulebrONT, transfer the whole *REPORT* directory on your local machine before opening the *report.html* file with a navigator.
 
 <a name="citation"></a>
 ## Citation
 
 @Authors:
 
-Aurore Comte (IRD) and Julie Orjuela (IRD) developped culebrONT.
+Aurore Comte (IRD) and Julie Orjuela (IRD) developped CulebrONT.
 
 Sebastien Ravel (CIRAD), Florian Charriat (CIRAD) helped on SnakeMake bugs and tricks.
 
