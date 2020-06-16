@@ -40,7 +40,7 @@ CulebrONT uses Python >= 3.7 and Snakemake >= 5.10.0. Singularity 3.0.0+ could b
 * Install or update CulebrONT
 
 ``` bash
-git clone https://github.com/SouthGreenPlatform/culebront_pipeline.git
+git clone https://github.com/SouthGreenPlatform/CulebrONT_pipeline.git
 cd culebront_pipeline
 ```
 
