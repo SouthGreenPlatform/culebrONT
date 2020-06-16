@@ -93,9 +93,9 @@ tools:
       RACON_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:racon-1.4.3.def'
 ###### CORRECTION
       NANOPOLISH_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:nanopolish-0.11.3.def'
-      MEDAKA_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:medaka-gpu-0.11.5.def'
+      MEDAKA_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:medaka-gpu-1.0.3.def'
 ###### QUALITY
-      BUSCO_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:busco-4.def'
+      BUSCO_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:busco-4.0.4.def'
       QUAST_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:quality.def'
       WEESAM_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:quality.def'
       BLOBTOOLS_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:quality.def'

@@ -84,25 +84,25 @@ SCRATCH : False
 tools:
 ## ASSEMBLERS:
     CANU_SIMG : '/path/to/singularity/images/canu-1.9.simg'
-    FLYE_SIMG : '/path/to/singularity/images/Flye-2.6.simg'
+    FLYE_SIMG : '/path/to/singularity/images/flye-2.6.simg'
     MINIASM_SIMG : '/path/to/singularity/images/miniasm-0.3.simg'
-    MINIPOLISH_SIMG : '/path/to/singularity/images/Minipolish-0.1.2.simg'
+    MINIPOLISH_SIMG : '/path/to/singularity/images/minipolish-0.1.2.simg'
 ## CIRCULARISATION
-    CIRCLATOR_SIMG : '/path/to/singularity/images/Circlator-1.5.5.simg'
+    CIRCLATOR_SIMG : '/path/to/singularity/images/circlator-1.5.5.simg'
 ## POLISHERS:
     RACON_SIMG : '/path/to/singularity/images/racon-1.4.3.simg'
     NANOPOLISH_SIMG : '/path/to/singularity/images/nanopolish-0.11.3.simg'
 ## CORRECTION
-    MEDAKA_SIMG : '/path/to/singularity/images/medaka-0.11.5.simg'
+    MEDAKA_SIMG : '/path/to/singularity/images/medaka-gpu-1.0.3.simg'
 ## QUALITY
-    BUSCO_SIMG : '/path/to/singularity/images/busco-4.0.5.simg'
+    BUSCO_SIMG : '/path/to/singularity/images/busco-4.0.4.simg'
     QUAST_SIMG : '/path/to/singularity/images/quast-5.0.2.simg'
     WEESAM_SIMG : '/path/to/singularity/images/weesam.simg'
     BLOBTOOLS_SIMG : '/path/to/singularity/images/bloobtools-v1.1.1.simg'
     MINIMAP2_SIMG: '/path/to/singularity/images/nanopolish-0.11.3.simg'
-    DIAMOND_SIMG : '/path/to/singularity/images/Diamond-0.9.30.simg'
+    DIAMOND_SIMG : '/path/to/singularity/images/diamond-0.9.30.simg'
     MUMMER_SIMG : '/path/to/singularity/images/mummer-4beta.simg'
-    ASSEMBLYTICS_SIMG : '/path/to/singularity/images/Assemblytics-1.2.simg'
+    ASSEMBLYTICS_SIMG : '/path/to/singularity/images/assemblytics-1.2.simg'
     SAMTOOLS_SIMG : '/path/to/singularity/images/nanopolish-0.11.3.simg'
     KAT_SIMG : '/path/to/singularity/images/kat-2.4.2.simg'
     MINICONDA_SIMG : 'shub://vibaotram/singularity-container:cpu-guppy3.4-conda-api'
