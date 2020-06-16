@@ -1,0 +1,43 @@
+BootStrap: docker
+From: ubuntu:18.04
+
+%environment
+PATH=$PATH:/usr/local/Flye-2.6/bin/
+
+%labels
+Maintainer Ndomassi TANDO - IRD Itrop Cluster, DIADE Unit
+base.image="ubuntu:18.04"
+version="1"
+software="Flye"
+software.version="2.6"
+
+%help
+Description:
+Flye is a de novo assembler for long and noisy reads, such as those produced by
+PacBio and Oxford Nanopore Technologies. The core read overlapping algorithm
+uses A-Bruijn graph to find the mappings between reads and does not require
+reads to be error-corrected, which resutlts into a faster assembly.
+
+Example commands:
+Assemble ONT raw reads: singularity exec flye-2.6.simg flye --nano-raw <reads fastq file> 
+-g <genome size estimate, e.g 2.7m> -o <output folder name>
+Assemble PacBio reads: singularity exec flye-2.6.simg flye --pacbio-raw <reads fastq file>
+ -g <genome size estimate, e.g 2.7m> -o <output folder name>
+Show complete help : singularity exec flye-2.6.simg flye --help
+
+%post
+apt-get -y update
+apt-get install -y build-essential wget zlib1g-dev libncurses5-dev git python3-dev python3-pip tar
+python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade setuptools
+
+cd /usr/local
+wget https://github.com/fenderglass/Flye/archive/2.6.tar.gz
+tar xvfz 2.6.tar.gz
+cd Flye-2.6
+python3 setup.py build
+python3 setup.py install
+
+%runscript
+exec "$@"
+
