@@ -1117,6 +1117,7 @@ rule run_weesam:
         bam = rules.run_minimap2.output.bam,
     output:
         txt = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/WEESAM/minimap2mapping.txt",
+        weesam_outdir = directory(f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/WEESAM/minimap2mapping_html_results")
     params:
         out_dir = lambda w, output: os.path.dirname(output.txt),
     log:
@@ -1541,9 +1542,11 @@ rule run_report:
         conf = rules.rule_graph.input.conf,
         check = rules.run_dico_final.output.check
     params:
+        outdir = directory(f"{output_dir}"),
         out_dir = directory(f"{output_dir}REPORT"),
         liste_assembler = ASSEMBLY_TOOLS,
         list_final = output_final,
+        weesam_outdir = expand(rules.run_weesam.output.weesam_outdir , fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['WEESAM'] else '',
         blob = expand(rules.run_blobtools.output.blob, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['BLOBTOOLS'] else '',
         blob_read_cov = expand(rules.run_blobtools.output.read_cov, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['BLOBTOOLS'] else '',
         weesam_txt = expand(rules.run_weesam.output.txt, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['WEESAM'] else '',

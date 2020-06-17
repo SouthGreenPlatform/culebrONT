@@ -20,6 +20,12 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<style>
+    .image-thumb {
+        width: 100%;
+    }
+</style>
+
 ```{r load package, echo= FALSE, message = FALSE}
 # list of packages required
 #list.of.packages <- c("knitr", "DT", "ggplot2","plotly",'htmltools','rmarkdown','rmdformats', 'magrittr','yaml','png', 'here', 'htmlwidgets')
@@ -42,6 +48,9 @@ library('yaml')
 library('png')
 library('here')
 library('htmlwidgets')
+library('gridExtra')
+library('cowplot')
+library("magick")
 options(DT.options = list(
                          paging=TRUE, pageLength = 10, searching = TRUE, ordering=TRUE, scrollCollapse=FALSE, server = FALSE, autoWidth = TRUE,
                          buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
@@ -55,8 +64,21 @@ options(DT.options = list(
                     ))
 ```
 
+
 ```{r, echo= FALSE, message = FALSE}
 opts_knit$set(root.dir = snakemake@params$out_dir)
+outdir <- snakemake@params$outdir
+```
+
+```{r, echo= FALSE, message = FALSE}
+comb2pngs <- function(imgs, bottom_text = NULL){
+  img1 <-  grid::rasterGrob(as.raster(png::readPNG(imgs[1])))
+
+  img2 <-  grid::rasterGrob(as.raster(png::readPNG(imgs[2])))
+
+  gridExtra::grid.arrange(img1, img2, ncol = 2)
+  #cowplot::plot_grid(img1, img2, align = "h", ncol = 2, rel_widths = c(1/2, 1/2))
+}
 ```
 
 # Rulegraph{.tabset .tabset-fade .tabset-pills}
@@ -94,10 +116,12 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
     BUSCO$Step = factor(BUSCO$Step, levels = c("STEP_ASSEMBLY","STEP_POLISHING_RACON","STEP_CORRECTION_NANOPOLISH", "STEP_CORRECTION_MEDAKA" ))
     p <- ggplot(BUSCO) + aes(x = Step, y = Complete, fill = Assembler)
     p <- p + geom_bar(stat="identity", position=position_dodge())
+   # p <- p + facet_grid(rows = vars(Assembler))
     p <- p + labs(x="Steps", y = "Complete BUSCO genes", fill = "Assembler tools")
 
     p2 <- ggplot(BUSCO) + aes(x = Step, y = Complete, color = Assembler)
     p2 <- p2 + geom_point()
+    # p <- p + facet_grid(rows = vars(Assembler))
     p2 <- p2 + labs(x="Steps", y = "Complete BUSCO genes", color = "Assembler tools")
 
   cat(sprintf("\n\n## %s\n\n", fichiers[i]))
@@ -130,19 +154,32 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
   for (i in 1:length(fichiers)) {
     cat(sprintf("\n\n## %s\n\n",fichiers[i]))
     cat("\n\n")
-   # cat(knitr::knit_print(
-    #  htmltools::pre(
-     # htmltools::includeHTML(paste0(fichiers[i],'/report_quast.html'))
-     # )
+    #cat(knitr::knit_print(
+    #htmltools::tags$iframe(
+    #       title = 'quast',
+    #       src=paste0(outdir,"/",fichiers[i],'/QUAST/quast_results/report.html'),
+    #       width='100%',
+    #       height='600'
+    #)
     #))
-    cat(knitr::knit_print(
-    htmltools::tags$iframe(
-           title = 'quast',
-           src=paste0(fichiers[i],'/report_quast.html'),
-           width='100%',
-           height='600'
-   )
+       data=read.csv(file = paste0(outdir,"/",fichiers[i], "/QUAST/quast_results/report.tsv"), sep = "\t", fill = TRUE)
+       cat(knitr::knit_print(
+       DT::datatable(data,
+          width = "100%",
+          options = list(
+                 headerCallback = JS(
+                   "function(thead, data, start, end, display){",
+                   "  $(thead).remove();",
+                   "}")
+         )
+       )
   ))
+    cat("\n\n")
+    cat("Cumulative length plot shows the growth of contig lengths. On the x-axis, contigs are ordered from the largest to smallest. The y-axis gives the size of the x largest contigs in the assembly.")
+    cat(paste0("![Cumulative Plot](",paste0(outdir,"/",fichiers[i],"/QUAST/quast_results/basic_stats/cumulative_plot.pdf")),"){width=100% height=500px}")
+    cat("\n\n")
+    cat("GC content plot shows the distribution of GC content in the contigs.The x value is the GC percentage (0 to 100 %).The y value is the number of non-overlapping 100 bp windows which GC content equals x %.For a single genome, the distribution is typically Gaussian. However, for assemblies with contaminants, the GC distribution appears to be a superposition of Gaussian distributions, giving a plot with multiple peaks.")
+    cat(paste0("![GC content Plot](",paste0(outdir,"/",fichiers[i],"/QUAST/quast_results/basic_stats/GC_content_plot.pdf"),"){width=100% height=500px}"))
 }
 ```
 
@@ -215,8 +252,8 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
 
 ```{r, results='asis', echo=FALSE, message = FALSE}
   if (isTRUE(Assemblytics_bool)){
-      #cat(sprintf("\n\n# %s\n\n","Assemblytics{.tabset}"))
-        listeFastq <- snakemake@params$out_dir
+    cat(sprintf("\n\n# %s\n\n","Assemblytics{.tabset}"))
+    listeFastq <- snakemake@params$out_dir
     fichiers <- dir(listeFastq, include.dirs = TRUE)
     listeAssembler <-snakemake@params$liste_assembler
     out_dir <- config_yaml$DATA$OUTPUT
@@ -231,11 +268,17 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
              cat("\n\n")
                 if (isTRUE(config_yaml$CORRECTION$NANOPOLISH)){
                   cat("*NANOPOLISH*")
-                  cat("\n\n")
-                  cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
-                  cat("\n\n")
-                  cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"), paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
-                  cat("\n\n")
+                  cat(paste0("![dotplot](",paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png"),")"))
+                  x = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")
+                  y = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")
+                    #img1 <-  grid::rasterGrob(as.raster(png::readPNG(x)),width=1,interpolate = FALSE)
+                    #img2 <-  grid::rasterGrob(as.raster(png::readPNG(y)),width=1,interpolate = FALSE)
+                    #gridExtra::grid.arrange(img1, img2, ncol=2, newpage = TRUE)
+
+                   #p1 <- cowplot::ggdraw() + cowplot::draw_image(x, scale = 1)
+                   #p2 <- cowplot::ggdraw() + cowplot::draw_image(y, scale = 1)
+                   #knitr::knit_print((cowplot::plot_grid(p2, p1, ncol = 2, scale = c(0.9,1), rel_widths = c(1, 2))))
+                  cat("![Nchart](",paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png"),") ![Variants Distribution](",paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png"),")", sep ="")
                 }
                 if (isTRUE(config_yaml$CORRECTION$MEDAKA)){
                   cat("*MEDAKA*")
@@ -267,20 +310,143 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
 
 ```{r, results='asis', echo=FALSE, message = FALSE}
   if (isTRUE(Weesam_bool)){
-    #cat(sprintf("\n\n# %s\n\n","Weesam{.tabset}"))
+    cat(sprintf("\n\n# %s\n\n","Weesam{.tabset}"))
+    listeFastq <- snakemake@params$out_dir
+    fichiers <- dir(listeFastq, include.dirs = TRUE)
+    listeAssembler <-snakemake@params$liste_assembler
+    out_dir <- config_yaml$DATA$OUTPUT
+    for (i in 1:length(fichiers)) {
+        cat(sprintf("\n\n## %s\n\n",fichiers[i]))
+        cat("\n\n")
+        for (j in 1:length(listeAssembler)){
+          cat(sprintf("\n\n### %s\n\n",listeAssembler[j]))
+          cat("\n\n")
+           if (isTRUE(config_yaml$QUALITY$CORRECTION)){
+             cat("**CORRECTION STEP**")
+             cat("\n\n")
+                if (isTRUE(config_yaml$CORRECTION$NANOPOLISH)){
+                  cat("*NANOPOLISH*")
+                  cat("\n\n")
+                  cat(knitr::knit_print(
+                    htmltools::tags$iframe(
+                           title = 'weesam for Nanopolish correction',
+                           src=paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
+                           width='100%',
+                           height='600'
+                   )
+                  ))
+                }
+                if (isTRUE(config_yaml$CORRECTION$MEDAKA)){
+                  cat("*MEDAKA*")
+                  cat("\n\n")
+                  cat(knitr::knit_print(
+                    htmltools::tags$iframe(
+                           title = 'weesam for medaka correction',
+                           src=paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
+                           width='100%',
+                           height='600'
+                   )
+                  ))
+                }
+           }
+          else if(isTRUE(config_yaml$QUALITY$POLISHING)){
+             cat("**POLISHING STEP**")
+             cat("\n\n")
+             cat(knitr::knit_print(
+                    htmltools::tags$iframe(
+                           title = 'weesam for polishing',
+                           src=paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING_RACON/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
+                           width='100%',
+                           height='600'
+                   )
+                  ))
+           }
+          else if(isTRUE(config_yaml$QUALITY$ASSEMBLY)){
+             cat("**ASSEMBLY STEP**")
+             cat("\n\n")
+             cat(knitr::knit_print(
+                    htmltools::tags$iframe(
+                           title = 'weesam for Assembly',
+                           src=paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
+                           width='100%',
+                           height='600'
+                   )
+                  ))
+           }
+        }
+    }
+
+
   }
 ```
 
 ```{r, results='asis', echo=FALSE, message = FALSE}
   if (isTRUE(Kat_bool)){
-    #cat(sprintf("\n\n# %s\n\n","KAT{.tabset}"))
-  }
-```
-
-
-```{r, results='asis', echo=FALSE, message = FALSE}
-  if (isTRUE(Mauve_bool)){
-    #cat(sprintf("\n\n# %s\n\n","Mauve{.tabset}"))
+    cat(sprintf("\n\n# %s\n\n","KAT{.tabset}"))
+    listeFastq <- snakemake@params$out_dir
+    fichiers <- dir(listeFastq, include.dirs = TRUE)
+    listeAssembler <-snakemake@params$liste_assembler
+    out_dir <- config_yaml$DATA$OUTPUT
+    for (i in 1:length(fichiers)) {
+        cat(sprintf("\n\n## %s\n\n",fichiers[i]))
+        cat("\n\n")
+        for (j in 1:length(listeAssembler)){
+          cat(sprintf("\n\n### %s\n\n",listeAssembler[j]))
+          cat("\n\n")
+           if (isTRUE(config_yaml$QUALITY$CORRECTION)){
+             cat("**CORRECTION STEP**")
+             cat("\n\n")
+                if (isTRUE(config_yaml$CORRECTION$NANOPOLISH)){
+                  cat("*NANOPOLISH*")
+                  y = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat.gcp.mx.png")
+                  z = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat.hist.png")
+                  w = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat-density.png")
+                  q = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat-spectra-cn.png")
+                    img1 <-  grid::rasterGrob(as.raster(png::readPNG(y)),width=1,interpolate = FALSE)
+                    img2 <-  grid::rasterGrob(as.raster(png::readPNG(z)),width=1,interpolate = FALSE)
+                    img3 <-  grid::rasterGrob(as.raster(png::readPNG(w)),width=1,interpolate = FALSE)
+                    img4 <-  grid::rasterGrob(as.raster(png::readPNG(q)),width=1,interpolate = FALSE)
+                    gridExtra::grid.arrange(img1, img2, img3, img4, nrow=2, ncol=2, newpage = TRUE)
+                }
+                if (isTRUE(config_yaml$CORRECTION$MEDAKA)){
+                  cat("*MEDAKA*")
+                  y = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat.gcp.mx.png")
+                  z = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat.hist.png")
+                  w = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat-density.png")
+                  q = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat-spectra-cn.png")
+                    img1 <-  grid::rasterGrob(as.raster(png::readPNG(y)),width=1,interpolate = FALSE)
+                    img2 <-  grid::rasterGrob(as.raster(png::readPNG(z)),width=1,interpolate = FALSE)
+                    img3 <-  grid::rasterGrob(as.raster(png::readPNG(w)),width=1,interpolate = FALSE)
+                    img4 <-  grid::rasterGrob(as.raster(png::readPNG(q)),width=1,interpolate = FALSE)
+                    gridExtra::grid.arrange(img1, img2, img3, img4, nrow=2, ncol=2, newpage = TRUE)
+                }
+           }
+          else if(isTRUE(config_yaml$QUALITY$POLISHING)){
+             cat("**POLISHING STEP**")
+                  y = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat.gcp.mx.png")
+                  z = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat.hist.png")
+                  w = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat-density.png")
+                  q = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat-spectra-cn.png")
+                    img1 <-  grid::rasterGrob(as.raster(png::readPNG(y)),width=1,interpolate = FALSE)
+                    img2 <-  grid::rasterGrob(as.raster(png::readPNG(z)),width=1,interpolate = FALSE)
+                    img3 <-  grid::rasterGrob(as.raster(png::readPNG(w)),width=1,interpolate = FALSE)
+                    img4 <-  grid::rasterGrob(as.raster(png::readPNG(q)),width=1,interpolate = FALSE)
+                    gridExtra::grid.arrange(img1, img2, img3, img4, nrow=2, ncol=2, newpage = TRUE)
+           }
+          else if(isTRUE(config_yaml$QUALITY$ASSEMBLY)){
+             cat("**ASSEMBLY STEP**")
+                  y = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat.gcp.mx.png")
+                  z = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat.hist.png")
+                  w = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat-density.png")
+                  q = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat-spectra-cn.png")
+                    img1 <-  grid::rasterGrob(as.raster(png::readPNG(y)),width=1,interpolate = FALSE)
+                    img2 <-  grid::rasterGrob(as.raster(png::readPNG(z)),width=1,interpolate = FALSE)
+                    img3 <-  grid::rasterGrob(as.raster(png::readPNG(w)),width=1,interpolate = FALSE)
+                    img4 <-  grid::rasterGrob(as.raster(png::readPNG(q)),width=1,interpolate = FALSE)
+                    gridExtra::grid.arrange(img1, img2, img3, img4, nrow=2, ncol=2, newpage = TRUE)
+           }
+        }
+    }
   }
 ```
 

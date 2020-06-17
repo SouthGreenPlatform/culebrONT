@@ -13,7 +13,7 @@ From: ubuntu:18.04
     echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
     apt install -y software-properties-common locales
     apt update
-    apt install -y libpng16-16 libblas3 libblas-dev liblapack-dev liblapack3 libreadline7 r-recommended r-doc-html libxml2-dev libcurl4-openssl-dev libssl-dev
+    apt install -y libpng16-16 libblas3 libblas-dev liblapack-dev liblapack3 libreadline7 r-recommended r-doc-html libxml2-dev libcurl4-openssl-dev libssl-dev libmagick++-dev
     
 ## Add repository for download latest version of R
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 51716619E084DAB9
@@ -46,7 +46,9 @@ From: ubuntu:18.04
     R -e "install.packages('png')"
     R -e "install.packages('here')"
     R -e "install.packages('htmlwidgets')"
-
+    R -e "install.packages('gridExtra')"
+    R -e "install.packages('cowplot')"
+    R -e "install.packages('magick')"
 
 # add R packages from github
     Rscript -e "library(devtools); install_github('strengejacke/strengejacke')"
