@@ -3,7 +3,7 @@ From : tensorflow/tensorflow:1.14.0-gpu-py3
 
 %labels
     June 2020
-    maintainer Aurore Comte <aurore.comte@ird.fr>
+    maintainer Aurore COMTE <aurore.comte@ird.fr>
     medaka v1.0.3
 
 #%help
