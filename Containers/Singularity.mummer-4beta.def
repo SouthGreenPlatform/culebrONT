@@ -1,6 +1,5 @@
 Bootstrap: docker
 From : ubuntu:18.04
-
 %labels
         mummer
         modified by <aurore.comte@ird.fr>

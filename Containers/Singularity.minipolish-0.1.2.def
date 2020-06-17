@@ -1,6 +1,5 @@
 BootStrap: docker
 From: ubuntu:18.04
-
 %labels
 Maintainer Ndomassi Tando - IRD Itrop Cluster, DIADE Unit
 base.image="ubuntu:18.04"

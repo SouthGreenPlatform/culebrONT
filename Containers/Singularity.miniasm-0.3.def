@@ -1,6 +1,5 @@
 Bootstrap : docker
 From : ubuntu:18.04
-
 %labels
     January 2020
     maintainer Aurore Comte <aurore.comte@ird.fr>

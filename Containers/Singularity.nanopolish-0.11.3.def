@@ -5,6 +5,7 @@ From: ubuntu:16.04
     autor : Dominik Handler <Dominik Handler@imba.oeaw.ac.at
     modification : Aurore Comte <aurore.comte@ird.fr>
     Nanopolish v0.11.3
+
 %post
     apt-get -y update
     apt-get -y install wget unzip sudo build-essential zlib1g zlib1g-dev git-core python3.5 python3-setuptools

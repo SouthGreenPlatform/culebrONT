@@ -1,6 +1,5 @@
 Bootstrap: docker
 From: ubuntu:18.04
-
 %help
     Container for LTR_retriever v.2.8
     https://github.com/oushujun/LTR_retriever

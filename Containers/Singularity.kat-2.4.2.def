@@ -3,7 +3,6 @@
 
 Bootstrap: docker
 From: ubuntu:18.04
-
 %labels
 	# This section contains labels for the container
 	MAINTAINER bmichanderson
