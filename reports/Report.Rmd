@@ -19,8 +19,19 @@ output:
 ```{r setup, include=FALSE, echo= FALSE, message = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 <style>
+    .tocify-extend-page {
+      height: 0 !important;
+    }
+    div.main-container{
+        max-width: 100%;
+    }
+    div.tocify {
+        top: 20%;
+    }
+.footer{
+    position:absolute; top:0; right:20px; padding:30px; height:180px
+    }
     .image-thumb {
         width: 100%;
     }
@@ -51,17 +62,17 @@ library('htmlwidgets')
 library('gridExtra')
 library('cowplot')
 library("magick")
-options(DT.options = list(
-                         paging=TRUE, pageLength = 10, searching = TRUE, ordering=TRUE, scrollCollapse=FALSE, server = FALSE, autoWidth = TRUE,
-                         buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-                         dom = 'Blfrtip',
-                         scrollX = TRUE,
-                         lengthMenu = list( c(10, 20, -1), c(10, 20, "All")),
-                          initComplete = JS(
-                            "function(settings, json) {",
-                            "$(this.api().table().header()).css({'background-color': '#3C3C3C', 'color': '#fff'});",
-                            "}")
-                    ))
+#options(DT.options = list(
+#                         paging=TRUE, pageLength = 10, searching = TRUE, ordering=TRUE, scrollCollapse=FALSE, server = FALSE, autoWidth = TRUE,
+#                         buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+#                         dom = 'Blfrtip',
+#                         scrollX = TRUE,
+#                         lengthMenu = list( c(10, 20, -1), c(10, 20, "All")),
+#                          initComplete = JS(
+#                            "function(settings, json) {",
+#                            "$(this.api().table().header()).css({'background-color': '#3C3C3C', 'color': '#fff'});",
+#                            "}")
+#                    ))
 ```
 
 
@@ -70,25 +81,61 @@ opts_knit$set(root.dir = snakemake@params$out_dir)
 outdir <- snakemake@params$outdir
 ```
 
+# Rulegraph{.tabset .tabset-fade .tabset-pills}
+
 ```{r, echo= FALSE, message = FALSE}
-comb2pngs <- function(imgs, bottom_text = NULL){
-  img1 <-  grid::rasterGrob(as.raster(png::readPNG(imgs[1])))
-
-  img2 <-  grid::rasterGrob(as.raster(png::readPNG(imgs[2])))
-
-  gridExtra::grid.arrange(img1, img2, ncol = 2)
-  #cowplot::plot_grid(img1, img2, align = "h", ncol = 2, rel_widths = c(1/2, 1/2))
-}
+  knitr::include_graphics(snakemake@input$dag, dpi="500")
 ```
 
-# Rulegraph{.tabset .tabset-fade .tabset-pills}
-```{r, echo= FALSE, message = FALSE}
-  # if we want to use dico from input on rule report
-  #print(snakemake@params$list_final)
-  #listFinal=snakemake@params$list_final
-  #print(listFinal$weesam_files)
-  #print(listFinal$weesam_files[1])
-  knitr::include_graphics(snakemake@input$dag, dpi="500")
+# Benchmark{.tabset}
+
+```{r, echo=FALSE,include = FALSE}
+DT::datatable(matrix())
+```
+
+```{r, results='asis', echo= FALSE, message = FALSE}
+listeFastq <- snakemake@params$out_dir
+fichiers <- dir(listeFastq, include.dirs = TRUE)
+for (i in 1:length(fichiers)) {
+   cat(sprintf("\n\n## %s\n\n", fichiers[i]))
+   cat("\n\n")
+   htmltools::p("TIME IN SECOND :")
+   cat("\n\n")
+
+   data <- read.csv(paste0(fichiers[i],"/Stats_benchmark.csv"),
+                      header = FALSE,
+                      sep=",",
+                      dec =".")
+
+    data=t(data)
+    list_assembler = list()
+    list_step = list()
+    for (i in 2:nrow(data)){
+      list_assembler = append(list_assembler,data[[i,1]])
+      list_step = append(list_step,data[[i,2]])
+    }
+
+    x = matrix("NA", ncol=length(unique(list_assembler)), nrow=length(unique(list_step)))
+    colnames(x) = unique(list_assembler)
+    rownames(x) = unique(list_step)
+    for (i in 2:nrow(data)){
+      for (k in 1:nrow(x)){
+        for(j in 1:ncol(x)){
+          if(data[[i,2]] == rownames(x)[k]){
+            if(data[[i,1]] == colnames(x)[j]){
+              x[k,j]=data[[i,3]]
+            }
+          }
+        }
+      }
+    }
+    cat(knitr::knit_print(
+        DT::datatable(x
+        )
+     ))
+   cat("\n\n")
+
+ }
 ```
 
 # Busco{.tabset}
@@ -107,6 +154,10 @@ plotly::ggplotly(ggplot2::ggplot())
 listeFastq <- snakemake@params$out_dir
 fichiers <- dir(listeFastq, include.dirs = TRUE)
  for (i in 1:length(fichiers)) {
+
+     cat(sprintf("\n\n## %s\n\n", fichiers[i]))
+     cat("\n\n")
+
     data <- read.csv(paste0(fichiers[i],"/Stats_busco.csv"),
                           header = TRUE,
                           row.names=1,
@@ -124,8 +175,6 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
     # p <- p + facet_grid(rows = vars(Assembler))
     p2 <- p2 + labs(x="Steps", y = "Complete BUSCO genes", color = "Assembler tools")
 
-  cat(sprintf("\n\n## %s\n\n", fichiers[i]))
-  cat("\n\n")
   cat(knitr::knit_print(
    DT::datatable(data,
       width = "100%",
@@ -133,7 +182,17 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
              headerCallback = JS(
                "function(thead, data, start, end, display){",
                "  $(thead).remove();",
-               "}")
+               "}"),
+             paging=TRUE, pageLength = 10, searching = TRUE, ordering=TRUE, scrollCollapse=FALSE, server = FALSE, autoWidth = TRUE,
+             buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+             dom = 'Blfrtip',
+             scrollX = TRUE,
+             lengthMenu = list( c(10, 20, -1), c(10, 20, "All")),
+              initComplete = JS(
+                "function(settings, json) {",
+                "$(this.api().table().header()).css({'background-color': '#3C3C3C', 'color': '#fff'});",
+                "}")
+
       )
    )
   ))
@@ -170,9 +229,17 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
                  headerCallback = JS(
                    "function(thead, data, start, end, display){",
                    "  $(thead).remove();",
-                   "}")
-         )
-       )
+                   "}"),
+                   paging=TRUE, pageLength = 10, searching = TRUE, ordering=TRUE, scrollCollapse=FALSE, server = FALSE, autoWidth = TRUE,
+                 buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                 dom = 'Blfrtip',
+                 scrollX = TRUE,
+                 lengthMenu = list( c(10, 20, -1), c(10, 20, "All")),
+                  initComplete = JS(
+                    "function(settings, json) {",
+                    "$(this.api().table().header()).css({'background-color': '#3C3C3C', 'color': '#fff'});",
+                    "}")
+       ))
   ))
     cat("\n\n")
     cat("Cumulative length plot shows the growth of contig lengths. On the x-axis, contigs are ordered from the largest to smallest. The y-axis gives the size of the x largest contigs in the assembly.")
@@ -449,18 +516,3 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
     }
   }
 ```
-
-<style>
-    .tocify-extend-page {
-      height: 0 !important;
-    }
-    div.main-container{
-        max-width: 100%;
-    }
-    div.tocify {
-        top: 20%;
-    }
-.footer{
-    position:absolute; top:0; right:20px; padding:30px; height:180px
-    }
-</style>
