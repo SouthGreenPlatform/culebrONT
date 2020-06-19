@@ -91,6 +91,22 @@ output_dir = Path(config['DATA']['OUTPUT']).resolve().as_posix() + "/"
 fastq = Path(config['DATA']['FASTQ']).resolve().as_posix()
 ref = Path(config['DATA']['REF']).resolve().as_posix()
 fast5 = Path(config['DATA']['FAST5']).resolve().as_posix()
+illumina = Path(config['DATA']['ILLUMINA']).resolve().as_posix() + "/"
+#print (type(illumina))
+
+def getting_ext(chaine):
+    """
+    create a Path object and return first suffix found from fist file
+    """
+    basepath = Path(chaine)
+    for entry in basepath.iterdir():
+        if entry.is_file():
+            #print (entry.name)
+            return entry.suffix
+
+ext_illumina = getting_ext(illumina)
+#print ('**********', ext_illumina)
+
 
 # Declaring model variable to medaka
 if 'model' in config['DATA'].keys():
@@ -1285,7 +1301,9 @@ rule combined_fastq:
     """
     threads: get_threads('combined_fastq', 2)
     input:
-        illumina_rep = config['DATA']['ILLUMINA']
+        illumina_rep = illumina
+    params:
+        command = "zcat " if ext_illumina == '.gz' else  "cat "
     output:
         combined_data = f"{output_dir}combined_data.fastq",
     log:
@@ -1301,34 +1319,13 @@ rule combined_fastq:
             combined: {output.combined_data}
         log:
             error: {log.error}
+        command:
+            {params.command} {input.illumina_rep}*{ext_illumina} > {output.combined_data}
         """
     shell:
         """
-        fq=False
-        gz=False
-        re_fq='.*\.\w*q$'
-        re_gz='.*\.\w*q\.gz$'
-        for i in {input.illumina_rep}*
-        do
-           if [[ $i =~ $re_fq ]]
-           then
-              fq=True
-           elif [[ $i =~ $re_gz ]]
-           then
-              gz=True
-           fi
-        done
-        
-        if [ $fq = True ]
-        then
-            cat {input.illumina_rep}*.*q > {output.combined_data}
-        fi
-        if [ $gz = True ]
-        then
-            zcat {input.illumina_rep}*.*q.gz >> {output.combined_data}
-        fi
+            {params.command} {input.illumina_rep}*{ext_illumina} > {output.combined_data}
         """
-    # TODO : gestion des extensions les sequences ne peuvent pas etre gz compressés!
 
 rule run_KAT:
     """
