@@ -75,7 +75,10 @@ def check_config_dic(config):
         if config["ASSEMBLY"]["CANU"] == False and config["ASSEMBLY"]["FLYE"] == False and config["ASSEMBLY"]["MINIASM"] == False:
             raise ValueError("CONFIG FILE CHECKING FAIL : you need to set True for at least one Assembly tool (CANU, FLYE, MINIASM ...)")
 
-validate(config, "schemas/config.schema.yaml")
+if (validate(config, "schemas/config.schema.yaml")) is not None:
+    raise ValueError("CONFIG FILE CHECKING STRUCTURE FAIL : you need to verify confi.yaml KEYS:VALUES.)")
+
+#validate(config, "schemas/config.schema.yaml")
 check_config_dic(config)
 
 # Cleaning Repport and dags if we rerun the snakemake a second time
