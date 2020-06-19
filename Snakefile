@@ -1509,7 +1509,7 @@ rule rule_graph:
 
 rule run_stats:
     """
-    print report
+    run stat
     """
     threads: get_threads('run_report', 4)
     input:
@@ -1529,6 +1529,31 @@ rule run_stats:
     script:
         "reports/getStats.py"
 
+rule run_benchmark_time:
+    """
+    run benchmark
+    """
+    threads: get_threads('run_report', 4)
+    input:
+        fastq = get_fastq,
+        summary = expand(rules.run_busco.output.summary, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = BUSCO_STEPS)
+    output:
+        stat = f"{output_dir}REPORT/{{fastq}}/Stats_benchmark.csv",
+    params:
+        liste_busco = expand(BUSCO_STEPS),
+        liste_assemblers = expand(ASSEMBLY_TOOLS),
+        out_dir = directory(f"{output_dir}"),
+        racon_round = config['params']['RACON']['RACON_ROUNDS'],
+        liste_correcteurs = expand(CORRECTION_TOOLS),
+        medaka_training = config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF']
+    priority: 10
+    message:
+        """
+        make benchmark
+        """
+    script:
+        "reports/getBenchmark.py"
+
 #TODO : quast could be optional
 rule run_report:
     """
@@ -1537,6 +1562,7 @@ rule run_report:
     threads: get_threads('run_report', 4)
     input:
         stat =  expand(rules.run_stats.output.stat,fastq=FASTQ),
+        bench = expand(rules.run_benchmark_time.output.stat,fastq=FASTQ),
         quast =  expand(rules.run_quast.output.report_path,fastq=FASTQ),
         dag = expand(rules.rule_graph.output.dag, fastq=FASTQ),
         conf = rules.rule_graph.input.conf,
