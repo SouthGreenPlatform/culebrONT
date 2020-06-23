@@ -253,7 +253,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
 ```{r, results='asis', echo=FALSE, message = FALSE}
   #config_yaml <- yaml.load_file(file.path(normalizePath(dirname('config.yaml')), 'config.yaml'))
   #config_yaml <- yaml.load_file(paste0("../../", config_file)) # TODO: ne pas mettre en dur le chemin du config file (idem dans le snakefile)
-  config_yaml <- yaml.load_file(snakemake@input$conf)
+  config_yaml <- yaml.load_file(snakemake@params$conf)
   Blobtools_bool = config_yaml$QUALITY$BLOBTOOLS
   Assemblytics_bool  = config_yaml$QUALITY$ASSEMBLYTICS
   Weesam_bool  = config_yaml$QUALITY$WEESAM
