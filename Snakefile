@@ -1,14 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on November 2019
-version: 1.0 
-@author: Julie Orjuela (IRD), Aurore Comte (IRD), Sebastien Ravel (CIRAD), Florian Charriat (CIRAD), Bao Tram Vi (IRD), François Sabot (IRD) and Sebastien Cunnac (IRD)
-@email: julie.orjuela@ird.fr, aurore@comte.ird.fr
-"""
+from pathlib import Path
+import os, pprint
+import re
+from os import listdir
+from snakemake.utils import validate
+import warnings
+from snakemake.logging import logger
+from snakemake.dag import DAG
+
+logger.info("""
+    Welcome to CulebrONT  !
+    Created on November 2019
+    version: 1.0 July 2020
+    @author: Julie Orjuela (IRD), Aurore Comte (IRD), Sebastien Ravel (CIRAD), Florian Charriat (CIRAD), Bao Tram Vi (IRD), François Sabot (IRD) and Sebastien Cunnac (IRD)
+    @email: julie.orjuela@ird.fr, aurore@comte.ird.fr
+
 #           ____   ____     _______     __________ ________   ________       ____    ___      _____________
 #          6MMMMb/ `MM'     `M'`MM'     `MMMMMMMMM `MMMMMMMb. `MMMMMMMb.    6MMMMb   `MM\     `M'MMMMMMMMMM
-#         8P    YM  MM       M  MM       MM      \  MM    `Mb  MM    `Mb   8P    Y8   MMM\     M /   MM   \
+#         8P    YM  MM       M  MM       MM      \  MM    `Mb  MM    `Mb   8P    Y8   MMM\     M /   MM   
 #        6M      Y  MM       M  MM       MM         MM     MM  MM     MM  6M      Mb  M\MM\    M     MM
 #        MM         MM       M  MM       MM    ,    MM    .M9  MM     MM  MM      MM  M \MM\   M     MM
 #        MM         MM       M  MM       MMMMMMM    MMMMMMM(   MM    .M9  MM      MM  M  \MM\  M     MM
@@ -18,22 +28,36 @@ version: 1.0
 #         8b    d9   8b     d8  MM    /  MM      /  MM    .M9  MM    \M\   8b    d8   M      \MM     MM
 #          YMMMM9     YMMMMM9  _MMMMMMM _MMMMMMMMM _MMMMMMM9' _MM_    \M\_  YMMMM9   _M_      \M    _MM_
 
-from pathlib import Path
-import os, pprint
-import re
-from os import listdir
-from snakemake.utils import validate
-import warnings
+
+    Please cite our github https://github.com/SouthGreenPlatform/CulebrONT_pipeline
+    Licencied under CeCill-C (http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html) 
+    and GPLv3 Intellectual property belongs to IRD and authors.
+    """)
 
 ################ CONFIGFILE EXTRACTION ################
+def install_dag_hook(callback):
+    def postprocess_hook(self, __origmeth=DAG.postprocess):
+        __origmeth(self)
+        callback(self)
+    DAG.postprocess = postprocess_hook
+
+def dag_finalized(dag):
+    for j in dag.jobs:
+        print(j.output, j.output_mintime, j.input_maxtime)
+
+### to use on V2
+#install_dag_hook(dag_finalized)
+#pprint.pprint (DAG.__dict__)
 
 # importing configuration files
 #pprint.pprint(workflow.__dict__)
 if len(workflow.overwrite_configfiles) == 0:
-    raise ValueError("you have to use --configfile option to snakemake command line")
+    logger.info("You need to use --configfile option to snakemake command line")
+    raise ValueError("You have to use --configfile option to snakemake command line")
 else:
     path_config = workflow.overwrite_configfiles[0]
-#print (path_config)
+
+#configfile:'config.yaml'
 cluster_config: 'cluster_config.yaml'
 
 # --- Verification Configuration Files --- #
@@ -50,6 +74,7 @@ def check_config_dic(config):
     if re.match(r"\S+\/$", config["DATA"]["FASTQ"]) == None:
         config["DATA"]["FASTQ"] = f"{config['DATA']['FASTQ']}/"
     if not os.path.exists(config["DATA"]["FASTQ"]):
+        logger.info("CONFIG FILE CHECKING FAIL : in the DATA section, FASTQ directory does not exists")
         raise ValueError("CONFIG FILE CHECKING FAIL : in the DATA section, FASTQ directory does not exists")
     if re.match(r"\S+\/$", config["DATA"]["FAST5"]) == None:
         config["DATA"]["FAST5"] = f"{config['DATA']['FAST5']}/"
@@ -61,6 +86,7 @@ def check_config_dic(config):
         diff = set(fastq_list) - set(fast5_list)
         if diff:
             warnings.warn(f"\n CONFIG FILE CHECKING WARNING : You don't have a fast5 repository for each of your fastq file (they should have the same name). This can raise a problem if you choose to use Nanopolish. Please check your data.")
+            logger.info("CONFIG FILE CHECKING WARNING : You don't have a fast5 repository for each of your fastq file (they should have the same name). This can raise a problem if you choose to use Nanopolish. Please check your data.")
     if re.match(r"\S+\/$", config["DATA"]["ILLUMINA"]) == None:
         config["DATA"]["ILLUMINA"] = f"{config['DATA']['ILLUMINA']}/"
         if not os.path.exists(config["DATA"]["ILLUMINA"]):
@@ -68,23 +94,27 @@ def check_config_dic(config):
     if re.match(r"\S+\/$", config["DATA"]["OUTPUT"]) == None:
         config["DATA"]["OUTPUT"] = f"{config['DATA']['OUTPUT']}/"
     if not os.path.isfile(config["DATA"]["REF"]):
+        logger.info("CONFIG FILE CHECKING FAIL : in the DATA section, the REF file is not a file")
         raise ValueError("CONFIG FILE CHECKING FAIL : in the DATA section, the REF file is not a file")
     if config["QUALITY"]["ASSEMBLY"] == False and config["QUALITY"]["POLISHING"] == False and config["QUALITY"]["CORRECTION"] == False:
+        logger.info("CONFIG FILE CHECKING FAIL : you need to set True for at least one quality step (ASSEMBLY, POLISHING or CORRECTION)")
         raise ValueError("CONFIG FILE CHECKING FAIL : you need to set True for at least one quality step (ASSEMBLY, POLISHING or CORRECTION)")
     else:
         if config["ASSEMBLY"]["CANU"] == False and config["ASSEMBLY"]["FLYE"] == False and config["ASSEMBLY"]["MINIASM"] == False:
+            logger.info("CONFIG FILE CHECKING FAIL : you need to set True for at least one Assembly tool (CANU, FLYE, MINIASM ...")
             raise ValueError("CONFIG FILE CHECKING FAIL : you need to set True for at least one Assembly tool (CANU, FLYE, MINIASM ...)")
 
 if (validate(config, "schemas/config.schema.yaml")) is not None:
+    logger.info("CONFIG FILE CHECKING STRUCTURE FAIL : you need to verify confi.yaml KEYS:VALUES")
     raise ValueError("CONFIG FILE CHECKING STRUCTURE FAIL : you need to verify confi.yaml KEYS:VALUES.)")
 
-#validate(config, "schemas/config.schema.yaml")
 check_config_dic(config)
 
 # Cleaning Repport and dags if we rerun the snakemake a second time
 
 def cleaning_for_rerun(config):
     if os.path.exists(f"{config['DATA']['OUTPUT']}/REPORT") or os.path.isfile(f"{config['DATA']['OUTPUT']}/dag.png"):
+        logger.info("If you want to rerun culebront a second time please delete the {config['DATA']['OUTPUT']}REPORT directory and the {config['DATA']['OUTPUT']}dag.png file.")
         warnings.warn(f"\n If you want to rerun culebront a second time please delete the {config['DATA']['OUTPUT']}REPORT directory and the {config['DATA']['OUTPUT']}dag.png file. \n")
 
 cleaning_for_rerun(config)
@@ -95,6 +125,10 @@ fastq = Path(config['DATA']['FASTQ']).resolve().as_posix()
 ref = Path(config['DATA']['REF']).resolve().as_posix()
 fast5 = Path(config['DATA']['FAST5']).resolve().as_posix()
 illumina = Path(config['DATA']['ILLUMINA']).resolve().as_posix() + "/"
+path_config = Path('config.yaml').resolve().as_posix()
+path_snake = Path('Snakefile').resolve().as_posix()
+
+#print (type(path_config))
 #print (type(illumina))
 
 def getting_ext(chaine):
@@ -254,6 +288,7 @@ def input_last():
 
 def output_final(wildcards):
     dico_final = {
+        #"dag": f"{output_dir}dag.png"
     }
     if config['QUALITY']['BLOBTOOLS']:
         dico_final.update({
@@ -1457,7 +1492,7 @@ rule run_fixstart:
 
 rule run_mauve:
     threads:
-        get_threads('run_mauve_by_genome', 8)
+        get_threads('run_mauve', 8)
     input:
         #liste = expand(f"{rules.run_fixstart.output.fix_start_fasta}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=input_last()) if config['MSA']['FIXSTART'] else expand(f"{rules.preparing_fasta_to_quality.output.renamed}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=input_last())
         liste = expand(f"{rules.run_fixstart.output.fix_start_fasta}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS) if config['MSA']['FIXSTART'] else expand(f"{rules.preparing_fasta_to_quality.output.renamed}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS)
@@ -1497,21 +1532,42 @@ rule run_mauve:
 ################################ RAPPORT ####################################
 
 rule rule_graph:
-    threads: get_threads('run_report', 1)
+    """
+    run dag on {rule}
+    """
+    threads: get_threads('rule_graph', 1)
     input:
-        conf = path_config
+        conf = str(path_config),
+    params:
+        tmp = f"{output_dir}dag.tmp"
     output:
         dag = f"{output_dir}dag.png"
+    log:
+        output = f"{output_dir}LOGS/REPORT/dag.o",
+        error = f"{output_dir}LOGS/REPORT/dag.e",
+    priority: 10
+    message:
+        """
+        making dag ...
+        snakemake -n --rulegraph --configfile {input.conf} > {params.tmp} 2>{log.error}
+        dot -Tpng {params.tmp} >{output.dag} 2>>{log.error}
+        """
+    singularity:
+        config['tools']['MINICONDA_SIMG']
+    conda:
+        "envs/environment.yaml"
     shell:
         """
-        snakemake -n --configfile {input.conf} --rulegraph | dot -Tpng > {output.dag}
+        snakemake -n --rulegraph --configfile {input.conf} >{params.tmp} 2>{log.error}
+        dot -Tpng {params.tmp} >{output.dag} 2>>{log.error}
+        rm {params.tmp} 2>>{log.output} 2>>{log.error}
         """
 
 rule run_stats:
     """
     run stat
     """
-    threads: get_threads('run_report', 4)
+    threads: get_threads('run_stats', 1)
     input:
         fastq = get_fastq,
         summary = expand(rules.run_busco.output.summary, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = BUSCO_STEPS)
@@ -1533,7 +1589,7 @@ rule run_benchmark_time:
     """
     run benchmark
     """
-    threads: get_threads('run_report', 4)
+    threads: get_threads('run_benchmark_time', 1)
     input:
         fastq = get_fastq,
         summary = expand(rules.run_busco.output.summary, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = BUSCO_STEPS)
@@ -1559,19 +1615,20 @@ rule run_report:
     """
     print report
     """
-    threads: get_threads('run_report', 4)
+    threads: get_threads('run_report', 1)
     input:
         stat =  expand(rules.run_stats.output.stat,fastq=FASTQ),
         bench = expand(rules.run_benchmark_time.output.stat,fastq=FASTQ),
         quast =  expand(rules.run_quast.output.report_path,fastq=FASTQ),
-        dag = expand(rules.rule_graph.output.dag, fastq=FASTQ),
-        conf = rules.rule_graph.input.conf,
+        dag = rules.rule_graph.output.dag,
         check = rules.run_dico_final.output.check
     params:
+        #dag = rules.rule_graph.output.dag,
+        conf = path_config,
         outdir = directory(f"{output_dir}"),
         out_dir = directory(f"{output_dir}REPORT"),
         liste_assembler = ASSEMBLY_TOOLS,
-        list_final = output_final,
+        #list_final = output_final,
         weesam_outdir = expand(rules.run_weesam.output.weesam_outdir , fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['WEESAM'] else '',
         blob = expand(rules.run_blobtools.output.blob, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['BLOBTOOLS'] else '',
         blob_read_cov = expand(rules.run_blobtools.output.read_cov, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['BLOBTOOLS'] else '',
