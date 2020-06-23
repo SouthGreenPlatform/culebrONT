@@ -5,17 +5,22 @@ __default__:
     partition : "normal"
     output : 'logs/stdout/{rule}/{wildcards}'
     error : 'logs/error/{rule}/{wildcards}'
-#
-#run_nanopolish :
-#    cpus-per-task : 8
-#    mem-per-cpu : '4'
-#    partition : "long"
-#
+
+run_nanopolish :
+    cpus-per-task : 8
+    mem-per-cpu : '2'
+    partition : "long"
+ 
+run_flye:
+    cpus-per-task : 8
+    mem-per-cpu : '1'
+    partition : "long"
+
 run_canu:
     cpus-per-task : 8
     mem-per-cpu : '4'
     partition : "long"
-#
+
 #run_miniasm:
 #    cpus-per-task : 8
 #    mem-per-cpu : '4'
@@ -43,10 +48,16 @@ run_canu:
 #
 run_medaka_train:
     cpus-per-task : 8
-    mem-per-cpu : '8'
+    mem-per-cpu : '4'
     partition : "supermem"
 
 #run_medaka_consensus:
 #    cpus-per-task : 8
 #    mem-per-cpu : '4'
 #    partition : "long"
+#
+run_kat:
+    cpus-per-task : 1
+    mem-per-cpu : '2'
+    partition : "long"
+
