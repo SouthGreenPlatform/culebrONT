@@ -785,12 +785,14 @@ rule run_medaka_train:
         draft = draft_to_correction,
         fastq = get_fastq,
         ref = ref,
+        index_fai = rules.index_fasta_to_correction.output.index_fai,
+        index_fmmi = rules.index_fasta_to_correction.output.index_mmi,
     output:
         fasta_cat_acc = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/MEDAKA/training/model.best.cat_acc.hdf5",
         fasta_val_cat_acc = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/MEDAKA/training/model.best.val_cat_acc.hdf5"
     params:
-        index_fai = rules.index_fasta_to_correction.output.index_fai,
-        index_fmmi = rules.index_fasta_to_correction.output.index_mmi,
+        #index_fai = rules.index_fasta_to_correction.output.index_fai,
+        #index_fmmi = rules.index_fasta_to_correction.output.index_mmi,
         out_name = directory(f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/MEDAKA/"),
     log:
         output = f"{output_dir}LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.o",
@@ -806,12 +808,12 @@ rule run_medaka_train:
             draft : {input.draft}
             fastq : {input.fastq}
             ref: {input.ref}
+            index_fai : {input.index_fai}
+            index_fmmi : {input.index_fmmi}
         output:
             fasta_cat_acc: {output.fasta_cat_acc}
             fasta_val_cat_acc: {output.fasta_val_cat_acc}
         params:
-            index_fai : {params.index_fai}
-            index_fmmi : {params.index_fmmi}
             out_name: {params.out_name}
         log:
             output : {log.output}
@@ -835,7 +837,9 @@ rule run_medaka_consensus:
     input:
         draft = draft_to_correction,
         fastq = get_fastq,
-        model = f"{rules.run_medaka_train.output.fasta_val_cat_acc if config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF'] else config['params']['MEDAKA']['MEDAKA_MODEL_PATH']}"
+        model = f"{rules.run_medaka_train.output.fasta_val_cat_acc if config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF'] else config['params']['MEDAKA']['MEDAKA_MODEL_PATH']}",
+        index_fai = rules.index_fasta_to_correction.output.index_fai,
+        index_fmmi = rules.index_fasta_to_correction.output.index_mmi,
     output:
         fasta = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/MEDAKA/consensus.fasta"
     params:
