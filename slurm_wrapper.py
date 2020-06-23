@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # written by Bao Tram Vi, modified by julie Orjuela (IRD)
+from snakemake.logging import logger
+from snakemake.dag import DAG
+
+logger.info("wrapper to launch CulebrONT on slurm HPC")
 
 '''
 wrap to pass cluster configuration parameters to --cluster snake option in culebrONT
@@ -11,16 +15,25 @@ from snakemake import load_configfile
 
 jobscript = sys.argv[-1]
 config = 'config.yaml'
+cluster_config = 'cluster_config.yaml'
 
 #read_job_propeties def reads the job properties defined in a snakemake jobscript and return a dict containing information about the job
 job_properties = read_job_properties(jobscript)
 config_properties = load_configfile(config)
-print(job_properties)
 
+cluster_properties = load_configfile(cluster_config)
 
 rule = job_properties['rule']
-# jobid = job_properties['jobid']
+jobid = job_properties['jobid']
+cluster = job_properties['cluster']
 log = rule
+
+#print(cluster_properties)
+
+logger.info("cluster properties : ")
+logger.info(cluster_properties)
+
+#"cluster": {"cpus-per-task": 4, "ntasks": 1, "mem-per-cpu": "2", "partition": "normal", "output": "logs/stdout/run_flye/fastq=5percentB1-1", "error": "logs/error/run_flye/fastq=5percentB1-1"}}
 
 # recovery wildcards in variables fastq, assemblers, busco_step 
 try:
@@ -43,19 +56,34 @@ except (AttributeError, KeyError):
 
 # recovery cpu per task from dict properties
 cpus_per_task = job_properties['threads']
-# if int(cpus_per_task) < 8:
-#     cpus_per_task = '8'
-    
 outdir = config_properties['DATA']['OUTPUT']
 logdir = os.path.join(outdir, "slurm_log")
 os.makedirs(logdir, exist_ok=True)
 
-# ajouter ici la lecture du fichier cluster_config.yaml donné par l'utilisateur? 
-#if rule == 'run_medaka_train':
-#    partition = '--partition supermem --mem-per-cpu 4G'
-#    cpus_per_task = '8'
-#else:
-#    partition = '--partition normal'
+logger.info("cluster properties partition : ")
+if rule in cluster_properties :
+    logger.info("cluster properties partition : ")
+    logger.info(cluster_properties[rule]['partition'])
+    logger.info("cluster properties mem-per-cpu : ")
+    logger.info(cluster_properties[rule]['mem-per-cpu'])
+
+# getting ressources from cluster config given by user
+def get_ressources(rule):
+    """
+    define ressources from cluster_config file or get params default for rule
+    """
+    if rule in cluster_properties and 'partition' in cluster_properties[rule]:
+       queue = cluster_properties[rule]['partition']
+       mempercpu = cluster_properties[rule]['mem-per-cpu']
+       return f"--partition {queue} --mem-per-cpu {mempercpu}G"
+    #elif '__default__' in cluster_properties and 'partition' in cluster_properties['__default__']:
+    else:
+       queue = cluster_properties['__default__']['partition']
+       mempercpu = cluster_properties['__default__']['mem-per-cpu']
+       return f'--partition {queue} --mem-per-cpu {mempercpu}G'
+    
+    
+partition = get_ressources(rule)
 
 sbatch = f'sbatch --parsable --job-name {rule} {partition} --cpus-per-task {cpus_per_task} --ntasks 1 --output {logdir}/{log}.log_%j --error {logdir}/{log}.log_%j'
 
@@ -69,12 +97,10 @@ scripts.insert(3, "echo -e \"# Number of used CPUS: $SLURM_CPUS_ON_NODE\"\n")
 scripts.insert(4, "echo -e \"# Memory per CPU in megabyte: $SLURM_MEM_PER_CPU\"\n")
 scripts.insert(5, "echo -e \"# Partition: $SLURM_JOB_PARTITION\"\n")
 
-
 with open(jobscript, "w") as j:
     j.writelines(scripts)
 
 cmdline = " ".join([sbatch, jobscript])
-# sbatch --job-name {cluster.job-name} --partition {cluster.partition} --account {cluster.account} --cpus-per-task {cluster.cpus-per-task} --output {cluster.output} --error {cluster.error}
 
 os.system(cmdline)
 print(cmdline)
