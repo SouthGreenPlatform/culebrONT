@@ -175,11 +175,11 @@ DATA:
 
 * **FAST5**: Nanopolish needs FAST5 files to training steps. Please give the path of FAST5 repertory in the *FAST5* DATA parameter. Inside this directory, a subdirectory with the exact same name as the corresponding FASTQ (before the *.fastq.gz*) is requested. For instance, if in the *FASTQ* directory we have *run1.fastq.gz* and *run2.fastq.gz*, CulebrONT is expecting the *run1/* and *run2/* subdirectories in the FAST5 main directory.   
 
-* ILLUMINA : indicate the path to the directory with *Illumina* sequence data (in fastq or fastq.gz format) to perform KAT quality. Use preferentially paired-end data.
+* **ILLUMINA** : indicate the path to the directory with *Illumina* sequence data (in fastq or fastq.gz format) to perform KAT quality. Use preferentially paired-end data.
 
-* OUTPUT: output *path* directory.
+* **OUTPUT**: output *path* directory.
 
-* CIRCULAR : Indicate *True* or *False* to activate/deactivate circularisation steps (only to procaryote).
+* **CIRCULAR** : Indicate *True* or *False* to activate/deactivate circularisation steps (only to procaryote).
 
 
 ##### 2. Chose assemblers, polisher and correctors
