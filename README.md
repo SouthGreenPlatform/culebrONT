@@ -96,8 +96,8 @@ Included tools :
 ##### Correction
 Correction can improve the consensus sequence for a draft genome assembly. We include Nanopolish and Medaka on correction steps. With CulebrONT you can now train a Medaka model and use it directly to obtain a consensus from you favorite organism. In addition, Medaka can use a dedicated GPU resource if indicated.
 
-Included tools :
-* Medaka Medaka-gpu version >= 0.11.5 https://github.com/nanoporetech/medaka
+Included tools :s
+* Medaka Medaka-gpu version >= 1.0.3 https://github.com/nanoporetech/medaka
 * Nanopolish version >= 0.11.3 https://nanopolish.readthedocs.io/en/latest/index.html#
 
 ### Checking assembly quality
@@ -317,7 +317,7 @@ tools:
     RACON_SIMG : '/data3/projects/containers/CULEBRONT/racon-1.4.3.simg'
     NANOPOLISH_SIMG : '/data3/projects/containers/CULEBRONT/nanopolish-0.11.3.simg'
 ## CORRECTION
-    MEDAKA_SIMG : '/data3/projects/containers/CULEBRONT/medaka-0.11.5.simg'
+    MEDAKA_SIMG : '/data3/projects/containers/CULEBRONT/medaka_conda-gpu-1.0.3.simg'
 ## QUALITY
     BUSCO_SIMG : '/data3/projects/containers/CULEBRONT/busco-4.0.5.simg'
     QUAST_SIMG : '/data3/projects/containers/CULEBRONT/quast-5.0.2.simg'
@@ -351,7 +351,7 @@ tools:
       RACON_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:racon-1.4.3.def'
 ###### CORRECTION
       NANOPOLISH_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:nanopolish-0.11.3.def'
-      MEDAKA_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:medaka-gpu-0.11.5.def'
+      MEDAKA_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:medaka_conda-gpu-1.0.3.simg'
 ###### QUALITY
       BUSCO_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:busco-4.def'
       QUAST_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:quality.def'
