@@ -10,11 +10,11 @@ DATA:
 ############ WC ################
 ASSEMBLY:
     CANU : False
-    FLYE : True
-    MINIASM : True
+    FLYE : True 
+    MINIASM : True 
 CORRECTION:
     NANOPOLISH : True
-    MEDAKA : False
+    MEDAKA : True
 #by default BUSCO is launched if True in QUALITY ASSEMBLY OR/ET POLISHING OR/ET CORRECTION step is/are activated
 QUALITY:
     ASSEMBLY : False
@@ -95,7 +95,7 @@ tools:
     RACON_SIMG : '/data3/projects/containers/CULEBRONT/racon-1.4.3.simg'
     NANOPOLISH_SIMG : '/data3/projects/containers/CULEBRONT/nanopolish-0.11.3.simg'
 ## CORRECTION
-    MEDAKA_SIMG : '/data3/projects/containers/CULEBRONT/medaka-0.11.5.simg'
+    MEDAKA_SIMG : '/data3/projects/containers/CULEBRONT/medaka_conda-gpu-1.0.3.simg'
 ## QUALITY
     BUSCO_SIMG : '/data3/projects/containers/CULEBRONT/busco-4.0.5.simg'
     QUAST_SIMG : '/data3/projects/containers/CULEBRONT/quast-5.0.2.simg'
