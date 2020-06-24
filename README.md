@@ -303,29 +303,30 @@ As an example, here are singularity images found  on the i-Trop HPC from the Sou
 ```yaml
 # cluster with scratch temporary directory
 SCRATCH = False
+
 ## @ITROP PATH
 tools:
 ## ASSEMBLERS:
     CANU_SIMG : '/data3/projects/containers/CULEBRONT/canu-1.9.simg'
-    FLYE_SIMG : '/data3/projects/containers/CULEBRONT/Flye-2.6.simg'
+    FLYE_SIMG : '/data3/projects/containers/CULEBRONT/flye-2.6.simg'
     MINIASM_SIMG : '/data3/projects/containers/CULEBRONT/miniasm-0.3.simg'
-    MINIPOLISH_SIMG : '/data3/projects/containers/3.3.0/Minipolish-0.1.2.simg'
+    MINIPOLISH_SIMG : '/data3/projects/containers/CULEBRONT/minipolish-0.1.2.simg'
 ## CIRCULARISATION
-    CIRCLATOR_SIMG : '/data3/projects/containers/CULEBRONT/Circlator-1.5.5.simg'
+    CIRCLATOR_SIMG : '/data3/projects/containers/CULEBRONT/circlator-1.5.5.simg'
 ## POLISHERS:
     RACON_SIMG : '/data3/projects/containers/CULEBRONT/racon-1.4.3.simg'
-## CORRECTION
     NANOPOLISH_SIMG : '/data3/projects/containers/CULEBRONT/nanopolish-0.11.3.simg'
-    MEDAKA_SIMG : '/data3/projects/containers/3.3.0/medaka-0.11.5.simg'
+## CORRECTION
+    MEDAKA_SIMG : '/data3/projects/containers/CULEBRONT/medaka-0.11.5.simg'
 ## QUALITY
     BUSCO_SIMG : '/data3/projects/containers/CULEBRONT/busco-4.0.5.simg'
     QUAST_SIMG : '/data3/projects/containers/CULEBRONT/quast-5.0.2.simg'
     WEESAM_SIMG : '/data3/projects/containers/CULEBRONT/weesam.simg'
     BLOBTOOLS_SIMG : '/data3/projects/containers/CULEBRONT/bloobtools-v1.1.1.simg'
     MINIMAP2_SIMG: '/data3/projects/containers/CULEBRONT/nanopolish-0.11.3.simg'
-    DIAMOND_SIMG : '/data3/projects/containers/CULEBRONT/Diamond-0.9.30.simg'
+    DIAMOND_SIMG : '/data3/projects/containers/CULEBRONT/diamond-0.9.30.simg'
     MUMMER_SIMG : '/data3/projects/containers/CULEBRONT/mummer-4beta.simg'
-    ASSEMBLYTICS_SIMG : '/data3/projects/containers/CULEBRONT/Assemblytics-1.2.simg'
+    ASSEMBLYTICS_SIMG : '/data3/projects/containers/CULEBRONT/assemblytics-1.2.simg'
     SAMTOOLS_SIMG : '/data3/projects/containers/CULEBRONT/nanopolish-0.11.3.simg'
     KAT_SIMG : '/data3/projects/containers/CULEBRONT/kat-2.4.2.simg'
     MINICONDA_SIMG : 'shub://vibaotram/singularity-container:cpu-guppy3.4-conda-api'
