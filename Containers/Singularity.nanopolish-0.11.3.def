@@ -8,10 +8,10 @@ From: ubuntu:16.04
 
 %post
     apt-get -y update
-    apt-get -y install wget unzip sudo build-essential zlib1g zlib1g-dev git-core python3.5 python3-setuptools
+    apt-get -y install wget unzip sudo build-essential zlib1g zlib1g-dev git-core python3.7 python3-setuptools
     apt-get -y install libbz2-dev libncurses5-dev autoconf autotools-dev curl gnuplot liblzma-dev libcrypto++-dev
     easy_install3 pip
-    pip install biopython
+    python3 -m pip install biopython
     cd /
 # minimap2 2.11
     wget https://github.com/lh3/minimap2/releases/download/v2.11/minimap2-2.11.tar.bz2
@@ -32,7 +32,6 @@ From: ubuntu:16.04
     make
     make install
     cd ..
-
 
 # NANOPOLISH 0.11.3
     git clone --recursive https://github.com/jts/nanopolish.git
