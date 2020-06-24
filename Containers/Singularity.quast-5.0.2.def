@@ -3,8 +3,6 @@ From : ubuntu:18.04
 %labels
         quast.version 5.0.2
         modified by <julie.orjuela@ird.fr>
-
-
 %post
 	##### System #####
 	apt update -y
