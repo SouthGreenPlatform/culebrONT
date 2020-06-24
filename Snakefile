@@ -125,7 +125,7 @@ fastq = Path(config['DATA']['FASTQ']).resolve().as_posix()
 ref = Path(config['DATA']['REF']).resolve().as_posix()
 fast5 = Path(config['DATA']['FAST5']).resolve().as_posix()
 illumina = Path(config['DATA']['ILLUMINA']).resolve().as_posix() + "/"
-path_config = Path('config.yaml').resolve().as_posix()
+#path_config = Path('config.yaml').resolve().as_posix()
 path_snake = Path('Snakefile').resolve().as_posix()
 
 #print (type(path_config))
