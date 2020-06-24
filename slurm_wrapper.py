@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # written by Bao Tram Vi, modified by julie Orjuela (IRD)
 from snakemake.logging import logger
-from snakemake.dag import DAG
 
-logger.info("wrapper to launch CulebrONT on slurm HPC")
+#logger.info("wrapper to launch CulebrONT on slurm HPC")
 
 '''
 wrap to pass cluster configuration parameters to --cluster snake option in culebrONT
@@ -30,8 +29,8 @@ log = rule
 
 #print(cluster_properties)
 
-logger.info("cluster properties : ")
-logger.info(cluster_properties)
+#logger.info("cluster properties : ")
+#logger.info(cluster_properties)
 
 #"cluster": {"cpus-per-task": 4, "ntasks": 1, "mem-per-cpu": "2", "partition": "normal", "output": "logs/stdout/run_flye/fastq=5percentB1-1", "error": "logs/error/run_flye/fastq=5percentB1-1"}}
 
@@ -60,12 +59,12 @@ outdir = config_properties['DATA']['OUTPUT']
 logdir = os.path.join(outdir, "slurm_log")
 os.makedirs(logdir, exist_ok=True)
 
-logger.info("cluster properties partition : ")
-if rule in cluster_properties :
-    logger.info("cluster properties partition : ")
-    logger.info(cluster_properties[rule]['partition'])
-    logger.info("cluster properties mem-per-cpu : ")
-    logger.info(cluster_properties[rule]['mem-per-cpu'])
+#logger.info("cluster properties partition : ")
+#if rule in cluster_properties :
+#    logger.info("cluster properties partition : ")
+#    logger.info(cluster_properties[rule]['partition'])
+#    logger.info("cluster properties mem-per-cpu : ")
+#    logger.info(cluster_properties[rule]['mem-per-cpu'])
 
 # getting ressources from cluster config given by user
 def get_ressources(rule):
@@ -103,5 +102,5 @@ with open(jobscript, "w") as j:
 cmdline = " ".join([sbatch, jobscript])
 
 os.system(cmdline)
-print(cmdline)
+#print(cmdline)
 
