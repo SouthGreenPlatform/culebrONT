@@ -409,8 +409,57 @@ run_canu:
 
 ```
 
-#### Profiles
-In order to run CulebrONT on HPC cluster, please follow the [recommandations found on the SnakeMake profile github](https://github.com/Snakemake-Profiles/).
+##### submit_culebront.sh
+
+This is a typical launcher for using CulebrONT on a Slurm cluster. You have to adapt it for the configuration of your favorite cluster.
+Please adapt this script also if you want to use wrappers or profiles.
+
+```
+#!/bin/bash
+#SBATCH --job-name culebrONT
+#SBATCH --output slurm-%x_%j.log
+#SBATCH --error slurm-%x_%j.log
+
+module load system/Miniconda3/1.0
+env=/home/$(whoami)/.conda/envs/snakemake
+[ ! -d $env ] && echo -e "## [$(date) - culebrONT]\t Creating conda environment for snakemake" && conda env create -f envs/environment.yaml -n snakemake
+
+source activate snakemake
+module load system/singularity/3.3.0
+module load system/python/3.7.2
+
+snakemake --unlock
+
+# SLURM JOBS WITH USING WRAPPER
+snakemake --nolock --use-conda --use-singularity --cores -p --verbose -s Snakefile \
+--latency-wait 60 --keep-going --restart-times 2 --rerun-incomplete  \
+--configfile config-itrop.yaml \
+--cluster "python3 slurm_wrapper.py" \
+--cluster-config cluster_config.yaml \
+--cluster-status "python3 slurm_status.py"
+
+# USING PROFILES
+#snakemake --nolock --use-singularity --use-conda --cores -p --verbose -s Snakefile --configfile config-itrop.yaml \
+#--latency-wait 60 --keep-going --restart-times 1 --rerun-incomplete --cluster-config cluster_config.yaml --profile slurm-culebrONT 
+
+```
+
+This launcher can be submitted to the Slurm queue typing:
+```
+sbatch submit_culebront.sh
+```
+
+_Important_ : Do not forget to adapt submit_culebront.sh if you want to use wrappers or profile!!
+
+
+#### slurm_wrapper
+
+A slurm_wrapper.py script is available on CulebrONT projet to manage ressources from your cluster configuration (taken from cluster_config.yaml file).
+This is the easier way to know what is running on cluster and to adapt ressources for every job. Take care, this cluster_config.yaml file is becomming obsolete on next Snakemake versions.  
+
+#### Profiles 
+
+Optionally is possible to use Profiles in order to run CulebrONT on HPC cluster. Please follow the [recommandations found on the SnakeMake profile github](https://github.com/Snakemake-Profiles/).
 
 Here is an example of how to profile a Slurm scheduler using [those recommandations]( https://github.com/Snakemake-Profiles/slurm).
 
@@ -443,30 +492,6 @@ RESOURCE_MAPPING = {
 ```
 SLURM Profile *slurm-culebrONT* is now created on : `/shared/home/$USER/.config/snakemake/slurm-culebrONT` repertory
 
-##### submit_culebront.sh
-
-This is a typical launcher for using CulebrONT on a Slurm cluster. You have to adapt it for the configuration of your favorite cluster.
-
-```
-#!/bin/bash
-#SBATCH --job-name culebrONT
-#SBATCH --output slurm-%x_%j.log
-#SBATCH --error slurm-%x_%j.log
-
-module load system/singularity/3.3.0
-module load system/python/3.7.2
-
-snakemake --unlock
-
-snakemake --nolock --use-singularity --use-conda --cores -p --verbose -s Snakefile \
---configfile config.yaml --latency-wait 60 --keep-going --restart-times 2 \
---rerun-incomplete --profile slurm-culebrONT \
-```
-
-This launcher can be submitted to the Slurm queue typing:
-```
-sbatch submit_culebront.sh
-```
 
 <a name="output"></a>
 ## Output on CulebrONT
