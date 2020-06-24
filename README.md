@@ -1,4 +1,4 @@
-![Culebront Logo](./SupplementaryFiles/Culebront-LOGO2.png)
+![Culebront Logo](./SupplementaryFiles/culebront_logo.png)
 
 ## Table of Contents
 <!-- TOC depthFrom:2 depthTo:3 withLinks:1 updateOnSave:1 orderedList:0 -->
