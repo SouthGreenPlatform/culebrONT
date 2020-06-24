@@ -42,7 +42,6 @@ From : ubuntu:18.04
     python3 -m pip install matplotlib
     python3 -m pip install seaborn
     python3 -m pip install numpy
-
     git clone https://github.com/centre-for-virus-research/weeSAM.git
 
 %environment

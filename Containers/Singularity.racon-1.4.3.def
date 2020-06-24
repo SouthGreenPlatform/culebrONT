@@ -21,7 +21,6 @@ export  PATH=$PATH:/usr/local/bin
 apt update
 apt install -y build-essential wget zlib1g-dev  cmake git curl
 
-
 cd /usr/local
 wget https://github.com/isovic/racon/releases/download/1.4.3/racon-v1.4.3.tar.gz
 tar xvfz racon-v1.4.3.tar.gz
@@ -39,6 +38,7 @@ git clone https://github.com/lh3/minimap2
 cd minimap2
 git checkout v2.15  # Fix version
 make
+
 # Install executables and manpages
 install minimap2 /usr/local/bin
 install misc/paftools.js /usr/local/bin

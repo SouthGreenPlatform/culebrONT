@@ -18,7 +18,6 @@ From : ubuntu:18.04
     apt -y install git-core   
     apt -y install zlib1g-dev     
     apt -y install software-properties-common
-
     apt -y install gnuplot gnuplot-x11 gnuplot-doc 
     apt -y install xfig transfig xfig-libs
            

@@ -29,7 +29,6 @@ From : ubuntu:18.04
         apt-get -y install gnuplot libcrypto++6
 
 ##### quast ####
-
     python3 -m pip install matplotlib
 
 	wget -P /tmp/ https://downloads.sourceforge.net/project/quast/quast-5.0.2.tar.gz
