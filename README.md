@@ -433,7 +433,7 @@ snakemake --unlock
 
 # SLURM JOBS WITH USING WRAPPER
 snakemake --nolock --use-conda --use-singularity --cores -p --verbose -s Snakefile \
---latency-wait 60 --keep-going --restart-times 2 --rerun-incomplete  \
+--latency-wait 60 --keep-going --restart-times 1 --rerun-incomplete  \
 --configfile config-itrop.yaml \
 --cluster "python3 slurm_wrapper.py" \
 --cluster-config cluster_config.yaml \
