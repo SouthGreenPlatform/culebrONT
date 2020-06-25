@@ -539,6 +539,11 @@ output_example_circ/
 ```
 The same Architecture per sample (fastq = SAMPLE-1 in example) is followed for LOG files.
 
+#### Report
+CulebrONT generates a beautiful report containing, foreach fastq found on input directory, a summary of interesting statistics such as busco, quast and others ones that you will discover!
+
+![Culebront Logo](./SupplementaryFiles/report.png)
+
 _Important_: To visualise the report created by CulebrONT, transfer the whole *REPORT* directory on your local machine before opening the *report.html* file with a navigator.
 
 <a name="citation"></a>
