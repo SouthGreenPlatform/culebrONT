@@ -1,30 +1,23 @@
+# Singularity recipe for creating a container for using the program QUAST
+
 Bootstrap: docker
-From : ubuntu:18.04
+From: ubuntu:18.04
 
 %labels
-        quast.version 5.0.2
-        modified by <julie.orjuela@ird.fr>
+	Quast container
 
 %post
-	##### System #####
+
 	apt update -y
-	apt upgrade -y
-	apt install -y build-essential wget zlib1g-dev pkg-config libfreetype6-dev libpng-dev perl python3-all-dev python3-pip openjdk-8-jdk python-setuptools
-    python3 -m pip install matplotlib
+	apt install -y locales
+	ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+	export DEBIAN_FRONTEND=noninteractive
+	apt-get install -y tzdata
+	dpkg-reconfigure --frontend noninteractive tzdata
+	locale-gen fr_FR.UTF-8
+	dpkg-reconfigure locales
+        apt install -y python3.7 python3-pip python-setuptools
+	apt install -y build-essential wget zlib1g-dev pkg-config libfreetype6-dev libpng-dev perl openjdk-8-jdk
+        python3 -m pip install matplotlib
+	python3 -m pip install quast
 
-	wget -P /tmp/ https://github.com/ablab/quast/releases/download/quast_5.0.2/quast-5.0.2.tar.gz
-	cd /tmp
-	tar xvzf /tmp/quast-5.0.2.tar.gz
-	rm /tmp/quast-5.0.2.tar.gz
-	if [ -d "/quast" ]; then
-		rm -rf /quast/
-	fi
-	mv /tmp/quast-5.0.2 /quast
-	cd /quast/
-	./setup.py install
-
-%runscript
-	python3 /quast/quast.py $@
-
-%environment
-    export PATH=$PATH:/quast
