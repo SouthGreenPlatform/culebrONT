@@ -13,7 +13,6 @@ output:
     toc_float:
       collapsed: false
       smooth_scroll: false
-    number_sections: false
 ---
 
 ```{r setup, include=FALSE, echo= FALSE, message = FALSE}
@@ -80,6 +79,34 @@ library("magick")
 opts_knit$set(root.dir = snakemake@params$out_dir)
 outdir <- snakemake@params$outdir
 ```
+
+# Home{.tabset}
+
+<div align="center" style="font-size:20px">
+```{r, echo= FALSE, message = FALSE}
+knitr::include_graphics(here::here("SupplementaryFiles/culebront_logo.png"))
+```
+**CulebrONT in a Snakemake workflow available on [github](https://github.com/SouthGreenPlatform/CulebrONT_pipeline) created by:**
+
+J. Orjuela (IRD), A. Comte (IRD), Bao Tram Vi (IRD), S. Ravel (CIRAD), F. Charriat (CIRAD), F. Sabot (IRD) and S. Cunnac (IRD),
+
+
+For more quality outputs you can check in the quality output directory.
+
+
+**Tools used in this report:**
+
+* BUSCO : https://busco.ezlab.org/
+* QUAST : http://quast.sourceforge.net/quast
+* BLOBTOOLS: https://blobtools.readme.io/docs
+* ASSEMBLYTICS: http://assemblytics.com/
+* KAT : https://github.com/TGAC/KAT
+* WEESAM : https://github.com/centre-for-virus-research/weeSAM
+
+
+Licencied under CeCill-C (http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html) and GPLv3 Intellectual property belongs to IRD and authors
+
+</div>
 
 # Rulegraph{.tabset .tabset-fade .tabset-pills}
 
