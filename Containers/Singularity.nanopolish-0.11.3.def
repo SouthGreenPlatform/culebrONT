@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: ubuntu:16.04
+From: ubuntu:18.04
 %labels
     January 2020
     autor : Dominik Handler <Dominik Handler@imba.oeaw.ac.at
@@ -7,10 +7,13 @@ From: ubuntu:16.04
     Nanopolish v0.11.3
 
 %post
+    #apt-get -y update
+    #apt -y install software-properties-common
+    #add-apt-repository ppa:deadsnakes/ppa  
     apt-get -y update
-    apt-get -y install wget unzip sudo build-essential zlib1g zlib1g-dev git-core python3.7 python3-setuptools
+    apt-get -y install python3.7 python3-setuptools python3-pip
+    apt-get -y install wget unzip sudo build-essential zlib1g zlib1g-dev git-core
     apt-get -y install libbz2-dev libncurses5-dev autoconf autotools-dev curl gnuplot liblzma-dev libcrypto++-dev
-    easy_install3 pip
     python3 -m pip install biopython
     cd /
 # minimap2 2.11
