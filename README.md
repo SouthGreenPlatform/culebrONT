@@ -430,11 +430,6 @@ Please adapt this script also if you want to use wrappers or profiles.
 #SBATCH --output slurm-%x_%j.log
 #SBATCH --error slurm-%x_%j.log
 
-module load system/Miniconda3/1.0
-env=/home/$(whoami)/.conda/envs/snakemake
-[ ! -d $env ] && echo -e "## [$(date) - culebrONT]\t Creating conda environment for snakemake" && conda env create -f envs/environment.yaml -n snakemake
-
-source activate snakemake
 module load system/singularity/3.3.0
 module load system/python/3.7.2
 
