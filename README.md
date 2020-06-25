@@ -52,7 +52,7 @@ To obtain a clear and correct report, please add also the following dependencies
 
 <a name="rules"></a>
 ### Available data test
-Some data test `Data-Xoo-sub/` are also available on https://itrop.ird.fr/culebront_utilities/. Feel free to download it using `wget` and put it on CulebrONT repertory.
+A data test `Data-Xoo-sub/` is available on https://itrop.ird.fr/culebront_utilities/. Feel free to download it using `wget` and put it on CulebrONT repertory.
 
 ## Rules in Culebront
 
