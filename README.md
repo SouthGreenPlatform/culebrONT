@@ -51,6 +51,9 @@ To obtain a clear and correct report, please add also the following dependencies
  * 'plotly', 'dplyr', 'optparse', 'htmltools', 'rmdformats', 'magrittr', 'yaml', 'png', 'here', 'htmlwidgets'.
 
 <a name="rules"></a>
+### Available data test
+Some data test `Data-Xoo-sub/` are also available on https://itrop.ird.fr/culebront_utilities/. Feel free to download it using `wget` and put it on CulebrONT repertory.
+
 ## Rules in Culebront
 
 Assembly, circularisation, polishing and correction steps are included in CulebrONT, and can be activated (or not) according to user’s requests. The most commonly used tools in the community for each step are integrated, as well as various quality control tools. CulebrONT also generates a report compiling information obtained at every step.
@@ -333,6 +336,13 @@ tools:
     R_SIMG: '/data3/projects/containers/CULEBRONT/R.simg'
 ```
 
+
+Available recipes from containers are available in the *Containers* folder, as well as on the main [CulebrONT repository](https://github.com/SouthGreenPlatform/CulebrONT.git). Feel free to build them on your own computer (or cluster); be careful, you need root rights to do it.
+
+Built singularity images are also available on https://itrop.ird.fr/culebront_utilities/. Feel free to download it using `wget` for example.
+
+###### singularity hub 
+
 If you want to recover singularity images from the Singularity Hub and build them, please use these paths :
 
 ```yaml
@@ -367,7 +377,6 @@ tools:
       R_SIMG: 'shub://SouthGreenPlatform/CulebrONT_pipeline:r.def'
 ```
 
-Available recipes from containers are available in the *Containers* folder, as well as on the main [CulebrONT repository](https://github.com/SouthGreenPlatform/CulebrONT.git). Feel free to build them on your own computer (or cluster); be careful, you need root rights to do it.
 
 ### Launching CulebrONT on a single machine
 
@@ -554,9 +563,9 @@ Before launching CulebrONT, you could base-calling of arbitrarily multiplexed li
 
 #### Thanks
 
-The authors acknowledge the IRD i-Trop HPC (South Green Platform) at IRD Montpellier
-    for providing HPC resources that have contributed to this work.
-   https://bioinfo.ird.fr/ - http://www.southgreen.fr
+The authors acknowledge the IRD i-Trop HPC (South Green Platform) at IRD Montpellier for providing HPC resources that have contributed to this work. https://bioinfo.ird.fr/ - http://www.southgreen.fr
+   
+Thanks to Yann Delorme for this beautiful logo https://nimarell.github.io/resume
 
 <a name="licence"></a>
 ## License
