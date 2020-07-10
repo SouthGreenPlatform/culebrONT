@@ -29,7 +29,7 @@ Installation
 Mandatory installation
 ^^^^^^^^^^^^^^^^^^^^^^
 
-CulebrONT uses Python >= 3.7 and Snakemake >= 5.10.0. Singularity 3.0.0+ could be of help (see `below <#singularity>`_\ )
+CulebrONT uses |PythonVersions| |SnakemakeVersions| |Singularity| could be of help (see `below <#singularity>`_\ )
 
 
 * Install or update CulebrONT
@@ -660,3 +660,19 @@ License
 
 Licencied under CeCill-C (http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html) and GPLv3
 Intellectual property belongs to IRD and authors.
+
+
+
+
+
+.. |PythonVersions| image:: https://img.shields.io/badge/python3.7+-red.svg
+   :target: https://www.python.org/downloads
+   :alt: Python 3.7+
+
+.. |SnakemakeVersions| image:: https://img.shields.io/badge/snakemake-≥5.10.0-brightgreen.svg?style=flat
+   :target: https://snakemake.readthedocs.io
+   :alt: Snakemake 5.10.0+
+
+.. |Singularity| image:: https://img.shields.io/badge/singularity-available-7E4C74.svg
+   :target: https://sylabs.io/docs/
+   :alt: Singularity 3.10.0+
