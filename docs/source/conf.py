@@ -277,10 +277,6 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
-# At top on conf.py (with other import statements)
-import recommonmark
-from recommonmark.transform import AutoStructify
-
 def setup(app):
     app.add_css_file('sphinx-argparse.css')
     app.add_config_value('recommonmark_config', {
