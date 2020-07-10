@@ -8,31 +8,6 @@
    :alt: Culebront Logo
 
 
-Table of Contents
------------------
-
-
-.. raw:: html
-
-   <!-- TOC depthFrom:2 depthTo:3 withLinks:1 updateOnSave:1 orderedList:0 -->
-   - [About this package](#about-this-package)
-   - [Installation](#installation)
-   - [Rules in CulebrONT](#rules)
-   - [Running CulebrONT](#running-culebront)
-   - [Parameters](#Parameters)
-   - [Singularity images](#singularity)
-   - [Cluster_config.yaml](#prepclusteryaml)
-   - [Launching CulebrONT on Slurm HPC clusters](#sbatch)
-   - [Output of CulebrONT](#output)
-   - [Citation](#citation)
-   - [Useful notes](#notes)
-   - [License](#license)
-   <!-- /TOC -->
-
-
-
-:raw-html-m2r:`<a name="about-this-package"></a>`
-
 About this package
 ------------------
 
@@ -70,7 +45,7 @@ Optional Installation
 To obtain a clear and correct report, please add also the following dependencies from R:
 
 
-* ``devtools::install_github("strengejacke/strengejacke")``
+* ``remote::install_github("strengejacke/strengejacke")``
 * 'plotly', 'dplyr', 'optparse', 'htmltools', 'rmdformats', 'magrittr', 'yaml', 'png', 'here', 'htmlwidgets'.
 
 :raw-html-m2r:`<a name="rules"></a>`
@@ -118,7 +93,7 @@ Included tools :
 Circularisation
 """""""""""""""
 
-If an assembled molecule is circular, e.g. for bacteria (CIRCULAR=True), this molecule is tagged and will be treated specially in pipeline. We implemented tagging and rotation of circular molecule before each racon polishing step, and we fixing start position on circular genome. This is efficient when multiple genome alignments are envisaged.  
+If an assembled molecule is circular, e.g. for bacteria (CIRCULAR=True), this molecule is tagged and will be treated specially in pipeline. We implemented tagging and rotation of circular molecule before each racon polishing step, and we fixing start position on circular genome. This is efficient when multiple genome alignments are envisaged.
 
 
 * If Circularisation (CIRCULAR=True) step is choosen, the *--plasmids* option on Flye is activated.
@@ -181,7 +156,7 @@ Optional Quality tools
 
 CulebrONT checks also the quality of assemblies by using Bloobtools, Assemblytics or KAT, or any combination of these. Weesam can be also used to check read coverage over you assembly (for small genome only). Alignment of several assembles (or from any steps : assembly, polishing, correction) and there comparison is performed using Mauve (for small genome only).
 
-Included tools :  
+Included tools :
 
 
 * Bloobtools version >= 1.1.1
@@ -239,25 +214,25 @@ First, indicate the data path in the configuration file
        CIRCULAR : True/False
 
 
-* 
+*
   **FASTQ**\ : CulebrONT takes as input a FASTQ directory. Every FASTQ file should contain the whole set of reads to be assembled (meaning that multiple runs must be merged in a single FASTQ file), as each FASTQ file found in this repertory will be assembled independently. FASTQ files can be compressed or not (gzipped). Naming convention accepted by CulebrONT are: *NAME.fastq.gz* or *NAME.fq.gz* or *NAME.fastq* or *NAME.fq*.
 
-* 
+*
   **REF**\ : Only one REFERENCE genome file will be used by CulebrONT. This REFERENCE will be used for QC steps (QUAST and MAUVE).
 
-* 
+*
   **GENOME_SIZE** : Estimated genome size (m,g,k) of the assembly.
 
-* 
-  **FAST5**\ : Nanopolish needs FAST5 files to training steps. Please give the path of FAST5 repertory in the *FAST5* DATA parameter. Inside this directory, a subdirectory with the exact same name as the corresponding FASTQ (before the *.fastq.gz*\ ) is requested. For instance, if in the *FASTQ* directory we have *run1.fastq.gz* and *run2.fastq.gz*\ , CulebrONT is expecting the *run1/* and *run2/* subdirectories in the FAST5 main directory.   
+*
+  **FAST5**\ : Nanopolish needs FAST5 files to training steps. Please give the path of FAST5 repertory in the *FAST5* DATA parameter. Inside this directory, a subdirectory with the exact same name as the corresponding FASTQ (before the *.fastq.gz*\ ) is requested. For instance, if in the *FASTQ* directory we have *run1.fastq.gz* and *run2.fastq.gz*\ , CulebrONT is expecting the *run1/* and *run2/* subdirectories in the FAST5 main directory.
 
-* 
+*
   **ILLUMINA** : indicate the path to the directory with *Illumina* sequence data (in fastq or fastq.gz format) to perform KAT quality. Use preferentially paired-end data.
 
-* 
+*
   **OUTPUT**\ : output *path* directory.
 
-* 
+*
   **CIRCULAR** : Indicate *True* or *False* to activate/deactivate circularisation steps (only to procaryote).
 
 2. Chose assemblers, polisher and correctors
@@ -388,7 +363,7 @@ Standard parameters used:
 Singularity containers
 ~~~~~~~~~~~~~~~~~~~~~~
 
-To use Singularity containers, provide to CulebrONT the already build Singularity containers path on your computer or cluster.  
+To use Singularity containers, provide to CulebrONT the already build Singularity containers path on your computer or cluster.
 
 As an example, here are singularity images found  on the i-Trop HPC from the SouthGreen platform.
 
@@ -555,7 +530,7 @@ slurm_wrapper
 ~~~~~~~~~~~~~
 
 A slurm_wrapper.py script is available on CulebrONT projet to manage ressources from your cluster configuration (taken from cluster_config.yaml file).
-This is the easier way to know what is running on cluster and to adapt ressources for every job. Take care, this cluster_config.yaml file is becomming obsolete on next Snakemake versions.  
+This is the easier way to know what is running on cluster and to adapt ressources for every job. Take care, this cluster_config.yaml file is becomming obsolete on next Snakemake versions.
 
 Profiles
 ~~~~~~~~
