@@ -38,7 +38,6 @@ extensions = ['recommonmark',
               'sphinx.ext.viewcode',
               'sphinx.ext.autodoc',
               'sphinx.ext.autosectionlabel',
-              'sphinx_issues'
               ]
 
 # TODO enable once new theme is final
