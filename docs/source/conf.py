@@ -15,11 +15,11 @@
 
 import sys
 import os
-from recommonmark.parser import CommonMarkParser
-from recommonmark.transform import AutoStructify
+# from recommonmark.parser import CommonMarkParser
+# from recommonmark.transform import AutoStructify
 
 
-source_parsers = {'.md': CommonMarkParser}
+# source_parsers = {'.md': CommonMarkParser}
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -35,8 +35,7 @@ sys.path.insert(0, os.path.abspath('../'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['recommonmark',
-              'sphinx.ext.intersphinx',
+extensions = ['sphinx.ext.intersphinx',
               'sphinx.ext.viewcode',
               'sphinx.ext.autodoc',
               'sphinx.ext.autosectionlabel',
@@ -281,10 +280,10 @@ texinfo_documents = [
 
 
 
-def setup(app):
-    app.add_css_file('sphinx-argparse.css')
-    app.add_config_value('recommonmark_config', {
-            'url_resolver': lambda url: github_doc_root + url,
-            'auto_toc_tree_section': 'Contents',
-            }, True)
-    app.add_transform(AutoStructify)
+# def setup(app):
+    # app.add_css_file('sphinx-argparse.css')
+    # app.add_config_value('recommonmark_config', {
+            # 'url_resolver': lambda url: github_doc_root + url,
+            # 'auto_toc_tree_section': 'Contents',
+            # }, True)
+    # app.add_transform(AutoStructify)
