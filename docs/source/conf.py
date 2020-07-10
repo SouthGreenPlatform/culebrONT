@@ -16,6 +16,8 @@
 import sys
 import os
 from recommonmark.parser import CommonMarkParser
+from recommonmark.transform import AutoStructify
+
 
 source_parsers = {'.md': CommonMarkParser}
 
@@ -276,6 +278,8 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+
 
 def setup(app):
     app.add_css_file('sphinx-argparse.css')
