@@ -15,12 +15,6 @@
 
 import sys
 import os
-# from recommonmark.parser import CommonMarkParser
-# from recommonmark.transform import AutoStructify
-
-
-# source_parsers = {'.md': CommonMarkParser}
-
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -59,8 +53,8 @@ master_doc = 'index'
 # General information about the project.
 project = 'CulebrONT'
 copyright = '2019-2020, Julie Orjuela (IRD), Aurore Comte (IRD), Sebastien Ravel (CIRAD), Florian Charriat (CIRAD)'
-# github_doc_root = 'https://github.com/rtfd/recommonmark/tree/master/docs/'
-# issues_github_path = 'SouthGreenPlatform/CulebrONT_pipeline'
+github_doc_root = 'https://github.com/SouthGreenPlatform/CulebrONT_pipeline/tree/master/docs/'
+issues_github_path = 'https://github.com/SouthGreenPlatform/CulebrONT_pipeline/issues'
 
 
 
@@ -128,26 +122,40 @@ html_theme = 'sphinx_rtd_theme'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'canonical_url': '',
+    'analytics_id': 'UA-172723859-1',  #  Provided by Google in your dashboard
+    'logo_only': False,
+    'display_version': True,
+    'prev_next_buttons_location': 'bottom',
+    'style_external_links': False,
+    # Toc options
+    'collapse_navigation': False,
+    'sticky_navigation': True,
+    'navigation_depth': 4,
+    'includehidden': True,
+    'titles_only': False
+}
+
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = "CulebrONT"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
+html_short_title = "CulebrONT"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = './SupplementaryFiles/culebront_logo2.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = './SupplementaryFiles/culebront_logo2.png'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
