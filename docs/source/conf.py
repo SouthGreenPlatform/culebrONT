@@ -132,8 +132,8 @@ html_theme_options = {
     # Toc options
     'collapse_navigation': False,
     'sticky_navigation': True,
-    'navigation_depth': 4,
-    'includehidden': True,
+    'navigation_depth': 2,
+    'includehidden': False,
     'titles_only': False
 }
 
@@ -162,6 +162,12 @@ html_favicon = './SupplementaryFiles/culebront_logo2.png'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+# These paths are either relative to html_static_path
+# or fully qualified paths (eg. https://...)
+html_css_files = [
+    './logo.css',
+]
+
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
@@ -186,19 +192,19 @@ html_static_path = ['_static']
 #html_domain_indices = True
 
 # If false, no index is generated.
-#html_use_index = True
+html_use_index = True
 
 # If true, the index is split into individual pages for each letter.
-#html_split_index = False
+html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
 #html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-#html_show_sphinx = True
+html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-#html_show_copyright = True
+html_show_copyright = True
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -286,7 +292,8 @@ texinfo_documents = [
 
 
 
-# def setup(app):
+def setup(app):
+    app.add_css_file('logo.css')  # may also be an URL('logo.css')  # may also be an URL
     # app.add_css_file('sphinx-argparse.css')
     # app.add_config_value('recommonmark_config', {
             # 'url_resolver': lambda url: github_doc_root + url,
