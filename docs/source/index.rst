@@ -3,6 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. image:: ./SupplementaryFiles/culebront_logo.png
+   :target: ./SupplementaryFiles/culebront_logo.png
+   :alt: Culebront Logo
+
 Welcome to culebrONT's documentation!
 =====================================
 
