@@ -21,14 +21,18 @@ Directed acyclic graphs (DAGs) show the differences between deactivated (left) a
 Assembly
 ^^^^^^^^
 
-CulebrONT includes (at the moment) three recent and community-validated assemblers : Flye, Miniasm and Canu. More will be added in the future.
+CulebrONT includes (at the moment) six recent and community-validated assemblers : Flye, Miniasm, Canu, Shasta, Smartdenovo et Raven.
 
 Included tools :
-
 
 * Flye version >= 2.6 https://github.com/fenderglass/Flye
 * Canu version >= 1.9 https://canu.readthedocs.io/en/latest/quick-start.html
 * Miniasm version >= 0.3 https://github.com/lh3/miniasm + Minipolish version >= 0.1.2 https://github.com/rrwick/Minipolish
+* Shasta version 0.5.1 https://github.com/chanzuckerberg/shasta
+* Smartdenovo https://github.com/ruanjue/smartdenovo
+* Raven version >= 1.1.10 https://github.com/lbcb-sci/raven
+
+
 
 Circularisation
 ^^^^^^^^^^^^^^^
@@ -36,12 +40,11 @@ Circularisation
 If an assembled molecule is circular, e.g. for bacteria (CIRCULAR=True), this molecule is tagged and will be treated specially in pipeline. We implemented tagging and rotation of circular molecule before each racon polishing step, and we fixing start position on circular genome. This is efficient when multiple genome alignments are envisaged.
 
 
-* If Circularisation (CIRCULAR=True) step is choosen, the *--plasmids* option on Flye is activated.
-* *Ciclator* is used to circularise assembly from Canu. Circlator will attempt to identify each circular sequence and output a linearised version from each of them.
+* If Circularisation (CIRCULAR=True) step is chosen, the *--plasmids* option on Flye is activated.
+* *Ciclator* is used to circularise assembly from Canu, Raven, Smartdenovo et Raven. Circlator will attempt to identify each circular sequence and output a linearised version from each of them.
 * Circularisation for Miniasm is already performed by minipolish.
 
 Included tools :
-
 
 * Circlator version >= 1.5.5 https://github.com/sanger-pathogens/circlator
 

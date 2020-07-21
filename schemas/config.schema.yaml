@@ -50,6 +50,9 @@ properties:
         type: object
         required:
             - CANU
+            - RAVEN
+            - SMARTDENOVO
+            - SHASTA
             - FLYE
             - MINIASM
         additionalProperties: false
@@ -57,6 +60,15 @@ properties:
             CANU :
                 type: boolean
                 description: true if you want to assemble the genome with canu
+            RAVEN :
+                type: boolean
+                description: true if you want to assemble the genome with raven
+            SMARTDENOVO:
+                type: boolean
+                description: true if you want to assemble the genome with smartdenovo
+            SHASTA:
+                type: boolean
+                description: true if you want to assemble the genome with shasta
             FLYE :
                 type: boolean
                 description: true if you want to assemble the genome with flye
@@ -127,6 +139,8 @@ properties:
         required:
             - MINIMAP2
             - CANU
+            - SMARTDENOVO
+            - SHASTA
             - CIRCLATOR
             - RACON
             - NANOPOLISH
@@ -155,6 +169,26 @@ properties:
                     OPTIONS:
                         type: string
                         description: "supplementary option for canu"
+            SMARTDENOVO:
+                type: object
+                additionalProperties: false
+                properties:
+                    KMER_SIZE:
+                        type: integer
+                        description: "kmer size to smartdenovo by default 16, use 17 if human"
+                    OPTIONS:
+                        type: string
+                        description: '-J 5000 for example to read size filter. it is possible to include others options from smartdenovo'
+            SHASTA:
+                type: object
+                additionalProperties: false
+                properties:
+                    MEM_MODE:
+                        type: string
+                        description: "--memoryMode controls whether mmap allocates anonymous memory or memory mapped to a filesystem "
+                    MEM_BACKING:
+                        type: string
+                        description: '--memoryBacking specifies the physical backing of pages allocated via mmap and can take one of the following values: disk, 4K or 2M'
             CIRCLATOR:
                 type: object
                 additionalProperties: false
@@ -267,6 +301,9 @@ properties:
         additionalProperties: false
         required:
             - CANU_SIMG
+            - RAVEN_SIMG
+            - SHASTA_SIMG
+            - SMARTDENOVO_SIMG
             - FLYE_SIMG
             - MINIASM_SIMG
             - MINIPOLISH_SIMG
@@ -290,6 +327,15 @@ properties:
             'CANU_SIMG' :
                 type: string
                 description: "binary path for canu singularity"
+            'RAVEN_SIMG':
+                type: string
+                description: "binary path for raven singularity"
+            'SMARTDENOVO_SIMG':
+                type: string
+                description: "binary path for smardenovo singularity"
+            'SHASTA_SIMG':
+                type: string
+                description: "binary path for shasta singularity"
             'FLYE_SIMG':
                 type: string
                 description: "binary path for flye singularity"

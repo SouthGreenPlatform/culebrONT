@@ -30,7 +30,6 @@ From: ubuntu:18.04
 # add R packages from bioconductor
     Rscript -e "install.packages('BiocManager')"
     Rscript -e "library(BiocManager); install('devtools')"
-   
     R -e "install.packages('ggplot2')"
     R -e "install.packages('DT')"
     R -e "install.packages('knitr')"

@@ -11,7 +11,10 @@ DATA:
 ASSEMBLY:
     CANU : False
     FLYE : True 
-    MINIASM : True 
+    MINIASM : True
+    RAVEN: True
+    SMARTDENOVO:  True
+    SHASTA: True
 CORRECTION:
     NANOPOLISH : True
     MEDAKA : True
@@ -40,6 +43,12 @@ params:
     CANU:
         MAX_MEMORY: '15G'
         OPTIONS: '-fast'
+    SMARTDENOVO:
+        KMER_SIZE: 16
+        OPTIONS: '-J 5000'
+    SHASTA:
+        MEM_MODE: 'filesystem'
+        MEM_BACKING: 'disk'
     CIRCLATOR:
         OPTIONS: ''
     RACON:
@@ -89,6 +98,9 @@ tools:
     FLYE_SIMG : '/data3/projects/containers/CULEBRONT/flye-2.6.simg'
     MINIASM_SIMG : '/data3/projects/containers/CULEBRONT/miniasm-0.3.simg'
     MINIPOLISH_SIMG : '/data3/projects/containers/CULEBRONT/minipolish-0.1.2.simg'
+    RAVEN_SIMG : '/data3/projects/containers/CULEBRONT/raven_conda-gpu-v1.1.10.simg'
+    SMARTDENOVO_SIMG : '/data3/projects/containers/CULEBRONT/smartdenovo.simg'
+    SHASTA_SIMG : '/data3/projects/containers/CULEBRONT/shasta-0.5.1.simg'
 ## CIRCULARISATION
     CIRCLATOR_SIMG : '/data3/projects/containers/CULEBRONT/circlator-1.5.5.simg'
 ## POLISHERS:

@@ -15,8 +15,8 @@ output:
       smooth_scroll: false
 ---
 
-```{r setup, include=FALSE, echo= FALSE, message = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE, echo= FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
 ```
 <style>
     .tocify-extend-page {
@@ -36,31 +36,25 @@ knitr::opts_chunk$set(echo = TRUE)
     }
 </style>
 
-```{r load package, echo= FALSE, message = FALSE}
-# list of packages required
-#list.of.packages <- c("knitr", "DT", "ggplot2","plotly",'htmltools','rmarkdown','rmdformats', 'magrittr','yaml','png', 'here', 'htmlwidgets')
-#new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-#if (!require('sjPlot')){
-#  devtools::install_github("strengejacke/strengejacke")
-#}
-#install missing ones
-#if(length(new.packages)) install.packages(new.packages, dependencies = TRUE)
-library('knitr')
-library('plotly')
-library('rmdformats')
-library('DT')
-library('ggplot2')
-library('rmarkdown')
-library('htmltools')
-library('sjPlot')
-library('magrittr')
-library('yaml')
-library('png')
-library('here')
-library('htmlwidgets')
-library('gridExtra')
-library('cowplot')
-library("magick")
+```{r load package, include=FALSE, echo= FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
+suppressMessages(library('knitr', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('plotly', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('rmdformats', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('DT', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('ggplot2', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('rmarkdown', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('htmltools', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('sjPlot', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('magrittr', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('yaml', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('png', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('here', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('htmlwidgets', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('gridExtra', warn.conflict = FALSE, quietly = TRUE))
+#suppressMessages(library('cowplot', warn.conflict = FALSE, quietly = TRUE))
+#suppressMessages(library('magick', warn.conflict = FALSE, quietly = TRUE))
+
 #options(DT.options = list(
 #                         paging=TRUE, pageLength = 10, searching = TRUE, ordering=TRUE, scrollCollapse=FALSE, server = FALSE, autoWidth = TRUE,
 #                         buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
@@ -75,7 +69,7 @@ library("magick")
 ```
 
 
-```{r, echo= FALSE, message = FALSE}
+```{r, echo= FALSE, message = FALSE, warning = FALSE}
 opts_knit$set(root.dir = snakemake@params$out_dir)
 outdir <- snakemake@params$outdir
 ```
@@ -83,7 +77,7 @@ outdir <- snakemake@params$outdir
 # Home{.tabset}
 
 <div align="center" style="font-size:20px">
-```{r, echo= FALSE, message = FALSE}
+```{r, echo= FALSE, message = FALSE, warning=FALSE}
 knitr::include_graphics(here::here("SupplementaryFiles/culebront_logo.png"))
 ```
 **CulebrONT in a Snakemake workflow available on [github](https://github.com/SouthGreenPlatform/CulebrONT_pipeline) created by:**
@@ -110,17 +104,17 @@ Licencied under CeCill-C (http://www.cecill.info/licences/Licence_CeCILL-C_V1-en
 
 # Rulegraph{.tabset .tabset-fade .tabset-pills}
 
-```{r, echo= FALSE, message = FALSE}
+```{r, echo= FALSE, message = FALSE, warning = FALSE}
   knitr::include_graphics(snakemake@input$dag, dpi="500")
 ```
 
 # Benchmark{.tabset}
 
-```{r, echo=FALSE,include = FALSE}
+```{r, echo=FALSE, include = FALSE, warning = FALSE}
 DT::datatable(matrix())
 ```
 
-```{r, results='asis', echo= FALSE, message = FALSE}
+```{r, results='asis', echo= FALSE, message = FALSE, warning = FALSE}
 listeFastq <- snakemake@params$out_dir
 fichiers <- dir(listeFastq, include.dirs = TRUE)
 for (i in 1:length(fichiers)) {
@@ -171,13 +165,13 @@ Assessing gene space is a core aspect of knowing whether or not you have a good 
 
 Benchmarking Universal Single-Copy Orthologs (BUSCO) sets are collections of orthologous groups with near-universally-distributed single-copy genes in each species, selected from OrthoDB root-level orthology delineations across arthropods, vertebrates, metazoans, fungi, and eukaryotes. BUSCO groups were selected from each major radiation of the species phylogeny requiring genes to be present as single-copy orthologs in at least 90% of the species; in others they may be lost or duplicated, and to ensure broad phyletic distribution they cannot all be missing from one sub-clade. The species that define each major radiation were selected to include the majority of OrthoDB species, excluding only those with unusually high numbers of missing or duplicated orthologs, while retaining representation from all major sub-clades. Their widespread presence means that any BUSCO can therefore be expected to be found as a single-copy ortholog in any newly-sequenced genome from the appropriate phylogenetic clade.
 
-```{r, echo=FALSE,include = FALSE}
+```{r, echo=FALSE, include = FALSE, warning = FALSE}
 DT::datatable(matrix())
 plotly::ggplotly(ggplot2::ggplot())
 plotly::ggplotly(ggplot2::ggplot())
 ```
 
-```{r, results='asis', echo=FALSE, message = FALSE}
+```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE}
 listeFastq <- snakemake@params$out_dir
 fichiers <- dir(listeFastq, include.dirs = TRUE)
  for (i in 1:length(fichiers)) {
@@ -234,7 +228,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
 
 QUAST is a good starting point to help evaluate the quality of assemblies. It provides many helpful contiguity statistics.
 
-```{r, results='asis', echo= FALSE, message = FALSE}
+```{r, results='asis', echo= FALSE, message = FALSE, warning = FALSE}
 listeFastq <- snakemake@params$out_dir
 fichiers <- dir(listeFastq, include.dirs = TRUE)
   for (i in 1:length(fichiers)) {
@@ -277,7 +271,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
 }
 ```
 
-```{r, results='asis', echo=FALSE, message = FALSE}
+```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE}
   #config_yaml <- yaml.load_file(file.path(normalizePath(dirname('config.yaml')), 'config.yaml'))
   #config_yaml <- yaml.load_file(paste0("../../", config_file)) # TODO: ne pas mettre en dur le chemin du config file (idem dans le snakefile)
   config_yaml <- yaml.load_file(snakemake@params$conf)
@@ -288,7 +282,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
   Mauve_bool  = config_yaml$MSA$MAUVE
 ```
 
-```{r, results='asis', echo=FALSE, message = FALSE}
+```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE}
   if (isTRUE(Blobtools_bool)){
     cat(sprintf("\n\n# %s\n\n","Blobtools{.tabset}"))
 
@@ -344,7 +338,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
   }
 ```
 
-```{r, results='asis', echo=FALSE, message = FALSE}
+```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE}
   if (isTRUE(Assemblytics_bool)){
     cat(sprintf("\n\n# %s\n\n","Assemblytics{.tabset}"))
     listeFastq <- snakemake@params$out_dir
@@ -402,7 +396,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
   }
 ```
 
-```{r, results='asis', echo=FALSE, message = FALSE}
+```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE}
   if (isTRUE(Weesam_bool)){
     cat(sprintf("\n\n# %s\n\n","Weesam{.tabset}"))
     listeFastq <- snakemake@params$out_dir
@@ -474,7 +468,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
   }
 ```
 
-```{r, results='asis', echo=FALSE, message = FALSE}
+```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE}
   if (isTRUE(Kat_bool)){
     cat(sprintf("\n\n# %s\n\n","KAT{.tabset}"))
     listeFastq <- snakemake@params$out_dir

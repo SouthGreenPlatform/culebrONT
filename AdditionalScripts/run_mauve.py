@@ -39,19 +39,16 @@ else:
     cmd = ["progressiveMauve", f"--output={xmfa}"] + fasta_files
 
 #launching MSA
-mauve_out = subprocess.run(cmd, check=True, capture_output=True, text=True)
+mauve_out = subprocess.run(cmd, check=True, capture_output=False, text=True, stdout=open(log_o,'w'), stderr=open(log_e,'w'))
 
 #rename fasta on xmfa
 subst = f's\'|{dir_quast}||\'ig' if not circular else f's\'|{out_dir}||\'ig'
-print('**SB**', circular, subst)
+# print('**SB**', circular, subst)
 cmd = f"sed -i {subst} {xmfa}"
 os.system(cmd)
-print('**CMD**',cmd)
+# print('**CMD**',cmd)
 
 #cmd = ["sed", "-i", subst, xmfa]
 #mauve_renaming = subprocess.run(cmd, check=True, capture_output=True, text=True)
 #print(mauve_renaming.stdout)
 #print(mauve_renaming.stderr)
-
-print(mauve_out.stdout)
-print(mauve_out.stderr)

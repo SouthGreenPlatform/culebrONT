@@ -67,6 +67,9 @@ Example:
        CANU : False
        FLYE : True
        MINIASM : False
+       SHASTA : False
+       SMARDENOVO : True
+       RAVEN: True
    CORRECTION:
        NANOPOLISH : True
        MEDAKA : False
@@ -138,6 +141,12 @@ Standard parameters used:
        CANU:
            MAX_MEMORY: '15G'
            OPTIONS: '-fast'
+       SMARTDENOVO:
+            KMER_SIZE: '16'
+            OPTIONS: '-J 5000'
+       SHASTA:
+            MEM_MODE: 'filesystem'
+            MEM_BACKING: 'disk'
        CIRCLATOR:
            OPTIONS: ''
        RACON:
@@ -191,9 +200,12 @@ As an example, here are singularity images found  on the i-Trop HPC from the Sou
    tools:
    ## ASSEMBLERS:
        CANU_SIMG : '/data3/projects/containers/CULEBRONT/canu-1.9.simg'
-       FLYE_SIMG : '/data3/projects/containers/CULEBRONT/flye-2.6.simg'
+       FLYE_SIMG : '/data3/projects/containers/CULEBRONT/flye-2.7.1.simg'
        MINIASM_SIMG : '/data3/projects/containers/CULEBRONT/miniasm-0.3.simg'
        MINIPOLISH_SIMG : '/data3/projects/containers/CULEBRONT/minipolish-0.1.2.simg'
+       RAVEN_SIMG : '/data3/projects/containers/CULEBRONT/raven_conda-gpu-v1.1.10.simg'
+       SMARTDENOVO_SIMG : '/data3/projects/containers/CULEBRONT/smartdenovo.simg'
+       SHASTA_SIMG : '/data3/projects/containers/CULEBRONT/shasta-0.5.1.simg'
    ## CIRCULARISATION
        CIRCLATOR_SIMG : '/data3/projects/containers/CULEBRONT/circlator-1.5.5.simg'
    ## POLISHERS:
@@ -235,6 +247,9 @@ If you want to recover singularity images from the Singularity Hub and build the
          FLYE_SIMG: 'shub://SouthGreenPlatform/CulebrONT_pipeline:flye-2.6.def'
          MINIASM_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:miniasm-0.3.def'
          MINIPOLISH_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:minipolish-0.1.2.def'
+         RAVEN_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:raven_conda-gpu-v1.1.10.simg'
+         SMARTDENOVO_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:smartdenovo.simg'
+         SHASTA_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:shasta-0.5.1.simg'
    ###### CIRCULARISATION
          CIRCLATOR_SIMG : 'shub://SouthGreenPlatform/CulebrONT_pipeline:circlator-1.5.5.def'
    ###### POLISHERS:

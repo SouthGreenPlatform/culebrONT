@@ -21,6 +21,21 @@ run_canu:
     mem-per-cpu : '4'
     partition : "long"
 
+run_raven:
+    cpus-per-task : 8
+    mem-per-cpu : '4'
+    partition : "long"
+
+run_shasta:
+    cpus-per-task : 8
+    mem-per-cpu : '4'
+    partition : "long"
+
+run_smartdenovo:
+    cpus-per-task : 8
+    mem-per-cpu : '4'
+    partition : "long"
+
 #run_miniasm:
 #    cpus-per-task : 8
 #    mem-per-cpu : '4'

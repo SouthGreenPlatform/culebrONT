@@ -100,9 +100,10 @@ def check_config_dic(config):
         logger.info("CONFIG FILE CHECKING FAIL : you need to set True for at least one quality step (ASSEMBLY, POLISHING or CORRECTION)")
         raise ValueError("CONFIG FILE CHECKING FAIL : you need to set True for at least one quality step (ASSEMBLY, POLISHING or CORRECTION)")
     else:
-        if config["ASSEMBLY"]["CANU"] == False and config["ASSEMBLY"]["FLYE"] == False and config["ASSEMBLY"]["MINIASM"] == False:
-            logger.info("CONFIG FILE CHECKING FAIL : you need to set True for at least one Assembly tool (CANU, FLYE, MINIASM ...")
-            raise ValueError("CONFIG FILE CHECKING FAIL : you need to set True for at least one Assembly tool (CANU, FLYE, MINIASM ...)")
+        if config["ASSEMBLY"]["CANU"] == False and config["ASSEMBLY"]["FLYE"] == False and config["ASSEMBLY"]["MINIASM"] == False and config["ASSEMBLY"]["RAVEN"] == False and config["ASSEMBLY"]["SMARTDENOVO"] == False :
+            logger.info("CONFIG FILE CHECKING FAIL : you need to set True for at least one Assembly tool (CANU, FLYE, MINIASM, RAVEN, SMARTDENOVO ...")
+            raise ValueError("CONFIG FILE CHECKING FAIL : you need to set True for at least one Assembly tool (CANU, FLYE, MINIASM, RAVEN, SMARTDENOVO ...)")
+
 
 if (validate(config, "schemas/config.schema.yaml")) is not None:
     logger.info("CONFIG FILE CHECKING STRUCTURE FAIL : you need to verify confi.yaml KEYS:VALUES")
@@ -143,7 +144,7 @@ def getting_ext(chaine):
 
 ext_illumina = getting_ext(illumina)
 #print ('**********', ext_illumina)
-
+ext_fastq = getting_ext(fastq)
 
 # Declaring model variable to medaka
 if 'model' in config['DATA'].keys():
@@ -164,6 +165,13 @@ if config['ASSEMBLY']['FLYE']:
     ASSEMBLY_TOOLS.append("FLYE")
 if config['ASSEMBLY']['MINIASM']:
     ASSEMBLY_TOOLS.append("MINIASM")
+if config['ASSEMBLY']['RAVEN']:
+    ASSEMBLY_TOOLS.append("RAVEN")
+if config['ASSEMBLY']['SMARTDENOVO']:
+    ASSEMBLY_TOOLS.append("SMARTDENOVO")
+if config['ASSEMBLY']['SHASTA']:
+    ASSEMBLY_TOOLS.append("SHASTA")
+
 #print (ASSEMBLY_TOOLS)
 
 CORRECTION_TOOLS = []
@@ -230,11 +238,6 @@ def get_threads(rule, default):
         return int(cluster_config['__default__']['threads'])
     return default
 
-# def get_fastq(wildcards):
-#     for f in listdir(config['DATA']['FASTQ']):
-#         filename, file_extension = os.path.splitext(f)
-#         if filename == wildcards.fastq:
-#             return f"{config['DATA']['FASTQ']}{f}"
 
 def get_fastq(wildcards):
     for f in listdir(config['DATA']['FASTQ']):
@@ -524,30 +527,192 @@ rule run_minipolish:
         ln -s {output.gfa_minipolish} {output.info} 2>>{log.error}
         """
 
-############################### CIRCULARISATION POST CANU ##############################
 
+rule run_raven:
+    """
+    launch raven
+    """
+    threads: get_threads('run_raven', 8)
+    input:
+        fastq = get_fastq,
+    output:
+        fasta = f"{output_dir}{{fastq}}/RAVEN/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/RAVEN/ASSEMBLER/assembly.fasta",
+    log:
+        output = f"{output_dir}LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN.o",
+        error = f"{output_dir}LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN.e",
+    benchmark:
+        f"{output_dir}LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN-BENCHMARK.txt"
+    priority: 30
+    message:
+        """
+        Launching {rule}
+        threads: {threads}
+        input:
+            fastq: {input.fastq}
+        output:
+            fasta: {output.fasta}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        config['tools']['RAVEN_SIMG']
+    shell:
+        """
+        raven -p 2 -t {threads} {input.fastq} >{output.fasta} 2>{log.error}
+        rm $PWD/raven.cereal
+        """
+
+
+rule convert_fastq_to_fasta:
+    """
+    convert fastq or fastq.gz on fasta. use by shasta and smartdenovo 
+    """
+    threads: 4
+    input:
+        fastq = get_fastq,
+    params:
+        command = "zcat " if ext_fastq == '.gz' else  "cat ",
+    output:
+        reads_on_fasta = f"{output_dir}{{fastq}}/FASTQ2FASTA/{{fastq}}.fasta",
+    log:
+        output = f"{output_dir}LOGS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.o",
+        error = f"{output_dir}LOGS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.e",
+    benchmark:
+        f"{output_dir}LOGS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA-BENCHMARK.txt"
+    shell:
+        """
+        {params.command} {input.fastq} | awk 'NR%4==1||NR%4==2' - | sed 's/^@/>/g' 1> {output.reads_on_fasta} 2>{log.error}    
+        """
+
+rule run_smartdenovo:
+    """
+    launch smartdenovo
+    """
+    threads: get_threads('run_smartdenovo', 8)
+    input:
+        reads_on_fasta = rules.convert_fastq_to_fasta.output.reads_on_fasta,
+        fastq = get_fastq,
+    params:
+        prefix = "SMART",
+        mak = "SMART.mak",
+        dir = f"{output_dir}{{fastq}}/SMARTDENOVO/ASSEMBLER",
+        kmersize = f"16 " if f"{config['params']['SMARTDENOVO']['KMER_SIZE']}" == '' else f"{config['params']['SMARTDENOVO']['KMER_SIZE']}",
+        options = f"{config['params']['SMARTDENOVO']['OPTIONS']}",
+        out_tmp= f"{output_dir}{{fastq}}/SMARTDENOVO/ASSEMBLER/SMART.dmo.cns"
+    output:
+        fasta = f"{output_dir}{{fastq}}/SMARTDENOVO/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/SMARTDENOVO/ASSEMBLER/assembly.fasta",
+    log:
+        output = f"{output_dir}LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO.o",
+        error = f"{output_dir}LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO.e",
+    benchmark:
+        f"{output_dir}LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO-BENCHMARK.txt"
+    priority: 30
+    message:
+        """
+        Launching {rule}
+        threads: {threads}
+        input:
+            fastq: {input.fastq}
+        params:
+            prefix = {params.prefix},
+            mak = {params.mak}
+        output:
+            fasta: {output.fasta}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        config['tools']['SMARTDENOVO_SIMG']
+    shell:
+        """
+        cd {params.dir} 1>{log.output} 2>{log.error}
+        smartdenovo.pl {params.options} -t {threads} -k {params.kmersize} -p  {params.prefix} -c 1 {input.reads_on_fasta} 1>{params.mak} 2>>{log.error}
+        make -f {params.mak} 1>>{log.output} 2>>{log.error}
+        ln -s {params.out_tmp} {output.fasta} 1>>{log.output} 2>>{log.error}
+        """
+
+
+rule run_shasta:
+    """
+    launch shasta
+    """
+    threads: get_threads('run_shasta', 8)
+    input:
+        reads_on_fasta = rules.convert_fastq_to_fasta.output.reads_on_fasta,
+        fastq = get_fastq,
+    params:
+        out_dir = directory(f"{output_dir}{{fastq}}/SHASTA/ASSEMBLER/"),
+        cmd_mv = f"ln -s {output_dir}{{fastq}}/SHASTA/ASSEMBLER/ShastaRun/Assembly.fasta {output_dir}{{fastq}}/SHASTA/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR']  else f"{output_dir}{{fastq}}/SHASTA/ASSEMBLER/assembly{add_circular_name}.fasta ",
+        memory_mode = f"--memoryMode {config['params']['SHASTA']['MEM_MODE']}",
+        memory_backing = f"--memoryBacking {config['params']['SHASTA']['MEM_BACKING']}"
+    output:
+        fasta = f"{output_dir}{{fastq}}/SHASTA/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/SHASTA/ASSEMBLER/assembly.fasta",
+    log:
+        output = f"{output_dir}LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA.o",
+        error = f"{output_dir}LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA.e",
+    benchmark:
+        f"{output_dir}LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA-BENCHMARK.txt"
+    priority: 30
+    message:
+        """
+        Launching {rule}
+        threads: {threads}
+        input:
+            fastq: {input.reads_on_fasta}
+        output:
+            fasta: {output.fasta}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        config['tools']['SHASTA_SIMG']
+    shell:
+        """
+        cd {params.out_dir}
+        shasta-Linux-0.5.1 --command assemble --input {input.reads_on_fasta} {params.memory_mode} {params.memory_backing} --threads {threads} 1>{log.output} 2>{log.error}
+        {params.cmd_mv}
+        """
+
+############################### CIRCULARISATION POST CANU ##############################
+def draft_to_circlator(wildcards):
+    if 'CANU' in wildcards.assemblers:
+        return rules.run_canu.output.fasta
+    if  'SHASTA' in wildcards.assemblers:
+        return rules.run_shasta.output.fasta
+    if 'RAVEN' in wildcards.assemblers:
+        return rules.run_raven.output.fasta
+    if 'SMARTDENOVO' in wildcards.assemblers:
+        return rules.run_smartdenovo.output.fasta
+    else:
+        return 'None'
+
+#assemblies_to_circlator = "['CANU', 'SHASTA', 'RAVEN', 'SMARTDENOVO']"
 rule run_circlator:
     """
     launch Circlator
     """
     threads: get_threads('run_circlator', 4)
     input:
-        draft = rules.run_canu.output.fasta,
-        fastq = rules.run_canu.output.trim_corr_fq,
-        #fastq = get_fastq,
+        draft = draft_to_circlator,
+        fastq = rules.run_canu.output.trim_corr_fq if 'CANU' in f'{{assemblers}}' else get_fastq,
     output:
-        fasta = f"{output_dir}{{fastq}}/CANU/ASSEMBLER/assemblyCIRCULARISED.fasta",
-        info = f"{output_dir}{{fastq}}/CANU/ASSEMBLER/assembly_info.txt",
+        fasta = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED.fasta",
+        info = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assembly_info.txt",
     params:
-        log_mv = f"{output_dir}{{fastq}}/CANU/ASSEMBLER/circlator.log",
-        out_dir = directory(f"{output_dir}{{fastq}}/CANU/ASSEMBLER/CIRCLATOR/"),
+        log_mv = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/circlator.log",
+        out_dir = directory(f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/CIRCLATOR/"),
         options = f"{config['params']['CIRCLATOR']['OPTIONS']}",
     log:
-        output = f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_CANU.o",
-        error = f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_CANU.e",
+        output = f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}.o",
+        error = f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}.e",
     benchmark:
-        f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_CANU-BENCHMARK.txt"
+        f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}-BENCHMARK.txt"
     priority: 30
+    #wildcard_constraints:
+    #     assemblers = assemblies_to_circlator
     message:
         """
         Launching {rule}
@@ -590,9 +755,9 @@ rule tag_circular:
     output:
         tagged_fasta = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED_circTag.fasta"
     log:
-        output = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/tag_circular.log"
-        #output = f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_CANU.o",
-        #error = f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_CANU.e",
+        output = f"{output_dir}LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.o",
+        error = f"{output_dir}LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.e",
+        #output = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/tag_circular.log"
     benchmark:
         f"{output_dir}LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR-BENCHMARK.txt"
     priority: 30
@@ -606,15 +771,15 @@ rule tag_circular:
         output:
             tagged_fasta : {output.tagged_fasta}
         log:
-            output = {log.output}",
+            output : {log.output}
+            error :  {log.error}
         """
     singularity:
         config['tools']['MINICONDA_SIMG']
     conda: "envs/R_for_culebront_cenv.yml"
     shell:
         """
-        exec > >(tee "{log.output}") 2>&1
-        Rscript AdditionalScripts/tagCircSeq.R --seqFile="{input.fasta}" --logFile="{input.info}" --outFilePath="{output.tagged_fasta}"
+        Rscript AdditionalScripts/tagCircSeq.R --seqFile="{input.fasta}" --logFile="{input.info}" --outFilePath="{output.tagged_fasta}" 1>{log.output} 2>{log.error}
         """
 
 ################################ INDEXING ###################################
@@ -713,7 +878,7 @@ rule rotate_circular:
         "envs/R_for_culebront_cenv.yml"
     shell:
         """
-        Rscript AdditionalScripts/rotateCircSeqs.R --seqFile "{input.draft}" --outFilePath "{output.rotated}" 2>{log.error}
+        Rscript AdditionalScripts/rotateCircSeqs.R --seqFile "{input.draft}" --outFilePath "{output.rotated}" 1>{log.output} 2>{log.error}
         """
 
 rule run_nanopolish :
@@ -767,11 +932,11 @@ rule run_nanopolish :
         config['tools']['NANOPOLISH_SIMG']
     shell:
         """
-        seqtk seq -A {params.fastq} > {output.temp_fasta}
+        seqtk seq -A {params.fastq} 1>{output.temp_fasta} 2>{log.error}
         nanopolish index -d {params.fast5} {output.temp_fasta} 1>>{log.output} 2>>{log.error}
-        minimap2 -ax {params.preset} -t {threads} {input.draft} {output.temp_fasta} | samtools sort -o {output.temp_bam} -T reads.tmp 1>>{log.output} 2>>{log.error}
+        minimap2 -ax {params.preset} -t {threads} {input.draft} {output.temp_fasta} 2>>{log.error} | samtools sort -o {output.temp_bam} -T reads.tmp 1>>{log.output} 2>>{log.error}
         samtools index {output.temp_bam} 1>>{log.output} 2>>{log.error}
-        python3 /nanopolish/scripts/nanopolish_makerange.py {input.draft} --segment-length {params.segment} --overlap-length {params.overlap} > {params.liste_segments} 2>> {log.error} #TODO ce chemin peut changer
+        python3 /nanopolish/scripts/nanopolish_makerange.py {input.draft} --segment-length {params.segment} --overlap-length {params.overlap} 1> {params.liste_segments} 2>> {log.error} #TODO ce chemin peut changer
         while read LINE; do echo "$LINE"; nanopolish variants --consensus -t {threads} -o {params.vcf}-"$LINE" -r {output.temp_fasta} -b {output.temp_bam} -g {input.draft} {params.options} -w "$LINE"; done < {params.liste_segments} 1>>{log.output} 2>>{log.error}
         nanopolish vcf2fasta --skip-checks -g {input.draft} {params.vcf}-* 1>{output.fasta} 2>>{log.error}
         """
@@ -1474,9 +1639,7 @@ rule run_fixstart:
          "envs/run_circlator_cenv.yml"
     shell:
         """
-        exec > >(tee "{log.output}") 2>&1
-        
-        # inspect fasta titles for circular molecules and write their names in a file
+        # def to inspect fasta titles for circular molecules and write their names in a file
         list_lin_seqs()
         {{
           grep -o -E "^>.*$" $1 | grep -v -E "circular" | tr -d ">" > "$2"
@@ -1485,14 +1648,14 @@ rule run_fixstart:
         set +e
         list_lin_seqs "{input.assembly_file}" "$linSeqNamesFile"
         set -e
-        echo "##  $(date): processing {input.assembly_file} "
-        echo "##  Using circlator fixstart to rotate circular sequences so that they start at a dnaA gene (if found)"
-        echo "##  Ignoring the following linear sequences: $(cat $linSeqNamesFile)."
+        echo "##  $(date): processing {input.assembly_file}" 1>{log.output} 2>{log.error}
+        echo "##  Using circlator fixstart to rotate circular sequences so that they start at a dnaA gene (if found)" 1>>{log.output} 2>>{log.error}
+        echo "##  Ignoring the following linear sequences: $(cat $linSeqNamesFile)." 1>>{log.output} 2>>{log.error}
 
-        circlator fixstart --ignore="$linSeqNamesFile" "{input.assembly_file}" "{params.out_dir}"/startfixed_asm
-
-        exit 0
+        circlator fixstart --ignore="$linSeqNamesFile" "{input.assembly_file}" "{params.out_dir}"/startfixed_asm 1>>{log.output} 2>>{log.error}
         """
+# TODO: faire en python pour simplifier ce code
+
 
 rule run_mauve:
     threads:
@@ -1500,7 +1663,6 @@ rule run_mauve:
     input:
         #liste = expand(f"{rules.run_fixstart.output.fix_start_fasta}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=input_last()) if config['MSA']['FIXSTART'] else expand(f"{rules.preparing_fasta_to_quality.output.renamed}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=input_last())
         liste = expand(f"{rules.run_fixstart.output.fix_start_fasta}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS) if config['MSA']['FIXSTART'] else expand(f"{rules.preparing_fasta_to_quality.output.renamed}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS)
-
     params:
         out_dir = f"{output_dir}{{fastq}}/MAUVE_ALIGN/",
         circular = config['DATA']['CIRCULAR'],
