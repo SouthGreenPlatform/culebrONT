@@ -13,8 +13,8 @@ from snakemake.utils import read_job_properties
 from snakemake import load_configfile
 
 jobscript = sys.argv[-1]
-config = 'config.yaml'
-cluster_config = 'cluster_config.yaml'
+config = sys.argv[1] 
+cluster_config = sys.argv[2]
 
 #read_job_propeties def reads the job properties defined in a snakemake jobscript and return a dict containing information about the job
 job_properties = read_job_properties(jobscript)
