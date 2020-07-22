@@ -1,7 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name culebrONT
+#SBATCH --job-name ruffi-culebrONT
 #SBATCH --output slurm-%x_%j.log
 #SBATCH --error slurm-%x_%j.log
+#SBATCH --partition=normal 
 
 module load system/Miniconda3/1.0
 env=/home/$(whoami)/.conda/envs/snakemake
@@ -16,8 +17,8 @@ snakemake --unlock
 # SLURM JOBS WITHOUT PROFILES
 snakemake --nolock --use-conda --use-singularity --cores -p --verbose -s Snakefile \
 --latency-wait 60 --keep-going --restart-times 1 --rerun-incomplete  \
---configfile config-itrop.yaml \
---cluster "python3 slurm_wrapper.py" \
+--configfile config.yaml \
+--cluster "python3 slurm_wrapper.py config.yaml cluster_config.yaml " \
 --cluster-config cluster_config.yaml \
 --cluster-status "python3 slurm_status.py"
 
