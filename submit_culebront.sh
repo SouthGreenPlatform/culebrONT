@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name ruffi-culebrONT
+#SBATCH --job-name culebrONT
 #SBATCH --output slurm-%x_%j.log
 #SBATCH --error slurm-%x_%j.log
 #SBATCH --partition=normal 
