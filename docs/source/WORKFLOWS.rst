@@ -122,7 +122,7 @@ A *Fixstart* step is possible before Mauve MSA to improve alignment on circular 
 Specifically to Racon:
 
 
-* Racon can be launch recursively from 1 to 9 rounds. 3 or 4 are recommanded.
+* Racon can be launch recursively from 1 to 9 rounds. 2 or 3 are recommanded.
 
 Specifically to Medaka :
 
@@ -333,8 +333,8 @@ Please adapt this script also if you want to use wrappers or profiles.
    # SLURM JOBS WITH USING WRAPPER
    snakemake --nolock --use-conda --use-singularity --cores -p --verbose -s Snakefile \
    --latency-wait 60 --keep-going --restart-times 1 --rerun-incomplete  \
-   --configfile config-itrop.yaml \
-   --cluster "python3 slurm_wrapper.py" \
+   --configfile config.yaml \
+   --cluster "python3 slurm_wrapper.py config.yaml cluster_config.yaml" \
    --cluster-config cluster_config.yaml \
    --cluster-status "python3 slurm_status.py"
 

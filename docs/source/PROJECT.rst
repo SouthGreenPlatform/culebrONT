@@ -5,9 +5,9 @@ Citation
 
 Aurore Comte (IRD) and Julie Orjuela (IRD) developped CulebrONT.
 
-Sebastien Ravel (CIRAD), Florian Charriat (CIRAD) helped on SnakeMake bugs and tricks.
+Sebastien Ravel (CIRAD), Florian Charriat (CIRAD) helped on SnakeMake bugs, tricks and documentation.
 
-François Sabot (IRD) was involved in coverage tools implementation.
+François Sabot (IRD) was involved in coverage tools implementation and benchmarking.
 
 Ndomassi Tando (IRD) helped on Singularity containers creation.
 
