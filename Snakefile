@@ -58,7 +58,7 @@ else:
     path_config = workflow.overwrite_configfiles[0]
 
 #configfile:'config.yaml'
-#cluster_config: 'cluster_config.yaml'
+cluster_config: 'cluster_config.yaml'
 
 # --- Verification Configuration Files --- #
 def get_fastq_list():
@@ -228,15 +228,15 @@ draft_to_correction = f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/rac
 draft_to_correction_index_fai = f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta.fai" if int(nb)>=1 else f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/Assembly{add_circular_name}.fasta.fai"
 draft_to_correction_index_mmi = f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta.mmi" if int(nb)>=1 else f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/Assembly{add_circular_name}.fasta.mmi"
 
-# def get_threads(rule, default):
-#     """
-#     use threads define in cluster_config rule or rule default or default in snakefile
-#     """
-#     if rule in cluster_config and 'threads' in cluster_config[rule]:
-#         return int(cluster_config[rule]['threads'])
-#     elif '__default__' in cluster_config and 'threads' in cluster_config['__default__']:
-#         return int(cluster_config['__default__']['threads'])
-#     return default
+def get_threads(rule, default):
+    """
+    use threads define in cluster_config rule or rule default or default in snakefile
+    """
+    if rule in cluster_config and 'threads' in cluster_config[rule]:
+        return int(cluster_config[rule]['threads'])
+    elif '__default__' in cluster_config and 'threads' in cluster_config['__default__']:
+        return int(cluster_config['__default__']['threads'])
+    return default
 
 
 def get_fastq(wildcards):
@@ -353,7 +353,7 @@ rule run_flye:
     """
     launch flye
     """
-    threads: 8
+    threads: get_threads('run_flye', 8)
     input:
         fastq = get_fastq,
     output:
@@ -399,7 +399,7 @@ rule run_canu:
     """
     launch canu
     """
-    threads: 8
+    threads: get_threads('run_canu', 8)
     input:
         fastq = get_fastq,
     output:
@@ -448,7 +448,7 @@ rule run_miniasm:
     """
     launch miniasm
     """
-    threads: 4
+    threads: get_threads('run_miniasm', 4)
     input:
         fastq = get_fastq,
     output:
@@ -486,7 +486,7 @@ rule run_minipolish:
     """
     launch minipolish
     """
-    threads: 4
+    threads: get_threads('run_minipolish', 4)
     input:
         fastq = get_fastq,
         gfa_miniasm = rules.run_miniasm.output.gfa_miniasm
@@ -532,7 +532,7 @@ rule run_raven:
     """
     launch raven
     """
-    threads: 8
+    threads: get_threads('run_raven', 8)
     input:
         fastq = get_fastq,
     output:
@@ -589,7 +589,7 @@ rule run_smartdenovo:
     """
     launch smartdenovo
     """
-    threads: 8
+    threads: get_threads('run_smartdenovo', 8)
     input:
         reads_on_fasta = rules.convert_fastq_to_fasta.output.reads_on_fasta,
         fastq = get_fastq,
@@ -638,7 +638,7 @@ rule run_shasta:
     """
     launch shasta
     """
-    threads: 8
+    threads: get_threads('run_shasta', 8)
     input:
         reads_on_fasta = rules.convert_fastq_to_fasta.output.reads_on_fasta,
         fastq = get_fastq,
@@ -694,7 +694,7 @@ rule run_circlator:
     """
     launch Circlator
     """
-    threads: 4
+    threads: get_threads('run_circlator', 4)
     input:
         draft = draft_to_circlator,
         fastq = rules.run_canu.output.trim_corr_fq if 'CANU' in f'{{assemblers}}' else get_fastq,
@@ -748,7 +748,7 @@ rule tag_circular:
     """
     Tagging title of circular molecules in assembly fasta files
     """
-    threads: 1
+    threads: get_threads('tag_circular', 1)
     input:
         fasta = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED.fasta",
         info = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assembly_info.txt",
@@ -788,7 +788,7 @@ rule index_fasta_to_correction:
     """
     create a .fai and a .mmi for each assembly fasta
     """
-    threads: 4
+    threads: get_threads('index_fasta_to_correction', 4)
     input:
         draft = draft_to_correction
     output:
@@ -809,7 +809,7 @@ rule run_racon:
     """
     launch Racon recursively n times (given by config.yaml)
     """
-    threads: 4
+    threads: get_threads('run_racon', 4)
     input:
         draft = draft_to_racon,
         fastq = get_fastq,
@@ -849,7 +849,7 @@ rule rotate_circular:
     """
     Rotate circular
     """
-    threads: 4
+    threads: get_threads('rotate_circular', 4)
     input:
         draft = draft_to_rotate,
     output:
@@ -885,7 +885,7 @@ rule run_nanopolish :
     """
     launch makerange, consensus and vcf2fasta
     """
-    threads: 8
+    threads: get_threads('run_nanopolish', 8)
     input:
         draft = draft_to_correction,
     output:
@@ -945,7 +945,7 @@ rule run_medaka_train:
     """
     launching Medaka Train with fasta ref
     """
-    threads: 8
+    threads: get_threads('run_medaka_train', 8)
     input:
         draft = draft_to_correction,
         fastq = get_fastq,
@@ -998,7 +998,7 @@ rule run_medaka_consensus:
     """
     launching Medaka Consensus
     """
-    threads: 8
+    threads: get_threads('run_medaka_consensus', 8)
     input:
         draft = draft_to_correction,
         fastq = get_fastq,
@@ -1059,7 +1059,7 @@ rule preparing_fasta_to_quality:
     """
     preparing fasta to quality
     """
-    threads: 2
+    threads: get_threads('preparing_fasta_to_quality', 2)
     input:
         fasta = fasta_to_busco
     output:
@@ -1096,7 +1096,7 @@ rule run_quast:
     """
     preparing fasta to quast and launch quast
     """
-    threads: 4
+    threads: get_threads('run_quast', 4)
     input:
         liste = expand(rules.preparing_fasta_to_quality.output.renamed, fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS),
     output:
@@ -1145,7 +1145,7 @@ rule run_busco:
     """
     BUSCO v4 assessing genome assembly and annotation completeness with Benchmarking Universal Single-Copy Orthologs v10
     """
-    threads: 4
+    threads: get_threads('run_busco', 4)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed
     output:
@@ -1193,7 +1193,7 @@ rule run_diamond:
     """
     running diamond to blobtools
     """
-    threads: 4
+    threads: get_threads('run_diamond', 4)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
     output:
@@ -1238,7 +1238,7 @@ rule run_minimap2:
     """
     running minimap2 in mode mapping ONT
     """
-    threads: 8
+    threads: get_threads('run_minimap2', 8)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
         fastq = get_fastq,
@@ -1280,7 +1280,7 @@ rule run_blobtools:
     """
     blobtools v1
     """
-    threads: 8
+    threads: get_threads('run_blobtools', 8)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
         sorted_bam = rules.run_minimap2.output.bam,
@@ -1333,7 +1333,7 @@ rule run_weesam:
     """
     weesam runs only in the last assemblies
     """
-    threads: 4
+    threads: get_threads('run_weesam', 4)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
         fastq = get_fastq,
@@ -1377,7 +1377,7 @@ rule run_mummer:
     """
     This rule run nucmer for assemblytics
     """
-    threads: 4
+    threads: get_threads('run_mummer', 4)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
         ref = ref
@@ -1425,7 +1425,7 @@ rule run_assemblytics:
     """
     Assemblytics analyze your assembly by comparing it to a reference genome https://github.com/MariaNattestad/assemblytics
     """
-    threads: 4
+    threads: get_threads('run_assemblytics', 4)
     input:
         delta = rules.run_mummer.output.delta,
     output:
@@ -1474,7 +1474,7 @@ rule run_flagstat:
     """
     calculate stats from mapping: use to quality report
     """
-    threads: 4
+    threads: get_threads('run_flagstat', 4)
     input:
         bam = rules.run_minimap2.output.bam,
     output:
@@ -1506,7 +1506,7 @@ rule combined_fastq:
     """
     zcat des fastq.gz. fastq sequences must to be decompressed to KAT.
     """
-    threads: 2
+    threads: get_threads('combined_fastq', 2)
     input:
         illumina_rep = illumina
     params:
@@ -1542,7 +1542,7 @@ rule run_KAT:
     This shows the completeness of an assembly, i.e. are all the reads assembled into contigs representative of the sequence data.
     https://kat.readthedocs.io/en/latest/using.html
     """
-    threads: 4
+    threads: get_threads('run_KAT', 4)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
         combined_data = rules.combined_fastq.output.combined_data,
@@ -1607,7 +1607,7 @@ rule run_fixstart:
     """
     Standardizing starting coordinate of bacterial genome assemblies with fixstart module of Circlator.
     """
-    threads: 1
+    threads: get_threads('run_fixstart', 1)
     input:
         assembly_file = rules.preparing_fasta_to_quality.output.renamed
     output:
@@ -1658,10 +1658,12 @@ rule run_fixstart:
 
 
 rule run_mauve:
-    threads: 8
+    threads:
+        get_threads('run_mauve', 8)
     input:
         #liste = expand(f"{rules.run_fixstart.output.fix_start_fasta}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=input_last()) if config['MSA']['FIXSTART'] else expand(f"{rules.preparing_fasta_to_quality.output.renamed}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=input_last())
         liste = expand(f"{rules.run_fixstart.output.fix_start_fasta}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS) if config['MSA']['FIXSTART'] else expand(f"{rules.preparing_fasta_to_quality.output.renamed}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS)
+
     params:
         out_dir = f"{output_dir}{{fastq}}/MAUVE_ALIGN/",
         circular = config['DATA']['CIRCULAR'],
@@ -1700,7 +1702,7 @@ rule rule_graph:
     """
     run dag on {rule}
     """
-    threads: 1
+    threads: get_threads('rule_graph', 1)
     input:
         conf = str(path_config),
     params:
@@ -1732,7 +1734,7 @@ rule run_stats:
     """
     run stat
     """
-    threads: 1
+    threads: get_threads('run_stats', 1)
     input:
         fastq = get_fastq,
         summary = expand(rules.run_busco.output.summary, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = BUSCO_STEPS)
@@ -1754,7 +1756,7 @@ rule run_benchmark_time:
     """
     run benchmark
     """
-    threads: 1
+    threads: get_threads('run_benchmark_time', 1)
     input:
         fastq = get_fastq,
         summary = expand(rules.run_busco.output.summary, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = BUSCO_STEPS)
@@ -1780,7 +1782,7 @@ rule run_report:
     """
     print report
     """
-    threads: 1
+    threads: get_threads('run_report', 1)
     input:
         stat =  expand(rules.run_stats.output.stat,fastq=FASTQ),
         bench = expand(rules.run_benchmark_time.output.stat,fastq=FASTQ),
