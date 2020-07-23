@@ -6,7 +6,9 @@ from snakemake.logging import logger
 
 '''
 wrap to pass cluster configuration parameters to --cluster snake option in culebrONT
+==>  ONLY TO SLURM !!
 '''
+
 import os
 import sys
 from snakemake.utils import read_job_properties
@@ -15,6 +17,7 @@ from snakemake import load_configfile
 jobscript = sys.argv[-1]
 config = sys.argv[1] 
 cluster_config = sys.argv[2]
+#logger.info(f"INFO: {jobscript} {config} {cluster_config}")
 
 #read_job_propeties def reads the job properties defined in a snakemake jobscript and return a dict containing information about the job
 job_properties = read_job_properties(jobscript)
@@ -24,12 +27,11 @@ cluster_properties = load_configfile(cluster_config)
 
 rule = job_properties['rule']
 jobid = job_properties['jobid']
-cluster = job_properties['cluster']
 log = rule
 
-#print(cluster_properties)
-
-#logger.info("cluster properties : ")
+#logger.info("INFO job properties:")
+#logger.info(job_properties)
+#logger.info("INFO cluster properties : ")
 #logger.info(cluster_properties)
 
 #"cluster": {"cpus-per-task": 4, "ntasks": 1, "mem-per-cpu": "2", "partition": "normal", "output": "logs/stdout/run_flye/fastq=5percentB1-1", "error": "logs/error/run_flye/fastq=5percentB1-1"}}
@@ -54,17 +56,9 @@ except (AttributeError, KeyError):
     pass
 
 # recovery cpu per task from dict properties
-cpus_per_task = job_properties['threads']
 outdir = config_properties['DATA']['OUTPUT']
 logdir = os.path.join(outdir, "slurm_log")
 os.makedirs(logdir, exist_ok=True)
-
-#logger.info("cluster properties partition : ")
-#if rule in cluster_properties :
-#    logger.info("cluster properties partition : ")
-#    logger.info(cluster_properties[rule]['partition'])
-#    logger.info("cluster properties mem-per-cpu : ")
-#    logger.info(cluster_properties[rule]['mem-per-cpu'])
 
 # getting ressources from cluster config given by user
 def get_ressources(rule):
@@ -74,17 +68,18 @@ def get_ressources(rule):
     if rule in cluster_properties and 'partition' in cluster_properties[rule]:
        queue = cluster_properties[rule]['partition']
        mempercpu = cluster_properties[rule]['mem-per-cpu']
-       return f"--partition {queue} --mem-per-cpu {mempercpu}G"
-    #elif '__default__' in cluster_properties and 'partition' in cluster_properties['__default__']:
+       cpus = cluster_properties[rule]['cpus-per-task']
+       return f"--partition {queue} --mem-per-cpu {mempercpu}G --cpus-per-task {cpus} "
     else:
        queue = cluster_properties['__default__']['partition']
        mempercpu = cluster_properties['__default__']['mem-per-cpu']
-       return f'--partition {queue} --mem-per-cpu {mempercpu}G'
+       cpus = cluster_properties['__default__']['cpus-per-task']
+       return f'--partition {queue} --mem-per-cpu {mempercpu}G --cpus-per-task {cpus} '
     
     
 partition = get_ressources(rule)
 
-sbatch = f'sbatch --parsable --job-name {rule} {partition} --cpus-per-task {cpus_per_task} --ntasks 1 --output {logdir}/{log}.log_%j --error {logdir}/{log}.log_%j'
+sbatch = f'sbatch --parsable --job-name {rule} {partition} --ntasks 1 --output {logdir}/{log}.log_%j --error {logdir}/{log}.log_%j'
 
 # read jobscript and insert information such as node, used and memory
 with open(jobscript, "r") as j:
@@ -100,7 +95,7 @@ with open(jobscript, "w") as j:
     j.writelines(scripts)
 
 cmdline = " ".join([sbatch, jobscript])
+logger.info(f'INFO : {cmdline}')
 
 os.system(cmdline)
-#print(cmdline)
 
