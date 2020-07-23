@@ -230,14 +230,22 @@ draft_to_correction_index_mmi = f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING
 
 def get_threads(rule, default):
     """
-    use threads define in cluster_config rule or rule default or default in snakefile
+    give threads or 'cpus-per-task from cluster_config rule : threads to SGE and cpus-per-task to SLURM
     """
+#    if rule in cluster_config and 'cpus-per-task' in cluster_config[rule]:
+#        return int(cluster_config[rule]['cpus-per-task'])
+#    elif '__default__' in cluster_config and 'cpus-per-task' in cluster_config['__default__']:
+#        return int(cluster_config['__default__']['cpus-per-task'])
+#    return default
     if rule in cluster_config and 'threads' in cluster_config[rule]:
         return int(cluster_config[rule]['threads'])
+    elif rule in cluster_config and 'cpus-per-task' in cluster_config[rule]:
+        return int(cluster_config[rule]['cpus-per-task'])
+    elif '__default__' in cluster_config and 'cpus-per-task' in cluster_config['__default__']:
+        return int(cluster_config['__default__']['cpus-per-task'])
     elif '__default__' in cluster_config and 'threads' in cluster_config['__default__']:
         return int(cluster_config['__default__']['threads'])
     return default
-
 
 def get_fastq(wildcards):
     for f in listdir(config['DATA']['FASTQ']):
