@@ -4,7 +4,7 @@
 #SBATCH --error slurm-%x_%j.log
 
 module load system/Miniconda3/1.0
-env=/home/$(whoami)/.conda/envs/snakemake
+env=${HOME}/.conda/envs/snakemake
 [ ! -d $env ] && echo -e "## [$(date) - culebrONT]\t Creating conda environment for snakemake" && conda env create -f envs/environment.yaml -n snakemake
 
 source activate snakemake
