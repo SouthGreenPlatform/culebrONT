@@ -71,7 +71,7 @@ suppressMessages(library('gridExtra', warn.conflict = FALSE, quietly = TRUE))
 
 ```{r, echo= FALSE, message = FALSE, warning = FALSE}
 opts_knit$set(root.dir = snakemake@params$out_dir)
-outdir <- snakemake@params$outdir
+outdir <- snakemake@params$out_dir_report
 ```
 
 # Home{.tabset}
@@ -80,9 +80,9 @@ outdir <- snakemake@params$outdir
 ```{r, echo= FALSE, message = FALSE, warning=FALSE}
 knitr::include_graphics(here::here("SupplementaryFiles/culebront_logo.png"))
 ```
-**CulebrONT in a Snakemake workflow available on [github](https://github.com/SouthGreenPlatform/CulebrONT_pipeline) created by:**
+**CulebrONT is a Snakemake workflow available on [github](https://github.com/SouthGreenPlatform/CulebrONT_pipeline) created by:**
 
-J. Orjuela (IRD), A. Comte (IRD), Bao Tram Vi (IRD), S. Ravel (CIRAD), F. Charriat (CIRAD), F. Sabot (IRD) and S. Cunnac (IRD),
+J.Orjuela (IRD), A.Comte (IRD), T.V Bao (IRD), S.Ravel (CIRAD), F.Charriat (CIRAD), F.Sabot (IRD) and S.Cunnac (IRD)
 
 
 For more quality outputs you can check in the quality output directory.
@@ -98,7 +98,9 @@ For more quality outputs you can check in the quality output directory.
 * WEESAM : https://github.com/centre-for-virus-research/weeSAM
 
 
-Licencied under CeCill-C (http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html) and GPLv3 Intellectual property belongs to IRD and authors
+Licencied under CeCill-C (http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html) and GPLv3.
+
+Intellectual property belongs to IRD and authors
 
 </div>
 
@@ -106,6 +108,12 @@ Licencied under CeCill-C (http://www.cecill.info/licences/Licence_CeCILL-C_V1-en
 
 ```{r, echo= FALSE, message = FALSE, warning = FALSE}
   knitr::include_graphics(snakemake@input$dag, dpi="500")
+```
+
+# Config file Parameters{.tabset .tabset-fade .tabset-pills}
+```{r, echo= FALSE, message = FALSE, warning = FALSE}
+  config_yaml <- yaml.load_file(snakemake@params$conf)
+  knitr::knit_print(config_yaml, dpi="500")
 ```
 
 # Benchmark{.tabset}
@@ -116,14 +124,16 @@ DT::datatable(matrix())
 
 ```{r, results='asis', echo= FALSE, message = FALSE, warning = FALSE}
 listeFastq <- snakemake@params$out_dir
-fichiers <- dir(listeFastq, include.dirs = TRUE)
+#fichiers <- dir(listeFastq, include.dirs = TRUE)
+fichiers <- snakemake@params$fastq_list
+out_dir <- snakemake@params$out_dir
 for (i in 1:length(fichiers)) {
    cat(sprintf("\n\n## %s\n\n", fichiers[i]))
    cat("\n\n")
    htmltools::p("TIME IN SECOND :")
    cat("\n\n")
 
-   data <- read.csv(paste0(fichiers[i],"/Stats_benchmark.csv"),
+   data <- read.csv(paste0(out_dir,"/",fichiers[i],"/REPORT/Stats_benchmark.csv"),
                       header = FALSE,
                       sep=",",
                       dec =".")
@@ -173,13 +183,14 @@ plotly::ggplotly(ggplot2::ggplot())
 
 ```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE}
 listeFastq <- snakemake@params$out_dir
-fichiers <- dir(listeFastq, include.dirs = TRUE)
+# <- dir(listeFastq, include.dirs = TRUE)
+fichiers <- snakemake@params$fastq_list
  for (i in 1:length(fichiers)) {
 
      cat(sprintf("\n\n## %s\n\n", fichiers[i]))
      cat("\n\n")
 
-    data <- read.csv(paste0(fichiers[i],"/Stats_busco.csv"),
+    data <- read.csv(paste0(fichiers[i],"/REPORT/Stats_busco.csv"),
                           header = TRUE,
                           row.names=1,
                           sep=",",
@@ -230,7 +241,8 @@ QUAST is a good starting point to help evaluate the quality of assemblies. It pr
 
 ```{r, results='asis', echo= FALSE, message = FALSE, warning = FALSE}
 listeFastq <- snakemake@params$out_dir
-fichiers <- dir(listeFastq, include.dirs = TRUE)
+fichiers <- snakemake@params$fastq_list
+#fichiers <- dir(listeFastq, include.dirs = TRUE)
   for (i in 1:length(fichiers)) {
     cat(sprintf("\n\n## %s\n\n",fichiers[i]))
     cat("\n\n")
@@ -242,7 +254,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
     #       height='600'
     #)
     #))
-       data=read.csv(file = paste0(outdir,"/",fichiers[i], "/QUAST/quast_results/report.tsv"), sep = "\t", fill = TRUE)
+       data=read.csv(file = paste0(fichiers[i], "/AGGREGATED_QC/QUAST_RESULTS/report.tsv"), sep = "\t", fill = TRUE)
        cat(knitr::knit_print(
        DT::datatable(data,
           width = "100%",
@@ -264,10 +276,10 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
   ))
     cat("\n\n")
     cat("Cumulative length plot shows the growth of contig lengths. On the x-axis, contigs are ordered from the largest to smallest. The y-axis gives the size of the x largest contigs in the assembly.")
-    cat(paste0("![Cumulative Plot](",paste0(outdir,"/",fichiers[i],"/QUAST/quast_results/basic_stats/cumulative_plot.pdf")),"){width=100% height=500px}")
+    cat(paste0("![Cumulative Plot](",paste0(listeFastq,"/",fichiers[i], "/AGGREGATED_QC/QUAST_RESULTS/basic_stats/cumulative_plot.pdf"),")"),",{width=100% height=500px}")
     cat("\n\n")
     cat("GC content plot shows the distribution of GC content in the contigs.The x value is the GC percentage (0 to 100 %).The y value is the number of non-overlapping 100 bp windows which GC content equals x %.For a single genome, the distribution is typically Gaussian. However, for assemblies with contaminants, the GC distribution appears to be a superposition of Gaussian distributions, giving a plot with multiple peaks.")
-    cat(paste0("![GC content Plot](",paste0(outdir,"/",fichiers[i],"/QUAST/quast_results/basic_stats/GC_content_plot.pdf"),"){width=100% height=500px}"))
+    cat(paste0("![GC content Plot](",paste0(listeFastq,"/",fichiers[i], "/AGGREGATED_QC/QUAST_RESULTS/basic_stats/GC_content_plot.pdf"),"){width=100% height=500px}"))
 }
 ```
 
@@ -289,7 +301,8 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
     htmltools::p("During the sequence quality assessment stage we tried to discern whether contamination was present. Sometimes this is not feasible at the read level. By plotting Contig GC content vs Contig Read Coverage we can look for clusters of contigs that share similar coverage. The appearance of multiple clusters can indicate multiple organisms. Occasionally, contigs can also be taxonomically classified, providing further evidence for contaminants.")
 
     listeFastq <- snakemake@params$out_dir
-    fichiers <- dir(listeFastq, include.dirs = TRUE)
+    #fichiers <- dir(listeFastq, include.dirs = TRUE)
+    fichiers <- snakemake@params$fastq_list
     listeAssembler <-snakemake@params$liste_assembler
     out_dir <- config_yaml$DATA$OUTPUT
     for (i in 1:length(fichiers)) {
@@ -304,33 +317,33 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
                 if (isTRUE(config_yaml$CORRECTION$NANOPOLISH)){
                   cat("*NANOPOLISH*")
                   cat("\n\n")
-                  cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/read_cov.png")),")"))
+                  cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/read_cov.png")),")"))
                   cat("\n\n")
-                  cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/blob.png")),")"))
+                  cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/blob.png")),")"))
                 }
                 if (isTRUE(config_yaml$CORRECTION$MEDAKA)){
                   cat("*MEDAKA*")
                   cat("\n\n")
-                  cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/BLOBTOOLS/read_cov.png")),")"))
+                  cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/BLOBTOOLS/read_cov.png")),")"))
                   cat("\n\n")
-                  cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/BLOBTOOLS/blob.png")),")"))
+                  cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/BLOBTOOLS/blob.png")),")"))
                   cat("\n\n")
                 }
            }
           else if(isTRUE(config_yaml$QUALITY$POLISHING)){
              cat("**POLISHING STEP**")
              cat("\n\n")
-             cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING_RACON/BLOBTOOLS/read_cov.png")),")"))
+             cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_POLISHING_RACON/BLOBTOOLS/read_cov.png")),")"))
              cat("\n\n")
-             cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/blob.png")),")"))
+             cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/blob.png")),")"))
              cat("\n\n")
            }
           else if(isTRUE(config_yaml$QUALITY$ASSEMBLY)){
              cat("**ASSEMBLY STEP**")
              cat("\n\n")
-             cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/BLOBTOOLS/read_cov.png")),")"))
+             cat(paste0("![ReadCovPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/BLOBTOOLS/read_cov.png")),")"))
              cat("\n\n")
-             cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/blob.png")),")"))
+             cat(paste0("![BlobPlots](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/BLOBTOOLS/blob.png")),")"))
              cat("\n\n")
            }
         }
@@ -342,9 +355,10 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
   if (isTRUE(Assemblytics_bool)){
     cat(sprintf("\n\n# %s\n\n","Assemblytics{.tabset}"))
     listeFastq <- snakemake@params$out_dir
-    fichiers <- dir(listeFastq, include.dirs = TRUE)
+    #fichiers <- dir(listeFastq, include.dirs = TRUE)
+    fichiers <- snakemake@params$fastq_list
     listeAssembler <-snakemake@params$liste_assembler
-    out_dir <- config_yaml$DATA$OUTPUT
+    out_dir <- snakemake@params$out_dir
     for (i in 1:length(fichiers)) {
         cat(sprintf("\n\n## %s\n\n",fichiers[i]))
         cat("\n\n")
@@ -356,9 +370,9 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
              cat("\n\n")
                 if (isTRUE(config_yaml$CORRECTION$NANOPOLISH)){
                   cat("*NANOPOLISH*")
-                  cat(paste0("![dotplot](",paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png"),")"))
-                  x = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")
-                  y = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")
+                  cat(paste0("![dotplot](",paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png"),")"))
+                  x = paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")
+                  y = paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")
                     #img1 <-  grid::rasterGrob(as.raster(png::readPNG(x)),width=1,interpolate = FALSE)
                     #img2 <-  grid::rasterGrob(as.raster(png::readPNG(y)),width=1,interpolate = FALSE)
                     #gridExtra::grid.arrange(img1, img2, ncol=2, newpage = TRUE)
@@ -366,30 +380,30 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
                    #p1 <- cowplot::ggdraw() + cowplot::draw_image(x, scale = 1)
                    #p2 <- cowplot::ggdraw() + cowplot::draw_image(y, scale = 1)
                    #knitr::knit_print((cowplot::plot_grid(p2, p1, ncol = 2, scale = c(0.9,1), rel_widths = c(1, 2))))
-                  cat("![Nchart](",paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png"),") ![Variants Distribution](",paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png"),")", sep ="")
+                  cat("![Nchart](",paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png"),") ![Variants Distribution](",paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png"),")", sep ="")
                 }
                 if (isTRUE(config_yaml$CORRECTION$MEDAKA)){
                   cat("*MEDAKA*")
                   cat("\n\n")
-                  cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
+                  cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
                   cat("\n\n")
-                  cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"),paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
+                  cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"),paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
                   cat("\n\n")
                 }
            }
           else if(isTRUE(config_yaml$QUALITY$POLISHING)){
              cat("**POLISHING STEP**")
              cat("\n\n")
-             cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
-             cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"))
-             cat(paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
+             cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_POLISHING/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
+             cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_POLISHING/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"))
+             cat(paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_POLISHING/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
            }
           else if(isTRUE(config_yaml$QUALITY$ASSEMBLY)){
              cat("**ASSEMBLY STEP**")
              cat("\n\n")
-             cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
-             cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"))
-             cat(paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
+             cat(paste0("![dotplot](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png")),")"))
+             cat(paste0("![Nchart](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png")),")"))
+             cat(paste0("![Variants Distribution](",here::here(paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png")),")"))
            }
         }
     }
@@ -400,9 +414,10 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
   if (isTRUE(Weesam_bool)){
     cat(sprintf("\n\n# %s\n\n","Weesam{.tabset}"))
     listeFastq <- snakemake@params$out_dir
-    fichiers <- dir(listeFastq, include.dirs = TRUE)
+    #fichiers <- dir(listeFastq, include.dirs = TRUE)
+    fichiers <- snakemake@params$fastq_list
     listeAssembler <-snakemake@params$liste_assembler
-    out_dir <- config_yaml$DATA$OUTPUT
+    out_dir <- snakemake@params$out_dir
     for (i in 1:length(fichiers)) {
         cat(sprintf("\n\n## %s\n\n",fichiers[i]))
         cat("\n\n")
@@ -418,7 +433,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
                   cat(knitr::knit_print(
                     htmltools::tags$iframe(
                            title = 'weesam for Nanopolish correction',
-                           src=paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
+                           src=paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
                            width='100%',
                            height='600'
                    )
@@ -430,7 +445,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
                   cat(knitr::knit_print(
                     htmltools::tags$iframe(
                            title = 'weesam for medaka correction',
-                           src=paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
+                           src=paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
                            width='100%',
                            height='600'
                    )
@@ -443,7 +458,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
              cat(knitr::knit_print(
                     htmltools::tags$iframe(
                            title = 'weesam for polishing',
-                           src=paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING_RACON/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
+                           src=paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_POLISHING_RACON/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
                            width='100%',
                            height='600'
                    )
@@ -455,7 +470,7 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
              cat(knitr::knit_print(
                     htmltools::tags$iframe(
                            title = 'weesam for Assembly',
-                           src=paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
+                           src=paste0(out_dir,"/",fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/WEESAM/minimap2mapping_html_results/minimap2mapping.html"),
                            width='100%',
                            height='600'
                    )
@@ -472,9 +487,10 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
   if (isTRUE(Kat_bool)){
     cat(sprintf("\n\n# %s\n\n","KAT{.tabset}"))
     listeFastq <- snakemake@params$out_dir
-    fichiers <- dir(listeFastq, include.dirs = TRUE)
+    #fichiers <- dir(listeFastq, include.dirs = TRUE)
+    fichiers <- snakemake@params$fastq_list
     listeAssembler <-snakemake@params$liste_assembler
-    out_dir <- config_yaml$DATA$OUTPUT
+    out_dir <- snakemake@params$out_dir
     for (i in 1:length(fichiers)) {
         cat(sprintf("\n\n## %s\n\n",fichiers[i]))
         cat("\n\n")
@@ -486,10 +502,10 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
              cat("\n\n")
                 if (isTRUE(config_yaml$CORRECTION$NANOPOLISH)){
                   cat("*NANOPOLISH*")
-                  y = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat.gcp.mx.png")
-                  z = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat.hist.png")
-                  w = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat-density.png")
-                  q = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat-spectra-cn.png")
+                  y = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat.gcp.mx.png")
+                  z = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat.hist.png")
+                  w = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat-density.png")
+                  q = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_NANOPOLISH/KAT/kat-spectra-cn.png")
                     img1 <-  grid::rasterGrob(as.raster(png::readPNG(y)),width=1,interpolate = FALSE)
                     img2 <-  grid::rasterGrob(as.raster(png::readPNG(z)),width=1,interpolate = FALSE)
                     img3 <-  grid::rasterGrob(as.raster(png::readPNG(w)),width=1,interpolate = FALSE)
@@ -498,10 +514,10 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
                 }
                 if (isTRUE(config_yaml$CORRECTION$MEDAKA)){
                   cat("*MEDAKA*")
-                  y = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat.gcp.mx.png")
-                  z = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat.hist.png")
-                  w = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat-density.png")
-                  q = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat-spectra-cn.png")
+                  y = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat.gcp.mx.png")
+                  z = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat.hist.png")
+                  w = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat-density.png")
+                  q = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_CORRECTION_MEDAKA/KAT/kat-spectra-cn.png")
                     img1 <-  grid::rasterGrob(as.raster(png::readPNG(y)),width=1,interpolate = FALSE)
                     img2 <-  grid::rasterGrob(as.raster(png::readPNG(z)),width=1,interpolate = FALSE)
                     img3 <-  grid::rasterGrob(as.raster(png::readPNG(w)),width=1,interpolate = FALSE)
@@ -511,10 +527,10 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
            }
           else if(isTRUE(config_yaml$QUALITY$POLISHING)){
              cat("**POLISHING STEP**")
-                  y = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat.gcp.mx.png")
-                  z = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat.hist.png")
-                  w = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat-density.png")
-                  q = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat-spectra-cn.png")
+                  y = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat.gcp.mx.png")
+                  z = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat.hist.png")
+                  w = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat-density.png")
+                  q = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_POLISHING/KAT/kat-spectra-cn.png")
                     img1 <-  grid::rasterGrob(as.raster(png::readPNG(y)),width=1,interpolate = FALSE)
                     img2 <-  grid::rasterGrob(as.raster(png::readPNG(z)),width=1,interpolate = FALSE)
                     img3 <-  grid::rasterGrob(as.raster(png::readPNG(w)),width=1,interpolate = FALSE)
@@ -523,10 +539,10 @@ fichiers <- dir(listeFastq, include.dirs = TRUE)
            }
           else if(isTRUE(config_yaml$QUALITY$ASSEMBLY)){
              cat("**ASSEMBLY STEP**")
-                  y = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat.gcp.mx.png")
-                  z = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat.hist.png")
-                  w = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat-density.png")
-                  q = paste0(outdir,"/",fichiers[i],"/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat-spectra-cn.png")
+                  y = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat.gcp.mx.png")
+                  z = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat.hist.png")
+                  w = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat-density.png")
+                  q = paste0(out_dir,fichiers[i],"/ASSEMBLERS/",listeAssembler[j],"/QUALITY/STEP_ASSEMBLY/KAT/kat-spectra-cn.png")
                     img1 <-  grid::rasterGrob(as.raster(png::readPNG(y)),width=1,interpolate = FALSE)
                     img2 <-  grid::rasterGrob(as.raster(png::readPNG(z)),width=1,interpolate = FALSE)
                     img3 <-  grid::rasterGrob(as.raster(png::readPNG(w)),width=1,interpolate = FALSE)

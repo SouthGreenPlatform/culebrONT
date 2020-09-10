@@ -97,23 +97,21 @@ KAT quality tool can be activate but Illumina reads are mandatory in this case.
 .. code-block:: yaml
 
    #### Others quality tools
+       FIXSTART: True
        WEESAM: True
        BLOBTOOLS: True
        ASSEMBLYTICS: True
        KAT: True
 
-Alignment of various assemblies **for small genomes (<10-20Mbp)** is also possible by using Mauve. Mauve will compared each state of the assembly (Raw, Polished and Corrected) for each assembler used.
-
-A *Fixstart* step is possible before Mauve MSA to improve alignment on circular molecules.
-
-
-* Fixstart will be deactivated if CIRCULAR is False
+* Alignment of various assemblies **for small genomes (<10-20Mbp)** is also possible by using Mauve. Mauve will compared assembly activated on QUALITY key (ASSEMBLY and/or POLISHING and/or CORRECTION) for each assembler used.
+* Before launch Mauve MSA to improve alignment on circular molecules is recommended to activate *Fixstart* step.
+* In any case, Fixstart will be deactivated if CIRCULAR is False
 * Only activate MAUVE if you have more than one sample and more than one quality step.
+
 
 .. code-block:: yaml
 
    MSA:
-       FIXSTART: True
        MAUVE: True
 
 4. Parameters for some specific tools
@@ -122,7 +120,7 @@ A *Fixstart* step is possible before Mauve MSA to improve alignment on circular 
 Specifically to Racon:
 
 
-* Racon can be launch recursively from 1 to 9 rounds. 2 or 3 are recommanded.
+* Racon can be launch recursively from 1 to 9 rounds. 2 or 3 are recommended.
 
 Specifically to Medaka :
 
@@ -134,55 +132,62 @@ Standard parameters used:
 
 .. code-block:: yaml
 
-   ############ PARAMS ################
-   params:
-       MINIMAP2:
-           PRESET_OPTION: 'map-pb' # -x minimap2 preset option is map-pb by default (map-pb, map-ont etc)
-       CANU:
-           MAX_MEMORY: '15G'
-           OPTIONS: '-fast'
-       SMARTDENOVO:
-            KMER_SIZE: '16'
+
+    ############ PARAMS ################
+    params:
+        MINIMAP2:
+            PRESET_OPTION: 'map-pb' # -x minimap2 preset option is map-pb by default (map-pb, map-ont etc)
+        FLYE:
+            OPTIONS: ''
+        CANU:
+            MAX_MEMORY: '15G'
+            OPTIONS: '-fast'
+        SMARTDENOVO:
+            KMER_SIZE: 16
             OPTIONS: '-J 5000'
-       SHASTA:
+        SHASTA:
             MEM_MODE: 'filesystem'
             MEM_BACKING: 'disk'
-       CIRCLATOR:
-           OPTIONS: ''
-       RACON:
-           RACON_ROUNDS: 2 #1 to 9
-       NANOPOLISH:
-           # segment length to split assembly and correct it  default=50000
-           NANOPOLISH_SEGMENT_LEN: '50000'
-           # overlap length between segments  default=200
-           NANOPOLISH_OVERLAP_LEN: '200'
-           OPTIONS: ''
-       MEDAKA:
-           # if 'MEDAKA_TRAIN_WITH_REF' is True, Medaka launchs training using the reference found in DATA REF param. Medaka does not take in count other Medaka model parameters below.
-           MEDAKA_TRAIN_WITH_REF: True
-           MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # if empty this param is not used.
-       BUSCO:
-           DATABASE : 'Data-Xoo-sub/bacteria_odb10'
-           MODEL : 'genome'
-   #        'SP' : 'caenorhabditis'
-           SP : ''
-       QUAST:
-           REF: 'Data-Xoo-sub/ref/BAI3_Sanger.fsa'
-           GFF: ''
-           GENOME_SIZE_PB: 48000000
-           #GENOME_SIZE_PB: 1000000
-           OPTIONS : ''
-       DIAMOND:
-           DATABASE: 'Data-Xoo-sub/testBacteria.dmnd'
-       MUMMER:
-   #         -l default 20
-           MINMATCH : 100
-   #         -c default 65
-           MINCLUSTER: 500
-       ASSEMBLYTICS:
-           UNIQUE_ANCHOR_LEN: 10000
-           MIN_VARIANT_SIZE: 50
-           MAX_VARIANT_SIZE: 10000
+        CIRCLATOR:
+            OPTIONS: ''
+        RACON:
+            RACON_ROUNDS: 2 #1 to 9
+        NANOPOLISH:
+            # segment length to split assembly and correct it  default=50000
+            NANOPOLISH_SEGMENT_LEN: '50000'
+            # overlap length between segments  default=200
+            NANOPOLISH_OVERLAP_LEN: '200'
+            OPTIONS: ''
+        MEDAKA:
+            # if 'MEDAKA_TRAIN_WITH_REF' is True, medaka launchs training using reference found in DATA REF param. Medaka does not take in count other medaka model parameters below.
+            MEDAKA_TRAIN_WITH_REF: True
+            MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
+            #options to feature, train and consensus
+            MEDAKA_FEATURES_OPTIONS: '--batch_size 100 --chunk_len 10000 --chunk_ovlp 1000'
+            MEDAKA_TRAIN_OPTIONS: '--batch_size 100 --epochs 5000 '
+            MEDAKA_CONSENSUS_OPTIONS: '-b 50 --hint=nomultithread' #use multithread on cluster
+        BUSCO:
+            DATABASE : 'Data-Xoo-sub/bacteria_odb10'
+            MODEL : 'genome'
+            SP : ''
+        QUAST:
+            REF: 'Data-Xoo-sub/ref/BAI3_Sanger.fsa'
+            GFF: ''
+            GENOME_SIZE_PB: 48000000
+            #GENOME_SIZE_PB: 1000000
+            OPTIONS : ''
+        DIAMOND:
+            DATABASE: 'Data-Xoo-sub/testBacteria.dmnd'
+        MUMMER:
+            #  -l default 20
+            MINMATCH : 100
+            # -c default 65
+            MINCLUSTER: 500
+        ASSEMBLYTICS:
+            UNIQUE_ANCHOR_LEN: 10000
+            MIN_VARIANT_SIZE: 50
+            MAX_VARIANT_SIZE: 10000
+
 
 Singularity containers
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -359,7 +364,7 @@ This is the easier way to know what is running on cluster and to adapt ressource
 Profiles
 ~~~~~~~~
 
-Optionally is possible to use Profiles in order to run CulebrONT on HPC cluster. Please follow the `recommandations found on the SnakeMake profile github <https://github.com/Snakemake-Profiles/>`_.
+Optionally is possible to use Profiles in order to run CulebrONT on HPC cluster. Please follow the `recommendations found on the SnakeMake profile github <https://github.com/Snakemake-Profiles/>`_.
 
 Here is an example of how to profile a Slurm scheduler using `those recommandations <https://github.com/Snakemake-Profiles/slurm>`_.
 
@@ -400,36 +405,36 @@ The architecture of CulebrONT output is designed as follows:
 
 .. code-block::
 
-   output_example_circ/
-   ├── SAMPLE-1
-   │   ├── CANU
-   │   │   ├── ASSEMBLER
-   │   │   ├── CORRECTION
-   │   │   ├── MSA
-   │   │   ├── POLISHING
-   │   │   └── QUALITY
-   │   ├── FLYE
-   │   │   ├── ASSEMBLER
-   │   │   ├── CORRECTION
-   │   │   ├── MSA
-   │   │   ├── POLISHING
-   │   │   └── QUALITY
-   │   ├── MAUVE_ALIGN
-   │   ├── MINIASM
-   │   │   ├── ASSEMBLER
-   │   │   ├── CORRECTION
-   │   │   ├── MSA
-   │   │   ├── POLISHING
-   │   │   └── QUALITY
-   │   └── QUAST
-   │       ├── data
-   │       └── quast_results
-   ├── LOGS
-   ...
-   └── REPORT
-       └── SAMPLE-1
+    OUTPUT_CULEBRONT_CIRCULAR/
+    ├── SAMPLE-1
+    │   ├── AGGREGATED_QC
+    │   │   ├── DATA
+    │   │   ├── MAUVE_ALIGN
+    │   │   └── QUAST_RESULTS
+    │   ├── ASSEMBLERS
+    │   │   ├── CANU
+    │   │   │   ├── ASSEMBLER
+    │   │   │   ├── CORRECTION
+    │   │   │   ├── FIXSTART
+    │   │   │   ├── POLISHING
+    │   │   │   └── QUALITY
+    │   │   ├── FLYE
+    │   │   │   ├── ...
+    │   │   ├── MINIASM
+    │   │   │   ├── ...
+    │   │   ├── RAVEN
+    │   │   │   ├── ...
+    │   │   ├── SHASTA
+    │   │   │   ├── ...
+    │   │   └── SMARTDENOVO
+    │   │   │   ├── ...
+    │   ├── DIVERS
+    │   │   └── FASTQ2FASTA
+    │   ├── LOGS
+    │   └── REPORT
+    └── FINAL_REPORT
+    ├── SAMPLE-2 ...
 
-The same Architecture per sample (fastq = SAMPLE-1 in example) is followed for LOG files.
 
 Report
 ------
@@ -442,4 +447,4 @@ CulebrONT generates a beautiful report containing, foreach fastq found on input 
    :alt: Culebront Logo
 
 
-*Important*\ : To visualise the report created by CulebrONT, transfer the whole *REPORT* directory on your local machine before opening the *report.html* file with a navigator.
+*Important*\ : To visualise the report created by CulebrONT, transfer the file the *report.html* on your local machine and open it on a navigator.

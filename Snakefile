@@ -12,7 +12,7 @@ from snakemake.dag import DAG
 logger.info("""
     Welcome to CulebrONT  !
     Created on November 2019
-    version: 1.0 July 2020
+    version: 1.2 September 2020
     @author: Julie Orjuela (IRD), Aurore Comte (IRD), Sebastien Ravel (CIRAD), Florian Charriat (CIRAD), Bao Tram Vi (IRD), François Sabot (IRD) and Sebastien Cunnac (IRD)
     @email: julie.orjuela@ird.fr, aurore@comte.ird.fr
 
@@ -100,7 +100,7 @@ def check_config_dic(config):
         logger.info("CONFIG FILE CHECKING FAIL : you need to set True for at least one quality step (ASSEMBLY, POLISHING or CORRECTION)")
         raise ValueError("CONFIG FILE CHECKING FAIL : you need to set True for at least one quality step (ASSEMBLY, POLISHING or CORRECTION)")
     else:
-        if config["ASSEMBLY"]["CANU"] == False and config["ASSEMBLY"]["FLYE"] == False and config["ASSEMBLY"]["MINIASM"] == False and config["ASSEMBLY"]["RAVEN"] == False and config["ASSEMBLY"]["SMARTDENOVO"] == False :
+        if config["ASSEMBLY"]["CANU"] == False and config["ASSEMBLY"]["FLYE"] == False and config["ASSEMBLY"]["MINIASM"] == False and config["ASSEMBLY"]["RAVEN"] == False and config["ASSEMBLY"]["SMARTDENOVO"] == False and config["ASSEMBLY"]["SHASTA"] == False:
             logger.info("CONFIG FILE CHECKING FAIL : you need to set True for at least one Assembly tool (CANU, FLYE, MINIASM, RAVEN, SMARTDENOVO ...")
             raise ValueError("CONFIG FILE CHECKING FAIL : you need to set True for at least one Assembly tool (CANU, FLYE, MINIASM, RAVEN, SMARTDENOVO ...)")
 
@@ -111,12 +111,12 @@ if (validate(config, "schemas/config.schema.yaml")) is not None:
 
 check_config_dic(config)
 
-# Cleaning Repport and dags if we rerun the snakemake a second time
+# Cleaning Report and dags if we rerun the snakemake a second time
 
 def cleaning_for_rerun(config):
-    if os.path.exists(f"{config['DATA']['OUTPUT']}/REPORT") or os.path.isfile(f"{config['DATA']['OUTPUT']}/dag.png"):
-        logger.info("If you want to rerun culebront a second time please delete the {config['DATA']['OUTPUT']}REPORT directory and the {config['DATA']['OUTPUT']}dag.png file.")
-        warnings.warn(f"\n If you want to rerun culebront a second time please delete the {config['DATA']['OUTPUT']}REPORT directory and the {config['DATA']['OUTPUT']}dag.png file. \n")
+    if os.path.exists(f"{config['DATA']['OUTPUT']}/REPORT") or os.path.isfile(f"{config['DATA']['OUTPUT']}FINAL_REPORT/dag.png"):
+        logger.info("If you want to rerun culebront a second time please delete the {config['DATA']['OUTPUT']}FINAL_REPORT directory and the {config['DATA']['OUTPUT']}/FINAL_REPORT/dag.png file.")
+        warnings.warn(f"\n If you want to rerun CulebrONT a second time please delete the {config['DATA']['OUTPUT']}REPORT directory and the {config['DATA']['OUTPUT']}/FINAL_REPORT/dag.png file. \n")
 
 cleaning_for_rerun(config)
 
@@ -129,9 +129,6 @@ illumina = Path(config['DATA']['ILLUMINA']).resolve().as_posix() + "/"
 #path_config = Path('config.yaml').resolve().as_posix()
 path_snake = Path('Snakefile').resolve().as_posix()
 
-#print (type(path_config))
-#print (type(illumina))
-
 def getting_ext(chaine):
     """
     create a Path object and return first suffix found from fist file
@@ -143,7 +140,6 @@ def getting_ext(chaine):
             return entry.suffix
 
 ext_illumina = getting_ext(illumina)
-#print ('**********', ext_illumina)
 ext_fastq = getting_ext(fastq)
 
 # Declaring model variable to medaka
@@ -204,7 +200,13 @@ if len(ASSEMBLY_TOOLS) <2 and len(BUSCO_STEPS) < 2 and config['MSA']['MAUVE']:
 # Make sure running fixstart makes sense
 if not config['DATA']['CIRCULAR']:
     warnings.warn(f"\n Fixstart is irrelevant if you have not activated CIRCULAR. Fixstart will not be run !! \n")
-    config['MSA']['FIXSTART'] = False
+    config['QUALITY']['FIXSTART'] = False
+
+# if you want run mauve fixstart has to be activated
+if config['DATA']['CIRCULAR'] and not config['QUALITY']['FIXSTART']:
+    warnings.warn(f"\n Fixstart is by default activated if CIRCULAR is TRUE on config file.  !! \n")
+    config['QUALITY']['FIXSTART'] = True
+    #raise ValueError("you have to activate FIXSTART on QUALITY key config file if ")
 
 #at least a quality step must to be activated by user in  config
 if len(BUSCO_STEPS) == 0 :
@@ -224,9 +226,9 @@ else:
 
 ############################### DEF ####################################
 
-draft_to_correction = f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta" if int(nb)>=1 else f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/Assembly{add_circular_name}.fasta"
-draft_to_correction_index_fai = f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta.fai" if int(nb)>=1 else f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/Assembly{add_circular_name}.fasta.fai"
-draft_to_correction_index_mmi = f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta.mmi" if int(nb)>=1 else f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/Assembly{add_circular_name}.fasta.mmi"
+draft_to_correction = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta" if int(nb)>=1 else f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/Assembly{add_circular_name}.fasta"
+draft_to_correction_index_fai = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta.fai" if int(nb)>=1 else f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/Assembly{add_circular_name}.fasta.fai"
+draft_to_correction_index_mmi = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta.mmi" if int(nb)>=1 else f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/Assembly{add_circular_name}.fasta.mmi"
 
 def get_threads(rule, default):
     """
@@ -258,24 +260,24 @@ def draft_to_racon(wildcards):
     n = int(wildcards.nb)
     if n == 1:
         if config['DATA']['CIRCULAR']:
-            return f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/ROTATE/rotate_{n}/assembly.racon{n}.fasta"
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/ROTATE/rotate_{n}/assembly.racon{n}.fasta"
         else:
-            return f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assembly{add_circular_name}.fasta"
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly{add_circular_name}.fasta"
     elif n > 1:
         if config['DATA']['CIRCULAR']:
-            return f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/ROTATE/rotate_{n}/assembly.racon{n}.fasta"
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/ROTATE/rotate_{n}/assembly.racon{n}.fasta"
         else:
-            return f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/racon_{n-1}/assembly.racon{n-1}.fasta"
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{n-1}/assembly.racon{n-1}.fasta"
     else:
         raise ValueError(f"loop numbers must be 1 or greater: received {n}")
 
 def draft_to_rotate(wildcards):
     n = int(wildcards.nb)
     if n == 1:
-        return f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED_circTag.fasta"
+        return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED_circTag.fasta"
     elif n > 1:
         #rules.run_racon.output.fasta
-        return f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/racon_{n-1}/assembly.racon{n-1}.fasta"
+        return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{n-1}/assembly.racon{n-1}.fasta"
     else:
         raise ValueError(f"loop numbers must be 1 or greater: received {n}")
 
@@ -298,32 +300,30 @@ def input_last():
         raise ValueError("you have to activate at least a QUALITY (ASSEMBLY, POLISHING or CORRECTION) step in config file")
 
 def output_final(wildcards):
-    dico_final = {
-        #"dag": f"{output_dir}dag.png"
-    }
+    dico_final = {}
     if config['QUALITY']['BLOBTOOLS']:
         dico_final.update({
-            "blob_files": expand(f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/BLOBTOOLS/output.quality.blobDB.table.txt", fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last())
+            "blob_files": expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/BLOBTOOLS/output.quality.blobDB.table.txt", fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last())
         })
     if config['QUALITY']['WEESAM']:
         dico_final.update({
-             "weesam_files": expand(f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/WEESAM/minimap2mapping.txt", fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last())
+             "weesam_files": expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/WEESAM/minimap2mapping.txt", fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last())
         })
     if config['QUALITY']['ASSEMBLYTICS']:
         dico_final.update({
-             "assemblytics_files": expand(f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/OUT.Assemblytics_structural_variants.summary", fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last())
+             "assemblytics_files": expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/OUT.Assemblytics_structural_variants.summary", fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last())
         })
     if config['QUALITY']['KAT']:
         dico_final.update({
-            "kat_files":  expand(f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.gcp", fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last())
+            "kat_files":  expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.gcp", fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last())
         })
-    if config['DATA']['CIRCULAR'] and config['MSA']['FIXSTART'] and not config['MSA']['MAUVE'] :
+    if config['DATA']['CIRCULAR'] and config['QUALITY']['FIXSTART'] and not config['MSA']['MAUVE'] :
         dico_final.update({
-            "fixstart_files": expand(f"{output_dir}{{fastq}}/{{assemblers}}/MSA/FIXSTART-{{busco_step}}/startfixed_asm.fasta", fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last())
+            "fixstart_files": expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/{{busco_step}}/startfixed_asm.fasta", fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last())
         })
     if config['MSA']['MAUVE']:
         dico_final.update({
-            "mauve_files": expand(f"{output_dir}{{fastq}}/MAUVE_ALIGN/candidate_assemblies.xmfa", fastq=FASTQ)
+            "mauve_files": expand(f"{output_dir}{{fastq}}/AGGREGATED_QC/MAUVE_ALIGN/candidate_assemblies.xmfa", fastq=FASTQ)
         })
     return dico_final
 
@@ -332,22 +332,20 @@ def output_values_final(wildcards):
     val = list()
     for valeur in dico.values():
         val.append(str(valeur[0]))
-    #print(val)
     return val
 
 ################################ FINAL ####################################
 rule final:
     input:
-        expand(f"{output_dir}REPORT/Report.html", fastq=FASTQ)
+        expand(f"{output_dir}FINAL_REPORT/CulebrONT_report.html", fastq=FASTQ)
 
 rule run_dico_final:
     input:
         unpack(output_final)
-        #output_values_final
     output:
-        check = f'{output_dir}ok.txt'
+        check = f"{output_dir}{{fastq}}/DIVERS/ok.txt"
     log:
-        error = f"{output_dir}LOGS/DICO-FINAL/dico-final.e"
+        error = f"{output_dir}{{fastq}}/LOGS/DICO-FINAL/dico-final.e"
     message:
         """
         check = {output.check}
@@ -365,18 +363,19 @@ rule run_flye:
     input:
         fastq = get_fastq,
     output:
-        fasta = f"{output_dir}{{fastq}}/FLYE/ASSEMBLER/assembly{add_circular_name}.fasta",
-        info = f"{output_dir}{{fastq}}/FLYE/ASSEMBLER/assembly_info.txt",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/FLYE/ASSEMBLER/assembly{add_circular_name}.fasta",
+        info = f"{output_dir}{{fastq}}/ASSEMBLERS/FLYE/ASSEMBLER/assembly_info.txt",
     params:
-        fasta_dir = directory(f"{output_dir}{{fastq}}/FLYE/ASSEMBLER/"),
+        fasta_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/FLYE/ASSEMBLER/"),
         genome_size = config['DATA']['GENOME_SIZE'],
         circular = "--plasmids" if config['DATA']['CIRCULAR'] else "",
         move = "mv " if config['DATA']['CIRCULAR'] else "echo ",
+        #options = config['params']['FLYE']['OPTIONS']
     log:
-        output = f"{output_dir}LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE.o",
-        error = f"{output_dir}LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE.e",
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE.e",
     benchmark:
-        f"{output_dir}LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE-BENCHMARK.txt"
     priority: 30
     message:
         """
@@ -403,6 +402,7 @@ rule run_flye:
         {params.move} {params.fasta_dir}/assembly.fasta {output.fasta} 1>>{log.output} 2>>{log.error}
         """
 
+
 rule run_canu:
     """
     launch canu
@@ -411,19 +411,19 @@ rule run_canu:
     input:
         fastq = get_fastq,
     output:
-        fasta_canu = f"{output_dir}{{fastq}}/CANU/ASSEMBLER/out_canu.contigs.fasta",
-        fasta = f"{output_dir}{{fastq}}/CANU/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/CANU/ASSEMBLER/assembly.fasta",
-        trim_corr_fq = f"{output_dir}{{fastq}}/CANU/ASSEMBLER/out_canu.trimmedReads.fasta.gz"
+        fasta_canu = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/out_canu.contigs.fasta",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/assembly.fasta",
+        trim_corr_fq = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/out_canu.trimmedReads.fasta.gz"
     params:
-        out_dir = directory(f"{output_dir}{{fastq}}/CANU/ASSEMBLER/"),
+        out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/"),
         genome_size = f"{config['DATA']['GENOME_SIZE']}",
         max_memory = f"{config['params']['CANU']['MAX_MEMORY']}",
         options = f"{config['params']['CANU']['OPTIONS']}",
     log:
-        output = f"{output_dir}LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.o",
-        error = f"{output_dir}LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.e",
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.e",
     benchmark:
-        f"{output_dir}LOGS/ASSEMBLER/CANU/{{fastq}}_CANU-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CANU/{{fastq}}_CANU-BENCHMARK.txt"
     priority: 30
     message:
         """
@@ -460,13 +460,13 @@ rule run_miniasm:
     input:
         fastq = get_fastq,
     output:
-        gfa_miniasm = f"{output_dir}{{fastq}}/MINIASM/ASSEMBLER/output_miniasm.gfa", # voir si à utiliser par gfapy
+        gfa_miniasm = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_miniasm.gfa", # voir si à utiliser par gfapy
     params:
-        temp_paf = temp(f"{output_dir}{{fastq}}/MINIASM/ASSEMBLER/output_minimap2.paf"),
+        temp_paf = temp(f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minimap2.paf"),
     log:
-        error = f"{output_dir}LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM.e",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM.e",
     benchmark:
-        f"{output_dir}LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM-BENCHMARK.txt"
     priority: 30
     message:
            """
@@ -499,16 +499,16 @@ rule run_minipolish:
         fastq = get_fastq,
         gfa_miniasm = rules.run_miniasm.output.gfa_miniasm
     output:
-        gfa_minipolish = f"{output_dir}{{fastq}}/MINIASM/ASSEMBLER/output_minipolish.gfa",
-        fasta = f"{output_dir}{{fastq}}/MINIASM/ASSEMBLER/assembly{add_circular_name}.fasta", #### {add_circular_name}
-        info = f"{output_dir}{{fastq}}/MINIASM/ASSEMBLER/assembly_info.txt"
+        gfa_minipolish = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minipolish.gfa",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assembly{add_circular_name}.fasta", #### {add_circular_name}
+        info = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assembly_info.txt"
     params:
         #racon_rounds = config['params']['MINIPOLISH']['RACON_ROUNDS'],
         racon_rounds = "2",
     log:
-        error = f"{output_dir}LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM_MINIPOLISH.e"
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM_MINIPOLISH.e"
     benchmark:
-        f"{output_dir}LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM_MINIPOLISH-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM_MINIPOLISH-BENCHMARK.txt"
     priority: 30
     message:
         """
@@ -544,12 +544,12 @@ rule run_raven:
     input:
         fastq = get_fastq,
     output:
-        fasta = f"{output_dir}{{fastq}}/RAVEN/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/RAVEN/ASSEMBLER/assembly.fasta",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/RAVEN/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/ASSEMBLERS/RAVEN/ASSEMBLER/assembly.fasta",
     log:
-        output = f"{output_dir}LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN.o",
-        error = f"{output_dir}LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN.e",
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN.e",
     benchmark:
-        f"{output_dir}LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN-BENCHMARK.txt"
     priority: 30
     message:
         """
@@ -582,12 +582,12 @@ rule convert_fastq_to_fasta:
     params:
         command = "zcat " if ext_fastq == '.gz' else  "cat ",
     output:
-        reads_on_fasta = f"{output_dir}{{fastq}}/FASTQ2FASTA/{{fastq}}.fasta",
+        reads_on_fasta = f"{output_dir}{{fastq}}/DIVERS/FASTQ2FASTA/{{fastq}}.fasta",
     log:
-        output = f"{output_dir}LOGS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.o",
-        error = f"{output_dir}LOGS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.e",
+        output = f"{output_dir}{{fastq}}/LOGS/DIVERS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.o",
+        error = f"{output_dir}{{fastq}}/LOGS/DIVERS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.e",
     benchmark:
-        f"{output_dir}LOGS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA-BENCHMARK.txt"
     shell:
         """
         {params.command} {input.fastq} | awk 'NR%4==1||NR%4==2' - | sed 's/^@/>/g' 1> {output.reads_on_fasta} 2>{log.error}    
@@ -604,17 +604,17 @@ rule run_smartdenovo:
     params:
         prefix = "SMART",
         mak = "SMART.mak",
-        dir = f"{output_dir}{{fastq}}/SMARTDENOVO/ASSEMBLER",
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER",
         kmersize = f"16 " if f"{config['params']['SMARTDENOVO']['KMER_SIZE']}" == '' else f"{config['params']['SMARTDENOVO']['KMER_SIZE']}",
         options = f"{config['params']['SMARTDENOVO']['OPTIONS']}",
-        out_tmp= f"{output_dir}{{fastq}}/SMARTDENOVO/ASSEMBLER/SMART.dmo.cns"
+        out_tmp= f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/SMART.dmo.cns"
     output:
-        fasta = f"{output_dir}{{fastq}}/SMARTDENOVO/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/SMARTDENOVO/ASSEMBLER/assembly.fasta",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/assembly.fasta",
     log:
-        output = f"{output_dir}LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO.o",
-        error = f"{output_dir}LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO.e",
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO.e",
     benchmark:
-        f"{output_dir}LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO-BENCHMARK.txt"
     priority: 30
     message:
         """
@@ -651,17 +651,17 @@ rule run_shasta:
         reads_on_fasta = rules.convert_fastq_to_fasta.output.reads_on_fasta,
         fastq = get_fastq,
     params:
-        out_dir = directory(f"{output_dir}{{fastq}}/SHASTA/ASSEMBLER/"),
-        cmd_mv = f"ln -s {output_dir}{{fastq}}/SHASTA/ASSEMBLER/ShastaRun/Assembly.fasta {output_dir}{{fastq}}/SHASTA/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR']  else f"{output_dir}{{fastq}}/SHASTA/ASSEMBLER/assembly{add_circular_name}.fasta ",
+        out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/"),
+        cmd_mv = f"ln -s {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/ShastaRun/Assembly.fasta {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR']  else f"ln -s {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/ShastaRun/Assembly.fasta {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly{add_circular_name}.fasta ",
         memory_mode = f"--memoryMode {config['params']['SHASTA']['MEM_MODE']}",
         memory_backing = f"--memoryBacking {config['params']['SHASTA']['MEM_BACKING']}"
     output:
-        fasta = f"{output_dir}{{fastq}}/SHASTA/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/SHASTA/ASSEMBLER/assembly.fasta",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly2Circ.fasta" if config['DATA']['CIRCULAR'] else f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly.fasta",
     log:
-        output = f"{output_dir}LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA.o",
-        error = f"{output_dir}LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA.e",
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA.e",
     benchmark:
-        f"{output_dir}LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA-BENCHMARK.txt"
     priority: 30
     message:
         """
@@ -671,6 +671,8 @@ rule run_shasta:
             fastq: {input.reads_on_fasta}
         output:
             fasta: {output.fasta}
+        params:
+            {params.cmd_mv}
         log:
             output: {log.output}
             error: {log.error}
@@ -680,6 +682,7 @@ rule run_shasta:
     shell:
         """
         cd {params.out_dir}
+        rm -rf ShastaRun/
         shasta-Linux-0.5.1 --command assemble --input {input.reads_on_fasta} {params.memory_mode} {params.memory_backing} --threads {threads} 1>{log.output} 2>{log.error}
         {params.cmd_mv}
         """
@@ -688,7 +691,7 @@ rule run_shasta:
 def draft_to_circlator(wildcards):
     if 'CANU' in wildcards.assemblers:
         return rules.run_canu.output.fasta
-    if  'SHASTA' in wildcards.assemblers:
+    if 'SHASTA' in wildcards.assemblers:
         return rules.run_shasta.output.fasta
     if 'RAVEN' in wildcards.assemblers:
         return rules.run_raven.output.fasta
@@ -707,17 +710,17 @@ rule run_circlator:
         draft = draft_to_circlator,
         fastq = rules.run_canu.output.trim_corr_fq if 'CANU' in f'{{assemblers}}' else get_fastq,
     output:
-        fasta = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED.fasta",
-        info = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assembly_info.txt",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED.fasta",
+        info = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly_info.txt",
     params:
-        log_mv = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/circlator.log",
-        out_dir = directory(f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/CIRCLATOR/"),
+        log_mv = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/circlator.log",
+        out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR/"),
         options = f"{config['params']['CIRCLATOR']['OPTIONS']}",
     log:
-        output = f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}.o",
-        error = f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}.e",
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}.e",
     benchmark:
-        f"{output_dir}LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}-BENCHMARK.txt"
     priority: 30
     #wildcard_constraints:
     #     assemblers = assemblies_to_circlator
@@ -758,16 +761,16 @@ rule tag_circular:
     """
     threads: get_threads('tag_circular', 1)
     input:
-        fasta = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED.fasta",
-        info = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assembly_info.txt",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED.fasta",
+        info = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly_info.txt",
     output:
-        tagged_fasta = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED_circTag.fasta"
+        tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED_circTag.fasta"
     log:
-        output = f"{output_dir}LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.o",
-        error = f"{output_dir}LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.e",
-        #output = f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/tag_circular.log"
+        output = f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.o",
+        error = f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.e",
+        #output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/tag_circular.log"
     benchmark:
-        f"{output_dir}LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR-BENCHMARK.txt"
     priority: 30
     message:
         """
@@ -822,15 +825,15 @@ rule run_racon:
         draft = draft_to_racon,
         fastq = get_fastq,
     output:
-        paf = f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/racon_{{nb}}/assembly.minimap4racon{{nb}}.paf",
-        fasta = f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/racon_{{nb}}/assembly.racon{{nb}}.fasta"
+        paf = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{{nb}}/assembly.minimap4racon{{nb}}.paf",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{{nb}}/assembly.racon{{nb}}.fasta"
     wildcard_constraints:
         nb = "[0-9]"
     log:
-        output=f"{output_dir}LOGS/POLISHING/RACON/{{fastq}}_{{assemblers}}_RACON{{nb}}.o",
-        error = f"{output_dir}LOGS/POLISHING/RACON/{{fastq}}_{{assemblers}}_RACON{{nb}}.e"
+        output=f"{output_dir}{{fastq}}/LOGS/POLISHING/RACON/{{fastq}}_{{assemblers}}_RACON{{nb}}.o",
+        error = f"{output_dir}{{fastq}}/LOGS/POLISHING/RACON/{{fastq}}_{{assemblers}}_RACON{{nb}}.e"
     benchmark:
-        f"{output_dir}LOGS/POLISHING/RACON/{{fastq}}_{{assemblers}}_RACON{{nb}}-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/POLISHING/RACON/{{fastq}}_{{assemblers}}_RACON{{nb}}-BENCHMARK.txt"
     priority: 30
     message:
         """
@@ -861,12 +864,12 @@ rule rotate_circular:
     input:
         draft = draft_to_rotate,
     output:
-        rotated = f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/ROTATE/rotate_{{nb}}/assembly.racon{{nb}}.fasta"
+        rotated = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/ROTATE/rotate_{{nb}}/assembly.racon{{nb}}.fasta"
     log:
-        output=f"{output_dir}LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}.o",
-        error = f"{output_dir}LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}.e"
+        output=f"{output_dir}{{fastq}}/LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}.e"
     benchmark:
-        f"{output_dir}LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}-BENCHMARK.txt"
     priority: 30
     message:
         """
@@ -889,32 +892,28 @@ rule rotate_circular:
         Rscript AdditionalScripts/rotateCircSeqs.R --seqFile "{input.draft}" --outFilePath "{output.rotated}" 1>{log.output} 2>{log.error}
         """
 
-rule run_nanopolish :
+rule run_nanopolish_makerange :
     """
-    launch makerange, consensus and vcf2fasta
+    launch nanopolish makerange
     """
-    threads: get_threads('run_nanopolish', 8)
+    threads: get_threads('run_nanopolish_makerange', 2)
     input:
         draft = draft_to_correction,
     output:
-        temp_bam = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/NANOPOLISH/reads.sorted.bam",
-        temp_fasta = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/NANOPOLISH/reads.fasta",
-        fasta = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/NANOPOLISH/consensus.fasta",
+        segments_list = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/segments.txt"
     params:
+        temp_bam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/reads.sorted.bam",
+        temp_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/reads.fasta",
         fastq = get_fastq,
         fast5 = f"{config['DATA']['FAST5']}/{{fastq}}",
-        directory = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/NANOPOLISH",
-        segment = config['params']['NANOPOLISH']['NANOPOLISH_SEGMENT_LEN'],
-        overlap = config['params']['NANOPOLISH']['NANOPOLISH_OVERLAP_LEN'],
-        options = config['params']['NANOPOLISH']['OPTIONS'],
-        liste_segments = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/NANOPOLISH/segments.txt",
-        vcf = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/NANOPOLISH/polished.vcf",
-        preset = f"{config['params']['MINIMAP2']['PRESET_OPTION']}" if {config['params']['MINIMAP2']['PRESET_OPTION']}!='' else 'map-pb'
+        preset = f"{config['params']['MINIMAP2']['PRESET_OPTION']}" if {config['params']['MINIMAP2']['PRESET_OPTION']}!='' else 'map-pb',
+        segment_len = config['params']['NANOPOLISH']['NANOPOLISH_SEGMENT_LEN'],
+        overlap_len = config['params']['NANOPOLISH']['NANOPOLISH_OVERLAP_LEN'],
     log:
-        output = f"{output_dir}LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH.o",
-        error = f"{output_dir}LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH.e",
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH.e",
     benchmark:
-        f"{output_dir}LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH-BENCHMARK.txt",
+        f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH-MAKERANGE-BENCHMARK.txt",
     priority: 30
     message:
         """
@@ -922,16 +921,13 @@ rule run_nanopolish :
         input:
             draft : {input.draft}
         output:
-            fasta : {output.fasta}
+            segments_list : {output.segments_list}
         params:
-            fastq : {params.fastq}
+            fastq :{params.fastq} 
             fast5 : {params.fast5}
-            directory : {params.directory}
-            segment : {params.segment}
-            overlap: {params.overlap}
-            options: {params.options}
-            liste segments : {params.liste_segments}
-            vcf : {params.vcf}
+            preset : {params.preset}
+            segment_len : {params.segment_len}
+            overlap_len : {params.overlap_len}
         log:
             output : {log.output}
             error: {log.error}
@@ -940,13 +936,114 @@ rule run_nanopolish :
         config['tools']['NANOPOLISH_SIMG']
     shell:
         """
-        seqtk seq -A {params.fastq} 1>{output.temp_fasta} 2>{log.error}
-        nanopolish index -d {params.fast5} {output.temp_fasta} 1>>{log.output} 2>>{log.error}
-        minimap2 -ax {params.preset} -t {threads} {input.draft} {output.temp_fasta} 2>>{log.error} | samtools sort -o {output.temp_bam} -T reads.tmp 1>>{log.output} 2>>{log.error}
-        samtools index {output.temp_bam} 1>>{log.output} 2>>{log.error}
-        python3 /nanopolish/scripts/nanopolish_makerange.py {input.draft} --segment-length {params.segment} --overlap-length {params.overlap} 1> {params.liste_segments} 2>> {log.error} #TODO ce chemin peut changer
-        while read LINE; do echo "$LINE"; nanopolish variants --consensus -t {threads} -o {params.vcf}-"$LINE" -r {output.temp_fasta} -b {output.temp_bam} -g {input.draft} {params.options} -w "$LINE"; done < {params.liste_segments} 1>>{log.output} 2>>{log.error}
-        nanopolish vcf2fasta --skip-checks -g {input.draft} {params.vcf}-* 1>{output.fasta} 2>>{log.error}
+        seqtk seq -A {params.fastq} 1>{params.temp_fasta} 2>{log.error}
+        nanopolish index -d {params.fast5} {params.temp_fasta} 1>>{log.output} 2>>{log.error}
+        minimap2 -ax {params.preset} -t {threads} {input.draft} {params.temp_fasta} 2>>{log.error} | samtools sort -o {params.temp_bam} -T reads.tmp 1>>{log.output} 2>>{log.error}
+        samtools index {params.temp_bam} 1>>{log.output} 2>>{log.error}
+        python3 /nanopolish/scripts/nanopolish_makerange.py {input.draft} --segment-length {params.segment_len} --overlap-length {params.overlap_len} 1> {output.segments_list} 2>> {log.error}
+        #TODO ce chemin de nanopolish peut changer, modifier le conteneur
+        """
+
+
+checkpoint nanopolish_variants_by_segment:
+    """
+    split segments list to nanopolish
+    """
+    threads: get_threads('split_segments', 1)
+    input:
+        segments_list = rules.run_nanopolish_makerange.output.segments_list,
+    output:
+        directory = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/SEGMENTS/"),
+    shell:
+        """
+        cd {output.directory};
+        split -l 1 {input.segments_list} --additional-suffix=".nanopolish-segment.txt"
+        """
+
+
+rule run_nanopolish_variants:
+    """
+    launch nanopolish_variants for each dynamic segment
+    """
+    threads: get_threads('run_nanopolish_variants', 4)
+    input:
+        one_segment = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/SEGMENTS/{{segment}}.nanopolish-segment.txt",
+        draft = rules.run_nanopolish_makerange.input.draft,
+    output:
+        one_vcf = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/VCFS/{{segment}}.nanopolish-segment.vcf",
+    params:
+        temp_fasta = rules.run_nanopolish_makerange.params.temp_fasta,
+        temp_bam = rules.run_nanopolish_makerange.params.temp_bam,
+        options = config['params']['NANOPOLISH']['OPTIONS'],
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_{{segment}}-NANOPOLISH.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_{{segment}}-NANOPOLISH.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_{{segment}}-NANOPOLISH-VARIANTS-BENCHMARK.txt",
+    priority: 30
+    message:
+        """
+        Launching {rule}
+        input:
+            one_segment : {input.one_segment}
+        output:
+            one_vcf = {output.one_vcf}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        config['tools']['NANOPOLISH_SIMG']
+    shell:
+        """
+        while read LINE; do echo "$LINE"; nanopolish variants --consensus -t {threads} -o {output.one_vcf} -r {params.temp_fasta} -b {params.temp_bam} -g {input.draft} {params.options} -w "$LINE"; done < {input.one_segment} 1>>{log.output} 2>>{log.error}
+        """
+
+def aggregate_input(wildcards):
+    checkpoint_output = checkpoints.nanopolish_variants_by_segment.get(**wildcards).output[0]
+    #print (checkpoint_output)
+    segment=glob_wildcards(os.path.join(checkpoint_output,"{segment}.nanopolish-segment.txt")).segment
+    #print (segment)
+    return expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/VCFS/{{segment}}.nanopolish-segment.vcf", fastq=wildcards.fastq, assemblers=wildcards.assemblers, segment=segment)
+
+
+rule run_nanopolish_merge :
+    """
+    launch nanopolish merge using vcf2fasta 
+    """
+    threads: get_threads('run_nanopolish_merge', 4)
+    input:
+        vcfs = aggregate_input,
+    output:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/consensus.fasta",
+    params:
+        vcf_dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/VCFS/",
+        draft = rules.run_nanopolish_makerange.input.draft,
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH-MERGE-BENCHMARK.txt",
+    priority: 30
+    message:
+        """
+        Launching {rule}
+        input:
+            vcf : {input.vcfs}
+        output:
+            fasta : {output.fasta}
+        params:
+            draft: {params.draft}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        config['tools']['NANOPOLISH_SIMG']
+    shell:
+        """
+        echo "{input.vcfs}"
+        nanopolish vcf2fasta --skip-checks -g {params.draft} {params.vcf_dir}*.nanopolish-segment.vcf 1>{output.fasta} 2>>{log.error}
         """
 
 rule run_medaka_train:
@@ -961,17 +1058,17 @@ rule run_medaka_train:
         index_fai = rules.index_fasta_to_correction.output.index_fai,
         index_fmmi = rules.index_fasta_to_correction.output.index_mmi,
     output:
-        fasta_cat_acc = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/MEDAKA/training/model.best.cat_acc.hdf5",
-        fasta_val_cat_acc = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/MEDAKA/training/model.best.val_cat_acc.hdf5"
+        fasta_cat_acc = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/training/model.best.cat_acc.hdf5",
+        fasta_val_cat_acc = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/training/model.best.val_cat_acc.hdf5"
     params:
-        #index_fai = rules.index_fasta_to_correction.output.index_fai,
-        #index_fmmi = rules.index_fasta_to_correction.output.index_mmi,
-        out_name = directory(f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/MEDAKA/"),
+        out_name = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/"),
+        options_features = config['params']['MEDAKA']['MEDAKA_FEATURES_OPTIONS'],
+        options_training = config['params']['MEDAKA']['MEDAKA_TRAIN_OPTIONS'],
     log:
-        output = f"{output_dir}LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.o",
-        error = f"{output_dir}LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.e",
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.e",
     benchmark:
-        f"{output_dir}LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN-BENCHMARK.txt",
+        f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN-BENCHMARK.txt",
     priority: 30
     message:
         """
@@ -988,6 +1085,8 @@ rule run_medaka_train:
             fasta_val_cat_acc: {output.fasta_val_cat_acc}
         params:
             out_name: {params.out_name}
+            options_features : {params.options_features}
+            options_training : {params.options_training}
         log:
             output : {log.output}
             error: {log.error}
@@ -996,10 +1095,10 @@ rule run_medaka_train:
         config['tools']['MEDAKA_SIMG']
     shell:
         """
-        mini_align -t {threads} -m -r {input.draft} -i {input.fastq} -p {params.out_name}calls2draft 1>{log.output} 2>{log.error}
+        mini_align -t {threads}  -m -r {input.draft} -i {input.fastq} -p {params.out_name}calls2draft 1>{log.output} 2>{log.error}
         mini_align -t {threads} -m -r {input.draft} -i {input.ref} -p {params.out_name}truth2draft 1>>{log.output} 2>>{log.error}
-        medaka features {params.out_name}calls2draft.bam {params.out_name}train_features.hdf --truth {params.out_name}truth2draft.bam --threads {threads} --batch_size 100 --chunk_len 1000 --chunk_ovlp 0 1>>{log.output} 2>>{log.error}
-        medaka train {params.out_name}train_features.hdf --train_name {params.out_name}training --epochs 10 1>>{log.output} 2>>{log.error}
+        medaka features {params.out_name}calls2draft.bam {params.out_name}train_features.hdf --truth {params.out_name}truth2draft.bam --threads {threads} {params.options_features} 1>>{log.output} 2>>{log.error}
+        medaka train {params.out_name}train_features.hdf --train_name {params.out_name}training {params.options_training}  1>>{log.output} 2>>{log.error}
         """
 
 rule run_medaka_consensus:
@@ -1014,14 +1113,15 @@ rule run_medaka_consensus:
         index_fai = rules.index_fasta_to_correction.output.index_fai,
         index_fmmi = rules.index_fasta_to_correction.output.index_mmi,
     output:
-        fasta = f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/MEDAKA/consensus.fasta"
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/consensus.fasta"
     params:
-        dir = directory(f"{output_dir}{{fastq}}/{{assemblers}}/CORRECTION/MEDAKA"),
+        dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA"),
+        options = config['params']['MEDAKA']['MEDAKA_CONSENSUS_OPTIONS'],
     log:
-        output = f"{output_dir}LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_CONSENSUS.o",
-        error = f"{output_dir}LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_CONSENSUS.e",
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_CONSENSUS.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_CONSENSUS.e",
     benchmark:
-        f"{output_dir}LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_CONSENSUS-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_CONSENSUS-BENCHMARK.txt"
     priority: 30
     message:
         """
@@ -1045,23 +1145,22 @@ rule run_medaka_consensus:
         config['tools']['MEDAKA_SIMG']
     shell:
         """
-        medaka_consensus -t {threads} -i {input.fastq} -d {input.draft} -o {params.dir} -m {input.model} 1>{log.output} 2>{log.error}
+        medaka_consensus -t {threads} {params.options} -i {input.fastq} -d {input.draft} -o {params.dir} -m {input.model} 1>{log.output} 2>{log.error}
         """
 
 def fasta_to_busco(wildcards):
     if wildcards.busco_step == 'STEP_ASSEMBLY':
-        return f"{output_dir}{{fastq}}/{{assemblers}}/ASSEMBLER/assembly{add_circular_name}.fasta"
+        return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly{add_circular_name}.fasta"
     elif wildcards.busco_step == 'STEP_POLISHING_RACON':
-        return f"{output_dir}{{fastq}}/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta"
+        return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta"
     elif wildcards.busco_step == 'STEP_CORRECTION_NANOPOLISH':
-        return rules.run_nanopolish.output.fasta
+        return rules.run_nanopolish_merge.output.fasta
     elif wildcards.busco_step == 'STEP_CORRECTION_MEDAKA':
         return rules.run_medaka_consensus.output.fasta
     else:
         raise ValueError("problem with fasta to busco rule.")
 
-
-################################ QUALITY CHECK ####################################
+################################ PREPARING QUALITY ####################################
 
 rule preparing_fasta_to_quality:
     """
@@ -1071,13 +1170,13 @@ rule preparing_fasta_to_quality:
     input:
         fasta = fasta_to_busco
     output:
-        renamed = f"{output_dir}{{fastq}}/QUAST/data/{{assemblers}}-{{busco_step}}-{add_circular_name}assembly.fasta",
+        renamed = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/{{assemblers}}-{{busco_step}}-{add_circular_name}assembly.fasta",
     params:
-        #index_fai = f"{output_dir}{{fastq}}/QUAST/data/{{assemblers}}-{{busco_step}}-{add_circular_name}assembly.fasta.fai",
-        index_mmi = f"{output_dir}{{fastq}}/QUAST/data/{{assemblers}}-{{busco_step}}-{add_circular_name}assembly.fasta.mmi"
+        #index_fai = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/{{assemblers}}-{{busco_step}}-{add_circular_name}assembly.fasta.fai",
+        index_mmi = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/{{assemblers}}-{{busco_step}}-{add_circular_name}assembly.fasta.mmi"
     log:
-        output = f"{output_dir}LOGS/QUALITY/QUAST/{{fastq}}-{{assemblers}}-{{busco_step}}-preparing_QUAST.o",
-        error = f"{output_dir}LOGS/QUALITY/QUAST/{{fastq}}-{{assemblers}}-{{busco_step}}-preparing_QUAST.e",
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/{{fastq}}-{{assemblers}}-{{busco_step}}-preparing_DATA.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/{{fastq}}-{{assemblers}}-{{busco_step}}-preparing_DATA.e",
     priority: 20
     message:
         """
@@ -1100,28 +1199,87 @@ rule preparing_fasta_to_quality:
         minimap2 -d {params.index_mmi} {output.renamed} 1>>{log.output} 2>>{log.error}
         """
 
+
+######### Standardizing starting coordinate of bacterial genomes ############
+
+rule run_fixstart:
+    """
+    Standardizing starting coordinate of bacterial genome assemblies with fixstart module of Circlator.
+    """
+    threads: get_threads('run_fixstart', 1)
+    input:
+        assembly_file = rules.preparing_fasta_to_quality.output.renamed
+    output:
+        fix_start_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/{{busco_step}}/startfixed_asm.fasta",
+    params:
+        fix_start_log = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/{{busco_step}}/startfixed_asm.log",
+        out_dir = lambda wc, output: os.path.dirname(output.fix_start_fasta)
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/FIXSTART/{{fastq}}_{{assemblers}}_{{busco_step}}-FIXSTART.o",
+        error =  f"{output_dir}{{fastq}}/LOGS/FIXSTART/{{fastq}}_{{assemblers}}_{{busco_step}}-FIXSTART.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/FIXSTART/{{fastq}}_{{assemblers}}_{{busco_step}}-FIXSTART-BENCHMARK.txt"
+    priority: 20
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            assembly_file  : {input.assembly_file}
+        params:
+            fix_start_log : {params.fix_start_log}
+            out_dir : {params.out_dir}
+        output:
+            fix_start_fast : {output.fix_start_fasta}
+        """
+    singularity:
+        config['tools']['MINICONDA_SIMG']
+    conda:
+         "envs/run_circlator_cenv.yml"
+    shell:
+        """
+        # def to inspect fasta titles for circular molecules and write their names in a file
+        list_lin_seqs()
+        {{
+          grep -o -E "^>.*$" $1 | grep -v -E "circular" | tr -d ">" > "$2"
+        }}
+        linSeqNamesFile="{params.out_dir}/linSeqNames.txt"
+        set +e
+        list_lin_seqs "{input.assembly_file}" "$linSeqNamesFile"
+        set -e
+        echo "##  $(date): processing {input.assembly_file}" 1>{log.output} 2>{log.error}
+        echo "##  Using circlator fixstart to rotate circular sequences so that they start at a dnaA gene (if found)" 1>>{log.output} 2>>{log.error}
+        echo "##  Ignoring the following linear sequences: $(cat $linSeqNamesFile)." 1>>{log.output} 2>>{log.error}
+        circlator fixstart --ignore="$linSeqNamesFile" "{input.assembly_file}" "{params.out_dir}"/startfixed_asm 1>>{log.output} 2>>{log.error}
+        """
+# TODO: change code to python
+
+
+################################ QUALITY CHECK ####################################
+
 rule run_quast:
     """
     preparing fasta to quast and launch quast
     """
     threads: get_threads('run_quast', 4)
     input:
-        liste = expand(rules.preparing_fasta_to_quality.output.renamed, fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS),
+        #liste = lambda wc: expand(rules.preparing_fasta_to_quality.output.renamed, fastq=wc.fastq, assemblers=ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS),
+        liste = lambda wc: expand(rules.run_fixstart.output.fix_start_fasta if config['QUALITY']['FIXSTART'] else rules.preparing_fasta_to_quality.output.renamed, fastq=wc.fastq, assemblers=ASSEMBLY_TOOLS, busco_step=input_last()),
     output:
-        report = f"{output_dir}{{fastq}}/QUAST/quast_results/report.html",
-        report_path = f"{output_dir}REPORT/{{fastq}}/report_quast.html"
+        report = f"{output_dir}{{fastq}}/AGGREGATED_QC/QUAST_RESULTS/report.html",
+        report_path = f"{output_dir}{{fastq}}/REPORT/report_quast.html"
     params:
         genome_size = f"{config['params']['QUAST']['GENOME_SIZE_PB']}",
-        #indir = f"{output_dir}{{fastq}}/QUAST/data/",
-        directory = f"{output_dir}{{fastq}}/QUAST/quast_results/",
+        #indir = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/",
+        directory = f"{output_dir}{{fastq}}/AGGREGATED_QC/QUAST_RESULTS/",
         reference = f"{config['DATA']['REF']}" if f"{config['DATA']['REF']}" == '' else f" -r {config['DATA']['REF']}",
         gff = f"{config['params']['QUAST']['GFF']}" if f"{config['params']['QUAST']['GFF']}"=='' else f" --g {config['params']['QUAST']['GFF']}",
         options = f"{config['params']['QUAST']['OPTIONS']}",
     log:
-        output = f"{output_dir}LOGS/QUALITY/QUAST/QUAST_{{fastq}}.o",
-        error = f"{output_dir}LOGS/QUALITY/QUAST/QUAST_{{fastq}}.e",
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/QUAST_{{fastq}}.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/QUAST_{{fastq}}.e",
     benchmark:
-        f"{output_dir}LOGS/QUALITY/QUAST/QUAST_{{fastq}}-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/QUAST_{{fastq}}-BENCHMARK.txt"
     priority: 20
     message:
         """
@@ -1155,21 +1313,22 @@ rule run_busco:
     """
     threads: get_threads('run_busco', 4)
     input:
-        fasta = rules.preparing_fasta_to_quality.output.renamed
+        #fasta = rules.preparing_fasta_to_quality.output.renamed
+        fasta = rules.run_fixstart.output.fix_start_fasta if config['QUALITY']['FIXSTART'] else rules.preparing_fasta_to_quality.output.renamed,
     output:
-        summary = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/BUSCO_RESULTS/short_summary_BUSCO_RESULTS.txt",
+        summary = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/BUSCO_RESULTS/short_summary_BUSCO_RESULTS.txt",
     params:
-        out_path = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/",
+        out_path = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/",
         busco_name = f"BUSCO_RESULTS",
         database = config['params']['BUSCO']['DATABASE'],
         model = config['params']['BUSCO']['MODEL'],
         sp = f" -sp {config['params']['BUSCO']['SP']}" if f"{config['params']['BUSCO']['SP']}"!="" else f"{config['params']['BUSCO']['SP']}",
         #path_tool = config['tools']['BUSCO_TOOL']
     log:
-        output = f"{output_dir}LOGS/QUALITY/BUSCO/{{fastq}}_{{assemblers}}_{{busco_step}}_BUSCO.o",
-        error = f"{output_dir}LOGS/QUALITY/BUSCO/{{fastq}}_{{assemblers}}_{{busco_step}}_BUSCO.e",
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/BUSCO/{{fastq}}_{{assemblers}}_{{busco_step}}_BUSCO.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/BUSCO/{{fastq}}_{{assemblers}}_{{busco_step}}_BUSCO.e",
     benchmark:
-        f"{output_dir}LOGS/QUALITY/BUSCO/{{fastq}}_{{assemblers}}_{{busco_step}}_BUSCO-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/BUSCO/{{fastq}}_{{assemblers}}_{{busco_step}}_BUSCO-BENCHMARK.txt"
     priority: 20
     message:
         """
@@ -1203,20 +1362,21 @@ rule run_diamond:
     """
     threads: get_threads('run_diamond', 4)
     input:
-        fasta = rules.preparing_fasta_to_quality.output.renamed,
+        fasta = rules.run_fixstart.output.fix_start_fasta if config['QUALITY']['FIXSTART'] else rules.preparing_fasta_to_quality.output.renamed,
+        #fasta = rules.preparing_fasta_to_quality.output.renamed,
     output:
-        csv = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/DIAMOND/diamond.csv",
+        csv = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/DIAMOND/diamond.csv",
     params:
         db = f"{config['params']['DIAMOND']['DATABASE']}",
-        dir = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/DIAMOND/",
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/DIAMOND/",
         mode = "blastx",
         format = '6 qseqid staxids bitscore qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore',
         #path_tool = config['tools']['DIAMOND_TOOL']
     log:
-        output = f"{output_dir}LOGS/QUALITY/DIAMOND/{{fastq}}_{{assemblers}}_{{busco_step}}_DIAMOND.o",
-        error = f"{output_dir}LOGS/QUALITY/DIAMOND/{{fastq}}_{{assemblers}}_{{busco_step}}_DIAMOND.e",
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/DIAMOND/{{fastq}}_{{assemblers}}_{{busco_step}}_DIAMOND.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/DIAMOND/{{fastq}}_{{assemblers}}_{{busco_step}}_DIAMOND.e",
     benchmark:
-        f"{output_dir}LOGS/QUALITY/DIAMOND/{{fastq}}_{{assemblers}}_{{busco_step}}_DIAMOND-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/DIAMOND/{{fastq}}_{{assemblers}}_{{busco_step}}_DIAMOND-BENCHMARK.txt"
     priority: 20
     message:
         """
@@ -1248,17 +1408,19 @@ rule run_minimap2:
     """
     threads: get_threads('run_minimap2', 8)
     input:
-        fasta = rules.preparing_fasta_to_quality.output.renamed,
+        fasta = rules.run_fixstart.output.fix_start_fasta if config['QUALITY']['FIXSTART'] else rules.preparing_fasta_to_quality.output.renamed,
+        #fasta = rules.preparing_fasta_to_quality.output.renamed,
         fastq = get_fastq,
     output:
-        bam = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/MINIMAP2/minimap2mapping.bam",
+        bam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/MINIMAP2/minimap2mapping.bam",
     params:
         preset = f"{config['params']['MINIMAP2']['PRESET_OPTION']}" if {config['params']['MINIMAP2']['PRESET_OPTION']}!='' else 'map-pb',
+        out_dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/MINIMAP2/"
     log:
-        output = f"{output_dir}LOGS/QUALITY/MINIMAP2/{{fastq}}_{{assemblers}}_{{busco_step}}_MINIMAP2.o",
-        error = f"{output_dir}LOGS/QUALITY/MINIMAP2/{{fastq}}_{{assemblers}}_{{busco_step}}_MINIMAP2.e",
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/MINIMAP2/{{fastq}}_{{assemblers}}_{{busco_step}}_MINIMAP2.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/MINIMAP2/{{fastq}}_{{assemblers}}_{{busco_step}}_MINIMAP2.e",
     benchmark:
-        f"{output_dir}LOGS/QUALITY/MINIMAP2/{{fastq}}_{{assemblers}}_{{busco_step}}_MINIMAP2-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/MINIMAP2/{{fastq}}_{{assemblers}}_{{busco_step}}_MINIMAP2-BENCHMARK.txt"
     #params:
     #    index_fai = rules.preparing_fasta_to_quality.output.index_fai,
     #    index_mmi = rules.preparing_fasta_to_quality.output.index_mmi,
@@ -1290,23 +1452,24 @@ rule run_blobtools:
     """
     threads: get_threads('run_blobtools', 8)
     input:
-        fasta = rules.preparing_fasta_to_quality.output.renamed,
+        #fasta = rules.preparing_fasta_to_quality.output.renamed,
+        fasta = rules.run_fixstart.output.fix_start_fasta if config['QUALITY']['FIXSTART'] else rules.preparing_fasta_to_quality.output.renamed,
         sorted_bam = rules.run_minimap2.output.bam,
         diamond = rules.run_diamond.output.csv,
     output:
-        table = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/BLOBTOOLS/output.quality.blobDB.table.txt",
-        read_cov = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/BLOBTOOLS/read_cov.png",
-        blob = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/BLOBTOOLS/blob.png"
+        table = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/BLOBTOOLS/output.quality.blobDB.table.txt",
+        read_cov = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/BLOBTOOLS/read_cov.png",
+        blob = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/BLOBTOOLS/blob.png"
     params:
-        dir = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/BLOBTOOLS/",
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/BLOBTOOLS/",
         #TODO mettre en config
         names = '/usr/local/blobtools-blobtools_v1.1.1/data/names.dmp',
         nodes = '/usr/local/blobtools-blobtools_v1.1.1/data/nodes.dmp',
     log:
-        output = f"{output_dir}LOGS/QUALITY/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{busco_step}}_BLOBTOOLS.o",
-        error = f"{output_dir}LOGS/QUALITY/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{busco_step}}_BLOBTOOLS.e",
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{busco_step}}_BLOBTOOLS.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{busco_step}}_BLOBTOOLS.e",
     benchmark:
-        f"{output_dir}LOGS/QUALITY/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{busco_step}}_BLOBTOOLS-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{busco_step}}_BLOBTOOLS-BENCHMARK.txt"
     priority: 20
     message:
         """
@@ -1343,19 +1506,20 @@ rule run_weesam:
     """
     threads: get_threads('run_weesam', 4)
     input:
-        fasta = rules.preparing_fasta_to_quality.output.renamed,
+        fasta = rules.run_fixstart.output.fix_start_fasta if config['QUALITY']['FIXSTART'] else rules.preparing_fasta_to_quality.output.renamed,
+        #fasta = rules.preparing_fasta_to_quality.output.renamed,
         fastq = get_fastq,
         bam = rules.run_minimap2.output.bam,
     output:
-        txt = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/WEESAM/minimap2mapping.txt",
-        weesam_outdir = directory(f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/WEESAM/minimap2mapping_html_results")
+        txt = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/WEESAM/minimap2mapping.txt",
+        weesam_outdir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/WEESAM/minimap2mapping_html_results")
     params:
-        out_dir = lambda w, output: os.path.dirname(output.txt),
+        out_dir = lambda wc, output: os.path.dirname(output.txt),
     log:
-        output = f"{output_dir}LOGS/QUALITY/WEESAM/{{fastq}}_{{assemblers}}_{{busco_step}}_WEESAM.o",
-        error = f"{output_dir}LOGS/QUALITY/WEESAM/{{fastq}}_{{assemblers}}_{{busco_step}}_WEESAM.e",
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/WEESAM/{{fastq}}_{{assemblers}}_{{busco_step}}_WEESAM.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/WEESAM/{{fastq}}_{{assemblers}}_{{busco_step}}_WEESAM.e",
     benchmark:
-        f"{output_dir}LOGS/QUALITY/WEESAM/{{fastq}}_{{assemblers}}_{{busco_step}}_WEESAM-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/WEESAM/{{fastq}}_{{assemblers}}_{{busco_step}}_WEESAM-BENCHMARK.txt"
     priority: 20
     message:
         """
@@ -1387,21 +1551,22 @@ rule run_mummer:
     """
     threads: get_threads('run_mummer', 4)
     input:
-        fasta = rules.preparing_fasta_to_quality.output.renamed,
+        #fasta = rules.preparing_fasta_to_quality.output.renamed,
+        fasta = rules.run_fixstart.output.fix_start_fasta if config['QUALITY']['FIXSTART'] else rules.preparing_fasta_to_quality.output.renamed,
         ref = ref
     output:
-        delta = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/MUMMER/mummer.delta.gz",
+        delta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/MUMMER/mummer.delta.gz",
     params:
         minmatch = config['params']['MUMMER']['MINMATCH'], #option -l  20
         mincluster = config['params']['MUMMER']['MINCLUSTER'], #option -c 65
         prefix = "mummer",
-        dir = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/MUMMER/",
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/MUMMER/",
  #       path_tool = config['tools']['MUMMER_TOOL']
     log:
-        output = f"{output_dir}LOGS/QUALITY/MUMMER/{{fastq}}_{{assemblers}}_{{busco_step}}_MUMMER.o",
-        error = f"{output_dir}LOGS/QUALITY/MUMMER/{{fastq}}_{{assemblers}}_{{busco_step}}_MUMMER.e",
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/MUMMER/{{fastq}}_{{assemblers}}_{{busco_step}}_MUMMER.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/MUMMER/{{fastq}}_{{assemblers}}_{{busco_step}}_MUMMER.e",
     benchmark:
-        f"{output_dir}LOGS/QUALITY/MUMMER/{{fastq}}_{{assemblers}}_{{busco_step}}_MUMMER-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/MUMMER/{{fastq}}_{{assemblers}}_{{busco_step}}_MUMMER-BENCHMARK.txt"
     priority: 20
     message:
         """
@@ -1437,21 +1602,21 @@ rule run_assemblytics:
     input:
         delta = rules.run_mummer.output.delta,
     output:
-        summary = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/OUT.Assemblytics_structural_variants.summary",
-        png_dotplot = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png",
-        png_Nchart = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png",
-        png_log_all_sizes = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png",
+        summary = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/OUT.Assemblytics_structural_variants.summary",
+        png_dotplot = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/OUT.Assemblytics.Dotplot_filtered.png",
+        png_Nchart = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/OUT.Assemblytics.Nchart.png",
+        png_log_all_sizes = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/OUT.Assemblytics.size_distributions.all_variants.log_all_sizes.png",
     params:
-        dir = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/",
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/ASSEMBLYTICS/",
         unique_anchor_length = config['params']['ASSEMBLYTICS']['UNIQUE_ANCHOR_LEN'],
         min_variant_size = config['params']['ASSEMBLYTICS']['MIN_VARIANT_SIZE'],
         max_variant_size = config['params']['ASSEMBLYTICS']['MAX_VARIANT_SIZE'],
         prefix = "OUT",
     log:
-        output = f"{output_dir}LOGS/QUALITY/ASSEMBLYTICS/{{fastq}}_{{assemblers}}_{{busco_step}}_ASSEMBLYTICS.o",
-        error = f"{output_dir}LOGS/QUALITY/ASSEMBLYTICS/{{fastq}}_{{assemblers}}_{{busco_step}}_ASSEMBLYTICS.e",
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/ASSEMBLYTICS/{{fastq}}_{{assemblers}}_{{busco_step}}_ASSEMBLYTICS.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/ASSEMBLYTICS/{{fastq}}_{{assemblers}}_{{busco_step}}_ASSEMBLYTICS.e",
     benchmark:
-        f"{output_dir}LOGS/QUALITY/ASSEMBLYTICS/{{fastq}}_{{assemblers}}_{{busco_step}}_ASSEMBLYTICS-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/ASSEMBLYTICS/{{fastq}}_{{assemblers}}_{{busco_step}}_ASSEMBLYTICS-BENCHMARK.txt"
     priority: 20
     message:
         """
@@ -1486,11 +1651,11 @@ rule run_flagstat:
     input:
         bam = rules.run_minimap2.output.bam,
     output:
-        txt = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/FLAGSTAT/flagstat.txt",
+        txt = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/FLAGSTAT/flagstat.txt",
     log:
-        error = f"{output_dir}LOGS/QUALITY/FLAGSTAT/{{fastq}}_{{assemblers}}_{{busco_step}}_FLAGSTAT.e",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/FLAGSTAT/{{fastq}}_{{assemblers}}_{{busco_step}}_FLAGSTAT.e",
     benchmark:
-        f"{output_dir}LOGS/QUALITY/FLAGSTAT/{{fastq}}_{{assemblers}}_{{busco_step}}_FLAGSTAT-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/FLAGSTAT/{{fastq}}_{{assemblers}}_{{busco_step}}_FLAGSTAT-BENCHMARK.txt"
     priority: 20
     message:
         """
@@ -1520,9 +1685,9 @@ rule combined_fastq:
     params:
         command = "zcat " if ext_illumina == '.gz' else  "cat "
     output:
-        combined_data = f"{output_dir}combined_data.fastq",
+        combined_data = f"{output_dir}{{fastq}}/DIVERS/combined_data.fastq",
     log:
-        error = f"{output_dir}LOGS/QUALITY/KAT/combinedfastq2KAT.e",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/KAT/combinedfastq2KAT.e",
     priority: 20
     message:
         """
@@ -1552,29 +1717,30 @@ rule run_KAT:
     """
     threads: get_threads('run_KAT', 4)
     input:
-        fasta = rules.preparing_fasta_to_quality.output.renamed,
+        #fasta = rules.preparing_fasta_to_quality.output.renamed,
+        fasta = rules.run_fixstart.output.fix_start_fasta if config['QUALITY']['FIXSTART'] else rules.preparing_fasta_to_quality.output.renamed,
         combined_data = rules.combined_fastq.output.combined_data,
     output:
-        gcp = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.gcp", #matrix
-        png_hist = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.hist.png",
-        png_spectra_hist = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat-spectra-hist.png",
-        png_spectra_cn = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat-spectra-cn.png",
-        png_density = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat-density.png",
-        png_gcp_mx = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.gcp.mx.png",
-        png_comp_main_mx_spectra_cn = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.comp-main.mx.spectra-cn.png",
+        gcp = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.gcp", #matrix
+        png_hist = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.hist.png",
+        png_spectra_hist = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat-spectra-hist.png",
+        png_spectra_cn = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat-spectra-cn.png",
+        png_density = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat-density.png",
+        png_gcp_mx = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.gcp.mx.png",
+        png_comp_main_mx_spectra_cn = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.comp-main.mx.spectra-cn.png",
     params:
-        hist = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.hist",
-        cmp = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.comp", #matrix
-        sect = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.sect",
-        dir = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/",
-        gcp_tmp = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.gcp.mx", #matrix
-        cmp_tmp  = f"{output_dir}{{fastq}}/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.comp-main.mx", #matrixkat.comp-main.mx
+        hist = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.hist",
+        cmp = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.comp", #matrix
+        sect = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.sect",
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/",
+        gcp_tmp = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.gcp.mx", #matrix
+        cmp_tmp  = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{busco_step}}/KAT/kat.comp-main.mx", #matrixkat.comp-main.mx
         #path_tool = config['tools']['KAT_TOOL'],
     log:
-        output = f"{output_dir}LOGS/QUALITY/KAT/{{fastq}}_{{assemblers}}_{{busco_step}}_KAT.o",
-        error = f"{output_dir}LOGS/QUALITY/KAT/{{fastq}}_{{assemblers}}_{{busco_step}}_KAT.e",
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/KAT/{{fastq}}_{{assemblers}}_{{busco_step}}_KAT.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/KAT/{{fastq}}_{{assemblers}}_{{busco_step}}_KAT.e",
     benchmark:
-        f"{output_dir}LOGS/QUALITY/KAT/{{fastq}}_{{assemblers}}_{{busco_step}}_KAT-BENCHMARK.txt"
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/KAT/{{fastq}}_{{assemblers}}_{{busco_step}}_KAT-BENCHMARK.txt"
     priority: 20
     message:
         """
@@ -1609,75 +1775,18 @@ rule run_KAT:
         mv {params.gcp_tmp} {output.gcp} 1>>{log.output} 2>>{log.error}
         """
 
-######### Standardizing starting coordinate of bacterial genomes ############
-
-rule run_fixstart:
-    """
-    Standardizing starting coordinate of bacterial genome assemblies with fixstart module of Circlator.
-    """
-    threads: get_threads('run_fixstart', 1)
-    input:
-        assembly_file = rules.preparing_fasta_to_quality.output.renamed
-    output:
-        fix_start_fasta = f"{output_dir}{{fastq}}/{{assemblers}}/MSA/FIXSTART-{{busco_step}}/startfixed_asm.fasta",
-    params:
-        fix_start_log = f"{output_dir}{{fastq}}/{{assemblers}}/MSA/FIXSTART-{{busco_step}}/startfixed_asm.log",
-        out_dir = lambda w, output: os.path.dirname(output.fix_start_fasta)
-    log:
-        output = f"{output_dir}LOGS/FIXSTART/{{fastq}}_{{assemblers}}_{{busco_step}}-FIXSTART.o",
-        error =  f"{output_dir}LOGS/FIXSTART/{{fastq}}_{{assemblers}}_{{busco_step}}-FIXSTART.e",
-    benchmark:
-        f"{output_dir}LOGS/FIXSTART/{{fastq}}_{{assemblers}}_{{busco_step}}-FIXSTART-BENCHMARK.txt"
-    priority: 20
-    message:
-        """
-        Launching {rule} ...
-        threads : {threads}
-        input:
-            assembly_file  : {input.assembly_file}
-        params:
-            fix_start_log : {params.fix_start_log}
-            out_dir : {params.out_dir}
-        output:
-            fix_start_fast : {output.fix_start_fasta}
-        """
-    singularity:
-        config['tools']['MINICONDA_SIMG']
-    conda:
-         "envs/run_circlator_cenv.yml"
-    shell:
-        """
-        # def to inspect fasta titles for circular molecules and write their names in a file
-        list_lin_seqs()
-        {{
-          grep -o -E "^>.*$" $1 | grep -v -E "circular" | tr -d ">" > "$2"
-        }}
-        linSeqNamesFile="{params.out_dir}/linSeqNames.txt"
-        set +e
-        list_lin_seqs "{input.assembly_file}" "$linSeqNamesFile"
-        set -e
-        echo "##  $(date): processing {input.assembly_file}" 1>{log.output} 2>{log.error}
-        echo "##  Using circlator fixstart to rotate circular sequences so that they start at a dnaA gene (if found)" 1>>{log.output} 2>>{log.error}
-        echo "##  Ignoring the following linear sequences: $(cat $linSeqNamesFile)." 1>>{log.output} 2>>{log.error}
-
-        circlator fixstart --ignore="$linSeqNamesFile" "{input.assembly_file}" "{params.out_dir}"/startfixed_asm 1>>{log.output} 2>>{log.error}
-        """
-# TODO: faire en python pour simplifier ce code
-
-
 rule run_mauve:
     threads:
         get_threads('run_mauve', 8)
     input:
-        #liste = expand(f"{rules.run_fixstart.output.fix_start_fasta}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=input_last()) if config['MSA']['FIXSTART'] else expand(f"{rules.preparing_fasta_to_quality.output.renamed}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=input_last())
-        liste = expand(f"{rules.run_fixstart.output.fix_start_fasta}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS) if config['MSA']['FIXSTART'] else expand(f"{rules.preparing_fasta_to_quality.output.renamed}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=BUSCO_STEPS)
-
+        #liste = expand(f"{rules.run_fixstart.output.fix_start_fasta}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=input_last()) if config['QUALITY']['FIXSTART'] else expand(f"{rules.preparing_fasta_to_quality.output.renamed}", fastq = FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step=input_last())
+        liste = lambda wc: expand(rules.run_fixstart.output.fix_start_fasta if config['QUALITY']['FIXSTART'] else rules.preparing_fasta_to_quality.output.renamed, fastq=wc.fastq, assemblers=ASSEMBLY_TOOLS, busco_step=input_last()),
     params:
-        out_dir = f"{output_dir}{{fastq}}/MAUVE_ALIGN/",
+        out_dir = f"{output_dir}{{fastq}}/AGGREGATED_QC/MAUVE_ALIGN/",
         circular = config['DATA']['CIRCULAR'],
-        dir_quast = f"{output_dir}{{fastq}}/QUAST/data/"
+        dir_quast = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/"
     output:
-        xmfa = f"{output_dir}{{fastq}}/MAUVE_ALIGN/candidate_assemblies.xmfa",
+        xmfa = f"{output_dir}{{fastq}}/AGGREGATED_QC/MAUVE_ALIGN/candidate_assemblies.xmfa",
     priority: 20
     message:
         """
@@ -1690,8 +1799,8 @@ rule run_mauve:
             xmfa: {output.xmfa}
         """
     log:
-        output = f"{output_dir}LOGS/MAUVE/{{fastq}}-MAUVE.o",
-        error = f"{output_dir}LOGS/MAUVE/{{fastq}}-MAUVE.e",
+        output = f"{output_dir}{{fastq}}/LOGS/MAUVE/{{fastq}}-MAUVE.o",
+        error = f"{output_dir}{{fastq}}/LOGS/MAUVE/{{fastq}}-MAUVE.e",
     singularity:
         config['tools']['MINICONDA_SIMG']
     conda:
@@ -1714,18 +1823,15 @@ rule rule_graph:
     input:
         conf = str(path_config),
     params:
-        tmp = f"{output_dir}dag.tmp"
+        tmp = f"{output_dir}FINAL_REPORT/dag.tmp"
     output:
-        dag = f"{output_dir}dag.png"
-    log:
-        output = f"{output_dir}LOGS/REPORT/dag.o",
-        error = f"{output_dir}LOGS/REPORT/dag.e",
+        dag = f"{output_dir}FINAL_REPORT/dag.png"
     priority: 10
     message:
         """
         making dag ...
-        snakemake -n --rulegraph --configfile {input.conf} > {params.tmp} 2>{log.error}
-        dot -Tpng {params.tmp} >{output.dag} 2>>{log.error}
+        snakemake -n --rulegraph --configfile {input.conf} > {params.tmp}
+        dot -Tpng {params.tmp}
         """
     singularity:
         config['tools']['MINICONDA_SIMG']
@@ -1733,9 +1839,9 @@ rule rule_graph:
         "envs/environment.yaml"
     shell:
         """
-        snakemake -n --rulegraph --configfile {input.conf} >{params.tmp} 2>{log.error}
-        dot -Tpng {params.tmp} >{output.dag} 2>>{log.error}
-        rm {params.tmp} 2>>{log.output} 2>>{log.error}
+        snakemake -n --rulegraph --configfile {input.conf} >{params.tmp} 
+        dot -Tpng {params.tmp} >{output.dag}
+        rm {params.tmp}
         """
 
 rule run_stats:
@@ -1747,11 +1853,12 @@ rule run_stats:
         fastq = get_fastq,
         summary = expand(rules.run_busco.output.summary, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = BUSCO_STEPS)
     output:
-        stat = f"{output_dir}REPORT/{{fastq}}/Stats_busco.csv",
+        stat = f"{output_dir}{{fastq}}/REPORT/Stats_busco.csv",
     params:
+        dir = directory(f"{output_dir}{{fastq}}/REPORT"),
         liste_busco = expand(BUSCO_STEPS),
         liste_assemblers = expand(ASSEMBLY_TOOLS),
-        out_dir = directory(f"{output_dir}{{fastq}}"),
+        out_dir = directory(f"{output_dir}{{fastq}}/"),
     priority: 10
     message:
         """
@@ -1769,11 +1876,11 @@ rule run_benchmark_time:
         fastq = get_fastq,
         summary = expand(rules.run_busco.output.summary, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = BUSCO_STEPS)
     output:
-        stat = f"{output_dir}REPORT/{{fastq}}/Stats_benchmark.csv",
+        stat = f"{output_dir}{{fastq}}/REPORT/Stats_benchmark.csv",
     params:
         liste_busco = expand(BUSCO_STEPS),
         liste_assemblers = expand(ASSEMBLY_TOOLS),
-        out_dir = directory(f"{output_dir}"),
+        out_dir = directory(f"{output_dir}{{fastq}}"),
         racon_round = config['params']['RACON']['RACON_ROUNDS'],
         liste_correcteurs = expand(CORRECTION_TOOLS),
         medaka_training = config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF']
@@ -1795,15 +1902,14 @@ rule run_report:
         stat =  expand(rules.run_stats.output.stat,fastq=FASTQ),
         bench = expand(rules.run_benchmark_time.output.stat,fastq=FASTQ),
         quast =  expand(rules.run_quast.output.report_path,fastq=FASTQ),
+        check = expand(rules.run_dico_final.output.check,fastq=FASTQ),
         dag = rules.rule_graph.output.dag,
-        check = rules.run_dico_final.output.check
     params:
-        #dag = rules.rule_graph.output.dag,
+        fastq_list = FASTQ,
         conf = path_config,
-        outdir = directory(f"{output_dir}"),
-        out_dir = directory(f"{output_dir}REPORT"),
+        out_dir_report = directory(f"{output_dir}FINAL_REPORT"),
+        out_dir = directory(f"{output_dir}"),
         liste_assembler = ASSEMBLY_TOOLS,
-        #list_final = output_final,
         weesam_outdir = expand(rules.run_weesam.output.weesam_outdir , fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['WEESAM'] else '',
         blob = expand(rules.run_blobtools.output.blob, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['BLOBTOOLS'] else '',
         blob_read_cov = expand(rules.run_blobtools.output.read_cov, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['BLOBTOOLS'] else '',
@@ -1818,14 +1924,11 @@ rule run_report:
         assemblytics_png_Nchart = expand(rules.run_assemblytics.output.png_Nchart, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['ASSEMBLYTICS'] else '',
         assemblytics_png_log_all_sizes = expand(rules.run_assemblytics.output.png_log_all_sizes, fastq=FASTQ, assemblers = ASSEMBLY_TOOLS, busco_step = input_last()) if config['QUALITY']['ASSEMBLYTICS'] else '',
         mauve = expand(rules.run_mauve.output.xmfa, fastq=FASTQ) if config['MSA']['MAUVE'] else '',
-        #fixstart = expand(rules.run_fixstart.output.fix_start_fasta, fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last()) if (config['MSA']['FIXSTART'] and not config['MSA']['MAUVE']) else '',
-        ##fixstart = expand(rules.run_fixstart.output.fix_start_fasta, fastq=FASTQ, assemblers=ASSEMBLY_TOOLS, busco_step=input_last()) if (config['DATA']['CIRCULAR'] and config['MSA']['FIXSTART'] and not config['MSA']['MAUVE']) else '',
     output:
-        report = f"{output_dir}REPORT/Report.html",
-    #priority: 0
+        report = f"{output_dir}FINAL_REPORT/CulebrONT_report.html",
     message:
         """
-        print final report...
+        print final CulebrONT_report ...
         """
     singularity:
         config['tools']['R_SIMG']

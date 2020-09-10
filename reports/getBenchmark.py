@@ -1,6 +1,8 @@
 import re
 import pandas as pd
 import csv
+import glob
+import os.path
 
 fastq = snakemake.input.fastq
 m = re.search(r'\/([\w-]+)\.f[\w\.]+$', fastq)
@@ -33,11 +35,31 @@ for step in steps:
                             if re.match(r"^\d", line[0]):
                                 results_time[assembler, f"RACON{i}"] = [line[0]]
         elif step == "STEP_CORRECTION_NANOPOLISH":
-            with open(f"{out_repository}/LOGS/CORRECTION/NANOPOLISH/{fq}_{assembler}_NANOPOLISH-BENCHMARK.txt", 'r') as f:
+            result_range = 0
+            result_merge = 0
+            result_mean_variant = 0
+            n = 0
+            with open(f"{out_repository}/LOGS/CORRECTION/NANOPOLISH/{fq}_{assembler}_NANOPOLISH-MERGE-BENCHMARK.txt", 'r') as f:
                 spamreader = csv.reader(f, delimiter="\t")
                 for line in spamreader:
                     if re.match(r"^\d", line[0]):
-                        results_time[assembler, "NANOPOLISH"] = [line[0]]
+                        result_merge = float(line[0])
+            with open(f"{out_repository}/LOGS/CORRECTION/NANOPOLISH/{fq}_{assembler}_NANOPOLISH-MAKERANGE-BENCHMARK.txt",'r') as f:
+                spamreader = csv.reader(f, delimiter="\t")
+                for line in spamreader:
+                    if re.match(r"^\d", line[0]):
+                        result_range = float(line[0])
+            rep = f"{out_repository}/LOGS/CORRECTION/NANOPOLISH/"
+            for filename in glob.glob(os.path.join(rep,f"{fq}_{assembler}_*-NANOPOLISH-VARIANTS-BENCHMARK.txt")):
+                with open(filename,'r') as f:
+                    spamreader = csv.reader(f, delimiter="\t")
+                    for line in spamreader:
+                        if re.match(r"^\d", line[0]):
+                            n = n + 1
+                            result_mean_variant = float(result_mean_variant)+float(line[0])
+            result_mean_variant = result_mean_variant / n
+            x = float(result_range) + float(result_mean_variant) + float(result_merge)
+            results_time[assembler, "NANOPOLISH"] = [x]
         elif step == "STEP_CORRECTION_MEDAKA":
             for medaka_step in medaka_steps:
                 with open(f"{out_repository}/LOGS/CORRECTION/MEDAKA/{fq}_{assembler}_MEDAKA_{medaka_step}-BENCHMARK.txt", 'r') as f:

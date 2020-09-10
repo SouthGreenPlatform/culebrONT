@@ -43,6 +43,7 @@ If an assembled molecule is circular, e.g. for bacteria (CIRCULAR=True), this mo
 * If Circularisation (CIRCULAR=True) step is chosen, the *--plasmids* option on Flye is activated.
 * *Ciclator* is used to circularise assembly from Canu, Raven, Smartdenovo et Raven. Circlator will attempt to identify each circular sequence and output a linearised version from each of them.
 * Circularisation for Miniasm is already performed by minipolish.
+* On circularisation step performed by circlator, trimmed corrected fastq files obtained by CANU are used by circlator. the others assemblers inclued only use raw fastq.
 
 Included tools :
 
@@ -63,11 +64,18 @@ Correction
 
 Correction can improve the consensus sequence for a draft genome assembly. We include Nanopolish and Medaka on correction steps. With CulebrONT you can now train a Medaka model and use it directly to obtain a consensus from you favorite organism. In addition, Medaka can use a dedicated GPU resource if indicated.
 
-Included tools :s
+* We have included a split on segments of the assembled molecule before nanopolish. Each segment is polished on parallel to improve speed and gain time. Segments polished are merged subsequently.
 
+Included tools :
 
 * Medaka Medaka-gpu version >= 1.0.3 https://github.com/nanoporetech/medaka
 * Nanopolish version >= 0.11.3 https://nanopolish.readthedocs.io/en/latest/index.html#
+
+
+Fixing start
+^^^^^^^^^^^^
+
+We inclued a fixstart step before to quality control but only if CIRCULAR is activated. Using circlator fixstart to rotate circular sequences so that they start at a dnaA gene (if found).
 
 Checking assembly quality
 -------------------------
@@ -86,7 +94,7 @@ Mandatory Quality tools
  In CulebrONT, BUSCO and QUAST are selected by default. BUSCO helps to check if you have a good assembly, by searching the expected single-copy lineage-conserved orthologs in any newly-sequenced genome from an appropriate phylogenetic clade. QUAST is a good starting point to help evaluate the quality of assemblies, providing many helpful contiguity statistics. BUSCO and QUAST statistics are summarized in the CulebrONT final report.
 
 
-* BUSCO and QUAST statistics will be calculated by acivaiting the QUALITY (ASSEMBLY, POLISHING, CORRECTION) steps. You must activate at least one over three QUALITY options on *config.yaml* file.
+* BUSCO and QUAST statistics will be calculated by activaiting the QUALITY (ASSEMBLY, POLISHING, CORRECTION) steps. You must activate at least one over three QUALITY options on *config.yaml* file.
 
 Included tools :
 

@@ -98,6 +98,7 @@ properties:
             - BLOBTOOLS
             - ASSEMBLYTICS
             - KAT
+            - FIXSTART
         additionalProperties: false
         properties:
             ASSEMBLY :
@@ -121,16 +122,15 @@ properties:
             KAT:
                 type: boolean
                 description: true if you want to use kat for quality
-    MSA:
-        type: object
-        required:
-            - FIXSTART
-            - MAUVE
-        additionalProperties: false
-        properties:
             FIXSTART:
                 type: boolean
                 description: true if you want to use fixstart for quality
+    MSA:
+        type: object
+        required:
+            - MAUVE
+        additionalProperties: false
+        properties:
             MAUVE:
                 type: boolean
                 description: true if you want to use mauve for quality
@@ -152,6 +152,16 @@ properties:
             - ASSEMBLYTICS
         additionalProperties: false
         properties:
+            FLYE:
+                type: object
+                additionalProperties: false
+                properties:
+                    MAX_MEMORY:
+                        type: string
+                        description: "preset option (-x) for flye"
+                    OPTIONS:
+                        type: string
+                        description: "supplementary option for flye"
             MINIMAP2:
                 type: object
                 additionalProperties: false
@@ -165,7 +175,7 @@ properties:
                 properties:
                     MAX_MEMORY:
                         type: string
-                        description: "preset option (-x) for minimap2"
+                        description: "preset option (-x) for canu"
                     OPTIONS:
                         type: string
                         description: "supplementary option for canu"
@@ -228,6 +238,15 @@ properties:
                     MEDAKA_MODEL_PATH:
                         type: string
                         description: "medaka model path if no train"
+                    MEDAKA_FEATURES_OPTIONS:
+                        type: string
+                        description: "medaka features options"
+                    MEDAKA_TRAIN_OPTIONS:
+                        type: string
+                        description: "medaka train options"
+                    MEDAKA_CONSENSUS_OPTIONS:
+                        type: string
+                        description: "medaka consensus options"
             BUSCO:
                 type: object
                 additionalProperties: false

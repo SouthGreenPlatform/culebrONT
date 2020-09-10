@@ -4,12 +4,13 @@ import pandas as pd
 assemblers = snakemake.params.liste_assemblers
 busco_steps = snakemake.params.liste_busco
 out_repository = snakemake.params.out_dir
+summary = snakemake.input.summary
 
 results = {}
 id = 1
 for assembler in assemblers:
     for step in busco_steps:
-        with open(f"{out_repository}/{assembler}/QUALITY/{step}/BUSCO_RESULTS/short_summary_BUSCO_RESULTS.txt", 'r') as busco:
+        with open(f"{out_repository}/ASSEMBLERS/{assembler}/QUALITY/{step}/BUSCO_RESULTS/short_summary_BUSCO_RESULTS.txt", 'r') as busco:
             for line in busco:
                 if line.startswith('#'):
                     continue

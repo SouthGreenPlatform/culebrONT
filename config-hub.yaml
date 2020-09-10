@@ -9,37 +9,47 @@ DATA:
 
 ############ WC ################
 ASSEMBLY:
-    CANU : False
+    CANU : True
     FLYE : True
     MINIASM : True
+    RAVEN : True
+    SMARTDENOVO:  True
+    SHASTA : True
 CORRECTION:
     NANOPOLISH : True
-    MEDAKA : False
+    MEDAKA : True
 #by default BUSCO is launched if True in QUALITY ASSEMBLY OR/ET POLISHING OR/ET CORRECTION step is/are activated
 QUALITY:
-    ASSEMBLY : False
-    POLISHING : False
+    ASSEMBLY : True
+    POLISHING : True
     CORRECTION : True
 #### Others quality tools are lauched only in last assemblies
     WEESAM: True
     BLOBTOOLS: True
     ASSEMBLYTICS: True
+    FIXSTART: True
 #### Others quality softs but illumina reads are required
     KAT: True
 #### Alignment of the various assemblies derived from a fastq file for small genomes (<10-20Mbp);
 #### lauched only in last assemblies, only activate MAUVE if you have more that 1 sample
 MSA:
-    FIXSTART: True
     MAUVE: True
-
 
 ############ PARAMS ################
 params:
     MINIMAP2:
         PRESET_OPTION: 'map-pb' # -x minimap2 preset option is map-pb by default (map-pb, map-ont etc)
+    FLYE:
+        OPTIONS: ''
     CANU:
         MAX_MEMORY: '15G'
         OPTIONS: '-fast'
+    SMARTDENOVO:
+        KMER_SIZE: 16
+        OPTIONS: '-J 5000'
+    SHASTA:
+        MEM_MODE: 'filesystem'
+        MEM_BACKING: 'disk'
     CIRCLATOR:
         OPTIONS: ''
     RACON:
@@ -54,6 +64,14 @@ params:
         # if 'MEDAKA_TRAIN_WITH_REF' is True, medaka launchs training using reference found in DATA REF param. Medaka does not take in count other medaka model parameters below.
         MEDAKA_TRAIN_WITH_REF: True
         MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
+        #options to feature, train and consensus
+        #
+        MEDAKA_FEATURES_OPTIONS: '--batch_size 10 --chunk_len 100 --chunk_ovlp 10'
+        #MEDAKA_FEATURES_OPTIONS: '--batch_size 100 --chunk_len 10000 --chunk_ovlp 1000'
+        MEDAKA_TRAIN_OPTIONS: '--batch_size 10 --epochs 500 '
+        #MEDAKA_TRAIN_OPTIONS: '--batch_size 100 --epochs 5000 '
+        MEDAKA_CONSENSUS_OPTIONS: '-b 5 --hint=nomultithread' #use multithread on cluster
+        #MEDAKA_CONSENSUS_OPTIONS: '-b 50 --hint=nomultithread' #use multithread on cluster
     BUSCO:
         DATABASE : 'Data-Xoo-sub/bacteria_odb10'
         MODEL : 'genome'

@@ -4,34 +4,35 @@ DATA:
     ILLUMINA: 'Data-Xoo-sub/illumina/'
     GENOME_SIZE: '4.8m'
     REF: 'Data-Xoo-sub/ref/BAI3_Sanger.fsa'
-    OUTPUT: 'output_xoo_sub_CIRC/'
+    OUTPUT: 'output_xoo_sub_XXX3/'
     CIRCULAR: True
 
 ############ WC ################
 ASSEMBLY:
-    CANU : False
+    CANU : True
     FLYE : True
     MINIASM : True
     RAVEN : True
     SMARTDENOVO:  True
+    SHASTA : True
 CORRECTION:
     NANOPOLISH : True
-    MEDAKA : False
+    MEDAKA : True
 #by default BUSCO is launched if True in QUALITY ASSEMBLY OR/ET POLISHING OR/ET CORRECTION step is/are activated
 QUALITY:
-    ASSEMBLY : False
-    POLISHING : False
+    ASSEMBLY : True
+    POLISHING : True
     CORRECTION : True
 #### Others quality tools are lauched only in last assemblies
     WEESAM: True
     BLOBTOOLS: True
     ASSEMBLYTICS: True
+    FIXSTART: True
 #### Others quality softs but illumina reads are required
     KAT: True
 #### Alignment of the various assemblies derived from a fastq file for small genomes (<10-20Mbp);
 #### lauched only in last assemblies, only activate MAUVE if you have more that 1 sample
 MSA:
-    FIXSTART: True
     MAUVE: True
 
 
@@ -39,11 +40,13 @@ MSA:
 params:
     MINIMAP2:
         PRESET_OPTION: 'map-pb' # -x minimap2 preset option is map-pb by default (map-pb, map-ont etc)
+    FLYE:
+        OPTIONS: ''
     CANU:
         MAX_MEMORY: '15G'
         OPTIONS: '-fast'
     SMARTDENOVO:
-        KMER_SIZE: '16'
+        KMER_SIZE: 16
         OPTIONS: '-J 5000'
     SHASTA:
         MEM_MODE: 'filesystem'
@@ -62,6 +65,14 @@ params:
         # if 'MEDAKA_TRAIN_WITH_REF' is True, medaka launchs training using reference found in DATA REF param. Medaka does not take in count other medaka model parameters below.
         MEDAKA_TRAIN_WITH_REF: True
         MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
+        #options to feature, train and consensus
+        #
+        MEDAKA_FEATURES_OPTIONS: '--batch_size 10 --chunk_len 100 --chunk_ovlp 10'
+        #MEDAKA_FEATURES_OPTIONS: '--batch_size 100 --chunk_len 10000 --chunk_ovlp 1000'
+        MEDAKA_TRAIN_OPTIONS: '--batch_size 10 --epochs 500 '
+        #MEDAKA_TRAIN_OPTIONS: '--batch_size 100 --epochs 5000 '
+        MEDAKA_CONSENSUS_OPTIONS: '-b 5 --hint=nomultithread' #use multithread on cluster
+        #MEDAKA_CONSENSUS_OPTIONS: '-b 50 --hint=nomultithread' #use multithread on cluster
     BUSCO:
         DATABASE : 'Data-Xoo-sub/bacteria_odb10'
         MODEL : 'genome'
@@ -95,9 +106,6 @@ tools:
     FLYE_SIMG : '/path/to/singularity/images/flye-2.6.simg'
     MINIASM_SIMG : '/path/to/singularity/images/miniasm-0.3.simg'
     MINIPOLISH_SIMG : '/path/to/singularity/images/minipolish-0.1.2.simg'
-    RAVEN_SIMG : '/path/to/singularity/images/raven-1.10.1.simg'
-    SMARTDENOVO_SIMG : '/path/to/singularity/images/smartdenovo.simg'
-    SHASTA_SIMG : '/path/to/singularity/images/shasta-0.5.1.simg'
 ## CIRCULARISATION
     CIRCLATOR_SIMG : '/path/to/singularity/images/circlator-1.5.5.simg'
 ## POLISHERS:
@@ -118,6 +126,5 @@ tools:
     KAT_SIMG : '/path/to/singularity/images/kat-2.4.2.simg'
     MINICONDA_SIMG : 'shub://vibaotram/singularity-container:cpu-guppy3.4-conda-api'
     R_SIMG: '/path/to/singularity/images/R.simg'
-
 
 
