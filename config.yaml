@@ -20,8 +20,8 @@ CORRECTION:
     MEDAKA : True
 #by default BUSCO is launched if True in QUALITY ASSEMBLY OR/ET POLISHING OR/ET CORRECTION step is/are activated
 QUALITY:
-    ASSEMBLY : True
-    POLISHING : True
+    ASSEMBLY : False
+    POLISHING : False
     CORRECTION : True
 #### Others quality tools are lauched only in last assemblies
     WEESAM: True
@@ -63,7 +63,7 @@ params:
         OPTIONS: ''
     MEDAKA:
         # if 'MEDAKA_TRAIN_WITH_REF' is True, medaka launchs training using reference found in DATA REF param. Medaka does not take in count other medaka model parameters below.
-        MEDAKA_TRAIN_WITH_REF: True
+        MEDAKA_TRAIN_WITH_REF: False
         MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
         #options to feature, train and consensus
         #
