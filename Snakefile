@@ -224,6 +224,9 @@ if config['DATA']['CIRCULAR']:
 else:
     add_circular_name = ""
 
+if not config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF'] and config['params']['MEDAKA']['MEDAKA_MODEL_PATH'] == "":
+   raise ValueError("you have to give a model to MEDAKA on MEDAKA_MODEL_PATH")
+
 ############################### DEF ####################################
 
 draft_to_correction = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{nb}/assembly.racon{nb}.fasta" if int(nb)>=1 else f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/Assembly{add_circular_name}.fasta"
@@ -1103,18 +1106,19 @@ rule run_medaka_train:
 
 rule run_medaka_consensus:
     """
-    launching Medaka Consensus
+    launching Medaka Consensus from training
     """
     threads: get_threads('run_medaka_consensus', 8)
     input:
         draft = draft_to_correction,
         fastq = get_fastq,
-        model = f"{rules.run_medaka_train.output.fasta_val_cat_acc if config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF'] else config['params']['MEDAKA']['MEDAKA_MODEL_PATH']}",
         index_fai = rules.index_fasta_to_correction.output.index_fai,
         index_fmmi = rules.index_fasta_to_correction.output.index_mmi,
+        model = f"{rules.run_medaka_train.output.fasta_val_cat_acc if config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF'] else config['params']['MEDAKA']['MEDAKA_MODEL_PATH']}",
     output:
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/consensus.fasta"
     params:
+        model_opt = "-m" if config['params']['MEDAKA']['MEDAKA_MODEL_PATH'] != "" else "",
         dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA"),
         options = config['params']['MEDAKA']['MEDAKA_CONSENSUS_OPTIONS'],
     log:
@@ -1139,13 +1143,13 @@ rule run_medaka_consensus:
             output : {log.output}
             error: {log.error}
         command :
-        medaka_consensus -t {threads} -i {input.fastq} -d {input.draft} -o {params.dir} -m {input.model}
+        medaka_consensus -t {threads} {params.options} -i {input.fastq} -d {input.draft} -o {params.dir} {params.model_opt} {input.model}
         """
     singularity:
         config['tools']['MEDAKA_SIMG']
     shell:
         """
-        medaka_consensus -t {threads} {params.options} -i {input.fastq} -d {input.draft} -o {params.dir} -m {input.model} 1>{log.output} 2>{log.error}
+        medaka_consensus -t {threads} {params.options} -i {input.fastq} -d {input.draft} -o {params.dir} {params.model_opt} {input.model} 1>{log.output} 2>{log.error}
         """
 
 def fasta_to_busco(wildcards):

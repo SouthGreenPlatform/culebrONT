@@ -126,7 +126,7 @@ Specifically to Medaka :
 
 
 * If 'MEDAKA_TRAIN_WITH_REF' is activated, Medaka launchs training using the reference found in 'DATA/REF' param. Medaka does not take into account other medaka model parameters.
-* If 'MEDAKA_TRAIN_WITH_REF' is deactivated, Medaka does not launch training but uses instead the model provided in 'MEDAKA_MODEL_PATH'. If 'MEDAKA_MODEL_PATH' is empty, this param is not used and the default model for *E.coli* is used.
+* If 'MEDAKA_TRAIN_WITH_REF' is deactivated, Medaka does not launch training but uses instead the model provided in 'MEDAKA_MODEL_PATH'. You have to provide a 'MEDAKA_MODEL_PATH'. This parameter could not be empty.
 
 Standard parameters used:
 
@@ -159,10 +159,10 @@ Standard parameters used:
             NANOPOLISH_OVERLAP_LEN: '200'
             OPTIONS: ''
         MEDAKA:
-            # if 'MEDAKA_TRAIN_WITH_REF' is True, medaka launchs training using reference found in DATA REF param. Medaka does not take in count other medaka model parameters below.
+            # if 'MEDAKA_TRAIN_WITH_REF' is True, Medaka launchs training using reference found in DATA REF param. Medaka does not take in count other medaka model parameters below.
             MEDAKA_TRAIN_WITH_REF: True
-            MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
-            #options to feature, train and consensus
+            MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # specify the correct model, -m in the above, according to the basecaller used. Empty parameter is not accepted
+            # options to feature, train and consensus
             MEDAKA_FEATURES_OPTIONS: '--batch_size 100 --chunk_len 10000 --chunk_ovlp 1000'
             MEDAKA_TRAIN_OPTIONS: '--batch_size 100 --epochs 5000 '
             MEDAKA_CONSENSUS_OPTIONS: '-b 50 --hint=nomultithread' #use multithread on cluster

@@ -64,10 +64,9 @@ params:
         OPTIONS: ''
     MEDAKA:
         # if 'MEDAKA_TRAIN_WITH_REF' is True, medaka launchs training using reference found in DATA REF param. Medaka does not take in count other medaka model parameters below.
-        MEDAKA_TRAIN_WITH_REF: False
-        MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
-        #options to feature, train and consensus
-        #
+        MEDAKA_TRAIN_WITH_REF: True
+        MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # specify the correct model, -m in the above, according to the basecaller used. empty is not possible
+        # options to feature, train and consensus
         MEDAKA_FEATURES_OPTIONS: '--batch_size 10 --chunk_len 100 --chunk_ovlp 10'
         #MEDAKA_FEATURES_OPTIONS: '--batch_size 100 --chunk_len 10000 --chunk_ovlp 1000'
         MEDAKA_TRAIN_OPTIONS: '--batch_size 10 --epochs 500 '
