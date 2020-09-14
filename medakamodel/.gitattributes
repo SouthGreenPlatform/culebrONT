@@ -1,2 +1,0 @@
-https://github.com/nanoporetech/medaka/blob/master/medaka/data/*_model.hdf5 filter=lfs diff=lfs merge=lfs -text
-
