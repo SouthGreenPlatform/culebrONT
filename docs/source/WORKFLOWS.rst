@@ -127,6 +127,7 @@ Specifically to Medaka :
 
 * If 'MEDAKA_TRAIN_WITH_REF' is activated, Medaka launchs training using the reference found in 'DATA/REF' param. Medaka does not take into account other medaka model parameters.
 * If 'MEDAKA_TRAIN_WITH_REF' is deactivated, Medaka does not launch training but uses instead the model provided in 'MEDAKA_MODEL_PATH'. You have to provide a 'MEDAKA_MODEL_PATH'. This parameter could not be empty.
+* _IMPORTANT_ : Medaka models can be downloaded from the medaka repository. You need to install `git lfs` (see documentation here https://git-lfs.github.com/) to download largest files before `git clone https://github.com/nanoporetech/medaka.git`. Medaka models are found on `medaka/medaka/data/ repertory`. You need to give to CulebrONT path of medaka model in order to polish assemblies.
 
 Standard parameters used:
 
@@ -161,7 +162,7 @@ Standard parameters used:
         MEDAKA:
             # if 'MEDAKA_TRAIN_WITH_REF' is True, Medaka launchs training using reference found in DATA REF param. Medaka does not take in count other medaka model parameters below.
             MEDAKA_TRAIN_WITH_REF: True
-            MEDAKA_MODEL_PATH: 'medakamodel/r941_min_high_g303_model.hdf5' # specify the correct model, -m in the above, according to the basecaller used. Empty parameter is not accepted
+            MEDAKA_MODEL_PATH: '/path/to/medaka/model/r941_min_high_g303_model.hdf5' # specify the correct model, -m in the above, according to the basecaller used. Empty parameter is not accepted
             # options to feature, train and consensus
             MEDAKA_FEATURES_OPTIONS: '--batch_size 100 --chunk_len 10000 --chunk_ovlp 1000'
             MEDAKA_TRAIN_OPTIONS: '--batch_size 100 --epochs 5000 '
