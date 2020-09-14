@@ -1788,8 +1788,7 @@ rule run_mauve:
         liste = lambda wc: expand(rules.run_fixstart.output.fix_start_fasta if config['QUALITY']['FIXSTART'] else rules.preparing_fasta_to_quality.output.renamed, fastq=wc.fastq, assemblers=ASSEMBLY_TOOLS, busco_step=input_last()),
     params:
         out_dir = f"{output_dir}{{fastq}}/AGGREGATED_QC/MAUVE_ALIGN/",
-        circular = config['DATA']['CIRCULAR'],
-        dir_quast = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/"
+        dir_aggregated = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/"
     output:
         xmfa = f"{output_dir}{{fastq}}/AGGREGATED_QC/MAUVE_ALIGN/candidate_assemblies.xmfa",
     priority: 20
@@ -1811,7 +1810,7 @@ rule run_mauve:
     conda:
         'envs/mauve_cenv.yml'
     script:
-         "AdditionalScripts/run_mauve.py"
+         'AdditionalScripts/run_mauve.py'
 
     #shell:
     #    """
