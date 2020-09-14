@@ -1149,6 +1149,7 @@ rule run_medaka_consensus:
         config['tools']['MEDAKA_SIMG']
     shell:
         """
+        rm -rf {params.dir}
         medaka_consensus -t {threads} {params.options} -i {input.fastq} -d {input.draft} -o {params.dir} {params.model_opt} {input.model} 1>{log.output} 2>{log.error}
         """
 
