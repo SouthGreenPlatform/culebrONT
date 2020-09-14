@@ -1,1 +1,2 @@
-https://github.com/nanoporetech/medaka/blob/master/medaka/data/r941_prom_variant_g360_model.hdf5 filter=lfs diff=lfs merge=lfs -text
+https://github.com/nanoporetech/medaka/blob/master/medaka/data/*_model.hdf5 filter=lfs diff=lfs merge=lfs -text
+
