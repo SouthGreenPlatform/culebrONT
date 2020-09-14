@@ -8,7 +8,6 @@ run progressive Mauve to create a multiple alignment of these genomes
 import os
 import re
 import subprocess
-import fileinput
 
 fasta_files = snakemake.input.liste
 out_dir = snakemake.params.out_dir
@@ -39,14 +38,15 @@ else:
     cmd = ["progressiveMauve", f"--output={xmfa}"] + fasta_files
 
 #launching MSA
-mauve_out = subprocess.run(cmd, check=True, capture_output=False, text=True, stdout=open(log_o,'w'), stderr=open(log_e,'w'))
+mauve_out = subprocess.run(cmd, check=True, capture_output=False, text=True, stdout=open(log_o, 'w'), stderr=open(log_e, 'w'))
+print("***", mauve_out)
 
 #rename fasta on xmfa
 subst = f's\'|{dir_quast}||\'ig' if not circular else f's\'|{out_dir}||\'ig'
 # print('**SB**', circular, subst)
 cmd = f"sed -i {subst} {xmfa}"
-os.system(cmd)
-# print('**CMD**',cmd)
+#os.system(cmd)
+print('**CMD**', cmd)
 
 #cmd = ["sed", "-i", subst, xmfa]
 #mauve_renaming = subprocess.run(cmd, check=True, capture_output=True, text=True)
