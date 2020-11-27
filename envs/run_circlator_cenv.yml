@@ -1,8 +1,0 @@
-name: CIRCLATOR_for_PB
-channels:
-  - conda-forge
-  - bioconda
-  - defaults
-dependencies:
-  - circlator=1.5.2
-  - canu=1.7
