@@ -1,0 +1,8 @@
+channels:
+    - bioconda
+    - conda-forge
+    - defaults
+    - anaconda
+dependencies:
+    - smartdenovo=1.0.0
+

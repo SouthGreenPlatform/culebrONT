@@ -1,0 +1,28 @@
+## BUILD SINGULARITY IMAGES PATH
+SINGULARITY:
+    REPORT : './Containers/Singularity.report.sif'
+    SHASTA : './Containers/Singularity.shasta-0.5.1.sif'
+    WEESAM : './Containers/Singularity.weesam.sif'
+    ASSEMBLYTICS : './Containers/Singularity.assemblytics.sif'
+    MEDAKA : './Containers/Singularity.medaka-gpu-1.2.sif'
+    KAT : './Containers/Singularity.kat.sif'
+    BLOBTOOLS: './Containers/Singularity.bloobtools-v1.1.1.sif'
+    QUAST: './Containers/quast-5.0.2.simg'
+
+CONDA:
+    FLYE : './envs/flye.yaml'
+    CANU : './envs/canu.yaml'
+    MINIPOLISH : './envs/minipolish.yaml'
+    RAVEN : './envs/raven.yaml'
+    SMARTDENOVO : './envs/smartdenovo.yaml'
+    CIRCLATOR : './envs/circlator.yaml'
+    R : './envs/R_for_culebront_cenv.yaml'
+    BUSCO : './envs/busco.yaml'
+    DIAMOND : './envs/diamond.yaml'
+    MUMMER : './envs/mummer.yaml'
+    MAUVE : './envs/mauve.yaml'
+    MINIASM_MINIMAP2 : './envs/miniasm_minimap2.yaml'
+    MINIMAP2_SAMTOOLS : './envs/minimap2_samtools.yaml'
+    RACON_MINIMAP2 : './envs/racon_minimap2.yaml'
+    QUAST: './envs/quast.yaml'
+    NANOPOLISH_MINIMAP2_SAMTOOLS_SEQTK : './envs/nanopolish_minimap2_samtools_seqtk.yaml'

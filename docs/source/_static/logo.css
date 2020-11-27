@@ -1,0 +1,26 @@
+/** css/yourtheme.css **/
+
+/* This line is theme specific - it includes the base theme CSS */
+@import 'theme.css';       /* for the Read the Docs theme */
+
+
+.wy-side-nav-search .wy-dropdown > a img.logo, .wy-side-nav-search > a img.logo {
+	display: block;
+	margin: 0 auto;
+	height: auto;
+	width: auto;
+	border-radius: 0;
+	max-width: 50% !important;
+	background: transparent;
+}
+
+.wy-table-responsive table td, .wy-table-responsive table th {
+	 white-space: break-spaces;
+}
+
+.rst-content .linenodiv pre, .rst-content div[class^="highlight"] pre, .rst-content pre.literal-block {
+	font-family: SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,Courier,monospace;
+	font-size: 12px;
+	line-height: 1.4;
+	white-space: break-spaces;
+}

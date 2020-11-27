@@ -1,0 +1,8 @@
+name: blobtools
+channels:
+    - bioconda
+    - conda-forge
+    - defaults
+    - anaconda
+dependencies:
+    - blobtools=1.1.1

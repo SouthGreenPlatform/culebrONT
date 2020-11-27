@@ -1,0 +1,9 @@
+name: mauve
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - mauve=2.4.0.snapshot_2015_02_13
+
+

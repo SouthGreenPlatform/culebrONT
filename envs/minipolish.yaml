@@ -1,0 +1,8 @@
+channels:
+    - bioconda
+    - conda-forge
+    - defaults
+    - anaconda
+dependencies:
+    - minipolish=0.1.2
+

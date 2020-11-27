@@ -1,0 +1,9 @@
+name: miniasm_minimap2
+channels:
+    - bioconda
+    - conda-forge
+    - defaults
+    - anaconda
+dependencies:
+    - miniasm=0.3_r179
+    - minimap2=2.17

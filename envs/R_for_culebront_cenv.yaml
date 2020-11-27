@@ -1,0 +1,15 @@
+name: R_for_culebront
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+  - r
+dependencies:
+  - bioconductor-gviz
+  - r-tidyverse
+  - r-cairo
+  - r-svglite
+  - r-nloptr
+  - r-optparse
+#  - racon=1.4.13
+#  - minimap2=2.17

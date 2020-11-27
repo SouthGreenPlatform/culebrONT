@@ -1,0 +1,30 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+description: an entry in the sample sheet
+type: object
+title: The Root Schema
+required:
+    SINGULARITY:
+        type: object
+        additionalProperties: false
+        required:
+            - MAIN
+            - SHASTA
+            - WEESAM
+            - ASSEMBLYTICS
+            - MEDAKA
+        properties:
+            'MAIN' :
+                type: string
+                description: "binary path for singularity"
+            'SHASTA':
+                type: string
+                description: "binary path for singularity"
+            'WEESAM':
+                type: string
+                description: "binary path for singularity"
+            'ASSEMBLYTICS':
+                type: string
+                description: "binary path for singularity"
+            'MEDAKA':
+                type: string
+                description: "binary path for singularity"
