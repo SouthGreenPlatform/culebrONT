@@ -213,7 +213,7 @@ wrappers
 
 A ``slurm_wrapper.py`` script is available on CulebrONT projet to manage resources from your cluster configuration (from cluster_config.yaml file). This is the easier way to know what is running on cluster and to adapt resources for every job. Take care, this cluster_config.yaml file is becoming obsolete on latest Snakemake versions.
 
-.. code-block::
+.. code-block::bash
 
    #!/bin/bash
    #SBATCH --job-name culebrONT
@@ -234,7 +234,7 @@ profiles
 
 Optionally is possible to use Profiles in order to run CulebrONT on HPC cluster. Please follow the `recommendations found on the SnakeMake profile github <https://github.com/Snakemake-Profiles/>`_.
 
-.. code-block::
+.. code-block::bash
 
    #!/bin/bash
    #SBATCH --job-name culebrONT
@@ -266,7 +266,7 @@ Output on CulebrONT
 
 The architecture of CulebrONT output is designed as follows:
 
-.. code-block::
+.. code-block::bash
 
     OUTPUT_CULEBRONT_CIRCULAR/
     ├── SAMPLE-1
