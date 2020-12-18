@@ -27,8 +27,8 @@ You have three options to obtain singularity build images:
         WEESAM : 'shub://SouthGreenPlatform/CulebrONT_pipeline:weesam.sif'
         ASSEMBLYTICS : 'shub://SouthGreenPlatform/CulebrONT_pipeline:assemblytics.sif'
         MEDAKA : 'shub://SouthGreenPlatform/CulebrONT_pipeline:medaka-gpu-1.2.sif'
-        BLOBTOOLS : 'shub://SouthGreenPlatform/CulebrONT_pipeline:bloobtools-v1.1.1.simg'
-        KAT: 'path/to/Containers/tools/KAT.simg'
+        BLOBTOOLS : 'shub://SouthGreenPlatform/CulebrONT_pipeline:blobtools.sif'
+        KAT: 'path/to/Containers/tools/KAT.sif'
 
 2. You can build available *.def* recipes available on the *CulebrONT_pipeline/Containers* repertory. Feel free to build them on your own computer (or cluster); be careful, you need root rights to do it. Use :
 
@@ -42,13 +42,13 @@ Now give to CulebrONT path from build images on ``tools_path.yaml`` such as :
 .. code-block:: bash
 
     SINGULARITY:
-        REPORT : 'path/to/Containers/Singularity.report.simg'
-        SHASTA : 'path/to/Containers/Singularity.shasta-0.5.1.simg'
-        WEESAM : 'path/to/Containers/tools/Singularity.weesam.simg'
-        ASSEMBLYTICS : 'path/to/Containers/Singularity.assemblytics-1.2.simg'
-        MEDAKA : 'path/to/Containers/Singularity.medaka-gpu-1.2.simg'
-        BLOBTOOLS : 'path/to/Containers/Singularity.bloobtools-v1.1.1.simg'
-        KAT: 'path/to/Containers/tools/Singularity.KAT.simg'
+        REPORT : 'path/to/Containers/Singularity.report.sif'
+        SHASTA : 'path/to/Containers/Singularity.shasta-0.5.1.sif'
+        WEESAM : 'path/to/Containers/tools/Singularity.weesam.sif'
+        ASSEMBLYTICS : 'path/to/Containers/Singularity.assemblytics.sif'
+        MEDAKA : 'path/to/Containers/Singularity.medaka-gpu-1.2.sif'
+        BLOBTOOLS : 'path/to/Containers/Singularity.bloobtools.sif'
+        KAT: 'path/to/Containers/tools/Singularity.KAT.sif'
 
 
 3. Download build available singularity images from i-Trop server https://itrop.ird.fr/culebront_utilities/. Use
