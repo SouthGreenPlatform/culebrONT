@@ -6,7 +6,7 @@ SINGULARITY:
     ASSEMBLYTICS : './Containers/Singularity.assemblytics.sif'
     MEDAKA : './Containers/Singularity.medaka-gpu-1.2.sif'
     KAT : './Containers/Singularity.kat.sif'
-    BLOBTOOLS: './Containers/Singularity.bloobtools.sif'
+    BLOBTOOLS: './Containers/Singularity.blobtools.sif'
 
 CONDA:
     FLYE : './envs/flye.yaml'
