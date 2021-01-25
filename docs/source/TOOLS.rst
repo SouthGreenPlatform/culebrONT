@@ -33,14 +33,14 @@ Using CulebrONT you can activate or deactivate circularisation steps. Typically,
 
 Directed acyclic graphs (DAGs) show the differences between deactivated (CIRCULAR=False):
 
-.. image:: images/schema_pipeline_global-NOCIRC.png
-   :target: images/schema_pipeline_global-NOCIRC.png
+.. image:: _images/schema_pipeline_global-NOCIRC.png
+   :target: _images/schema_pipeline_global-NOCIRC.png
    :alt: CIRCULAR_FALSE
 
 and activated CIRCULAR step on configuration file (CIRCULAR=True):
 
-.. image:: images/schema_pipeline_global-CIRC.png
-   :target: images/schema_pipeline_global-CIRC.png
+.. image:: _images/schema_pipeline_global-CIRC.png
+   :target: _images/schema_pipeline_global-CIRC.png
    :alt: CIRCULAR_TRUE
 
 
@@ -112,8 +112,8 @@ Quality on assemblies
 
 A variety of useful tools exist to check high accuracy assemblies.
 
-.. image:: images/schema_pipeline_global-QUALITY.png
-   :target: images/schema_pipeline_global-QUALITY.png
+.. image:: _images/schema_pipeline_global-QUALITY.png
+   :target: _images/schema_pipeline_global-QUALITY.png
    :alt: QUALITY
 
 

@@ -1,7 +1,9 @@
-name: CIRCLATOR_for_PB
+name: mauve-2.4.0
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - circlator=1.5.2
+  - mauve=2.4.0.snapshot_2015_02_13
+
+

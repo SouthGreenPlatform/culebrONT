@@ -73,7 +73,7 @@ Florian Charriat (CIRAD)'''
 # built documents.
 #
 # The short X.Y version.
-version = "1.3.0"
+version = "1.3.1"
 
 if os.environ.get('READTHEDOCS') == 'True':
     # Because Read The Docs modifies conf.py, versioneer gives a "dirty"

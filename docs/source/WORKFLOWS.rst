@@ -13,7 +13,7 @@ CulebrONT allow you to build a workflow using a simple configuration ``config.ya
 
 First, indicate the data path in the configuration ``config.yaml`` file:
 
-.. code-block:: yaml
+.. code-block:: YAML
 
    DATA:
        FASTQ: '/path/to/fastq/directory/'
@@ -55,22 +55,9 @@ Feel free to activate only assembly, assembly+polishing or assembly+polishing+co
 
 Example:
 
-.. code-block:: yaml
-
-   ASSEMBLY:
-       CANU : False
-       FLYE : True
-       MINIASM : False
-       SHASTA : False
-       SMARDENOVO : True
-       RAVEN: True
-   CIRCULAR: False
-   POLISHING:
-       RACON: True
-   CORRECTION:
-       NANOPOLISH : True
-       MEDAKA : False
-   FIXSTART: False
+.. literalinclude:: ../../config.yaml
+    :language: YAML
+    :lines: 10-27
 
 
 3. Chose quality tools
@@ -81,15 +68,9 @@ With CulebrONT you can use several quality tools to check assemblies.
 * If BLOBTOOLS, ASSEMBLYTICS, WEESAM and KAT are activated only the last draft generated on the pipeline will be used.
 * KAT quality tool can be activate but Illumina reads are mandatory in this case. These reads can be compressed or not.
 
-.. code-block:: yaml
-
-    QUALITY:
-       BUSCO: True
-       QUAST: True
-       WEESAM: True
-       BLOBTOOLS: True
-       ASSEMBLYTICS: True
-       KAT: True
+.. literalinclude:: ../../config.yaml
+    :language: YAML
+    :lines: 29-38
 
 
 Alignment of various assemblies **for small genomes (<10-20Mbp)** is also possible by using Mauve.
@@ -97,10 +78,9 @@ Alignment of various assemblies **for small genomes (<10-20Mbp)** is also possib
 * If you want to improve alignment with MAUVE on circular molecules is recommended to activate *Fixstart* step.
 * Only activate MAUVE if you have more than one sample and more than one quality step.
 
-.. code-block:: yaml
-
-   MSA:
-       MAUVE: True
+.. literalinclude:: ../../config.yaml
+    :language: YAML
+    :lines: 41-43
 
 
 4. Parameters for some specific tools
@@ -124,53 +104,9 @@ Specifically to ``Medaka``:
 
 Here you find standard parameters used on CulebrONT. Feel free to adapt it to your requires.
 
-.. code-block:: yaml
-
-    params:
-        MINIMAP2:
-            PRESET_OPTION: 'map-ont'
-        FLYE:
-            OPTIONS: ''
-        CANU:
-            MAX_MEMORY: '15G'
-            OPTIONS: '-fast'
-        SMARTDENOVO:
-            KMER_SIZE: 16
-            OPTIONS: '-J 5000'
-        SHASTA:
-            MEM_MODE: 'filesystem'
-            MEM_BACKING: 'disk'
-        CIRCLATOR:
-            OPTIONS: ''
-        RACON:
-            RACON_ROUNDS: 2
-        CORRECTION_MAKERANGE:
-            SEGMENT_LEN: '50000'
-            OVERLAP_LEN: '200'
-        NANOPOLISH:
-            OPTIONS: ''
-        MEDAKA:
-            MEDAKA_TRAIN_WITH_REF: True
-            MEDAKA_MODEL_PATH: 'Data-Xoo-sub/medaka-models/r941_min_high_g303_model.hdf5'
-            MEDAKA_FEATURES_OPTIONS: '--batch_size 100 --chunk_len 10000 --chunk_ovlp 1000'
-            MEDAKA_TRAIN_OPTIONS: '--batch_size 100 --epochs 5000 '
-            MEDAKA_CONSENSUS_OPTIONS: '-batch 50'
-        BUSCO:
-            DATABASE : 'Data-Xoo-sub/bacteria_odb10'
-            MODEL : 'genome'
-            SP : ''
-        QUAST:
-            GFF: ''
-            OPTIONS : ''
-        DIAMOND:
-            DATABASE: 'Data-Xoo-sub/testBacteria.dmnd'
-        MUMMER:
-            MINMATCH : 100
-            MINCLUSTER: 500
-        ASSEMBLYTICS:
-            UNIQUE_ANCHOR_LEN: 10000
-            MIN_VARIANT_SIZE: 50
-            MAX_VARIANT_SIZE: 10000
+.. literalinclude:: ../../config.yaml
+    :language: YAML
+    :lines: 46-
 
 .. warning::
     Please check documentation of each tool and make sure that the settings are correct!

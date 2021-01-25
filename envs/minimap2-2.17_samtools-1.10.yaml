@@ -1,4 +1,4 @@
-name: minimap2_samtools
+name: minimap2-2.17_samtools-1.10
 channels:
     - bioconda
     - conda-forge

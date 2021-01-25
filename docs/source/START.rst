@@ -10,25 +10,28 @@ In your local computer OR on HPC cluster, first of all clone our repository or d
    git clone https://github.com/SouthGreenPlatform/CulebrONT_pipeline.git
    cd CulebrONT_pipeline
 
-For installation, you need modify ``tools_path.yaml`` file. You need to adapt path to singularity images and also conda environments. We will explain all here!
+In order to build a pipeline, you have to adapt two files in YAML (Yet Another Markup Language) format  ``tools_path.yaml`` and then ``config.yaml``.  The snakemake pipeline will then execute the set of rules executed into their own virtual environment.
+
+For installation, you need to first modify ``tools_path.yaml`` file. You need to adapt path to singularity images and also conda environments. CulebrONT integrates many tools. In order to build a workflow, CulebrONT needs to know where tools are installed. You can give only tools you will use for your analysis. To avoid you to install them, we provide singularity images and conda environments. We will explain all here!
+
 
 How to build singularity images?
 --------------------------------
 
-You have three options to obtain singularity build images:
+You have three options to obtain singularity build images. Choose one of them!
 
 1. Give path to **singularity hub** images from our `CulebrONT repository <https://singularity-hub.org/collections/4442>`_. If you use singularity hub repository build singularity images will be download from the cloud :
 
-.. code-block:: bash
+.. code-block:: YAML
 
     SINGULARITY:
-        REPORT : 'shub://SouthGreenPlatform/CulebrONT_pipeline:report.sif'
-        SHASTA : 'shub://SouthGreenPlatform/CulebrONT_pipeline:shasta-0.5.1.sif'
-        WEESAM : 'shub://SouthGreenPlatform/CulebrONT_pipeline:weesam.sif'
-        ASSEMBLYTICS : 'shub://SouthGreenPlatform/CulebrONT_pipeline:assemblytics.sif'
-        MEDAKA : 'shub://SouthGreenPlatform/CulebrONT_pipeline:medaka-gpu-1.2.sif'
-        BLOBTOOLS : 'shub://SouthGreenPlatform/CulebrONT_pipeline:blobtools.sif'
-        KAT: 'path/to/Containers/tools/KAT.sif'
+        REPORT : 'shub://SouthGreenPlatform/CulebrONT_pipeline:report.def'
+        SHASTA : 'shub://SouthGreenPlatform/CulebrONT_pipeline:shasta-0.7.0.def'
+        WEESAM : 'shub://SouthGreenPlatform/CulebrONT_pipeline:weesam-latest.def'
+        ASSEMBLYTICS : 'shub://SouthGreenPlatform/CulebrONT_pipeline:assemblytics-1.2.def'
+        MEDAKA : 'shub://SouthGreenPlatform/CulebrONT_pipeline:medaka-gpu-1.2.def'
+        BLOBTOOLS : 'shub://SouthGreenPlatform/CulebrONT_pipeline:blobtools-1.1.1.def'
+        KAT: 'shub://SouthGreenPlatform/CulebrONT_pipeline:kat-latest.sif'
 
 2. You can build available *.def* recipes available on the *CulebrONT_pipeline/Containers* repertory. Feel free to build them on your own computer (or cluster); be careful, you need root rights to do it. Use :
 
@@ -39,17 +42,9 @@ You have three options to obtain singularity build images:
 
 Now give to CulebrONT path from build images on ``tools_path.yaml`` such as :
 
-.. code-block:: bash
-
-    SINGULARITY:
-        REPORT : 'path/to/Containers/Singularity.report.sif'
-        SHASTA : 'path/to/Containers/Singularity.shasta-0.5.1.sif'
-        WEESAM : 'path/to/Containers/tools/Singularity.weesam.sif'
-        ASSEMBLYTICS : 'path/to/Containers/Singularity.assemblytics.sif'
-        MEDAKA : 'path/to/Containers/Singularity.medaka-gpu-1.2.sif'
-        BLOBTOOLS : 'path/to/Containers/Singularity.bloobtools.sif'
-        KAT: 'path/to/Containers/tools/Singularity.KAT.sif'
-
+.. literalinclude:: ../../tools_path.yaml
+    :language: YAML
+    :lines: 2-9
 
 3. Download build available singularity images from i-Trop server https://itrop.ird.fr/culebront_utilities/. Use
 
@@ -59,30 +54,32 @@ Now give to CulebrONT path from build images on ``tools_path.yaml`` such as :
     wget -rm -nH --cut-dirs=2 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/singularity_build/
 
 
+.. NOTE::
+
+    If you don't want to use some tool, please leave the path empty. Like bellow for SHASTA and ASSEMBLYTICS and don't remove the line of the tool PLEASE.
+
+    .. code-block:: YAML
+
+        SINGULARITY:
+            REPORT : 'path/to/Containers/Singularity.report.sif'
+            SHASTA : ''
+            WEESAM : 'path/to/Containers/tools/Singularity.weesam-latest.sif'
+            ASSEMBLYTICS : ''
+            MEDAKA : 'path/to/Containers/Singularity.medaka-gpu-1.2.sif'
+            BLOBTOOLS : 'path/to/Containers/Singularity.bloobtools-1.1.1.sif'
+            KAT: 'path/to/Containers/tools/Singularity.kat-latest.sif'
+
+
+
 How to build use Conda environments?
 ------------------------------------
 
 A series of Conda environment are available on our repository for each tool used. These environments will be automatically build the first time that you launch CulebrONT. Conda are available on the *CulebrONT_pipeline/envs/* folder. Give to CulebrONT conda path required on *tools_path.yaml* file such as :
 
-.. code-block:: bash
+.. literalinclude:: ../../tools_path.yaml
+    :language: YAML
+    :lines: 11-27
 
-    CONDA:
-        FLYE : './envs/flye.yaml'
-        CANU : './envs/canu.yaml'
-        MINIPOLISH : './envs/minipolish.yaml'
-        RAVEN : './envs/raven.yaml'
-        SMARTDENOVO : './envs/smartdenovo.yaml'
-        CIRCULATOR : './envs/circlator.yaml'
-        R : './envs/R_for_culebront_cenv.yaml'
-        QUAST : './envs/quast.yaml'
-        BUSCO : './envs/busco.yaml'
-        DIAMOND : './envs/diamond.yaml'
-        MUMMER : './envs/mummer.yaml'
-        MAUVE : './envs/mauve.yaml'
-        MINIASM_MINIMAP2 : './envs/miniasm_minimap2.yaml'
-        MINIMAP2_SAMTOOLS : './envs/minimap2_samtools.yaml'
-        RACON_MINIMAP2 : './envs/racon_minimap2.yaml'
-        NANOPOLISH_MINIMAP2_SAMTOOLS_SEQTK : './envs/nanopolish_minimap2_samtools_seqtk.yaml'
 
 .. DANGER::
     conda enviroments are compiled by Snakemake in each output analysis folder. To avoid this, please use ``--conda-prefix /path/to/build_conda_env`` on snakemake command line.
@@ -103,7 +100,7 @@ On ``cluster_config.yaml`` , you can add partition, memory and threads to be use
 
 Here is a example of the configuration file we used on the i-Trop HPC.
 
-.. code-block:: yaml
+.. code-block:: YAML
 
    __default__:
        cpus-per-task : 4

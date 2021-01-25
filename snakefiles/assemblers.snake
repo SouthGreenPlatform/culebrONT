@@ -307,7 +307,8 @@ rule run_shasta:
         cmd_mv_fasta = f"ln -s {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/ShastaRun/Assembly.fasta {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly{add_circular_name}.fasta ",
         cmd_mv_gfa = f"ln -s {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/ShastaRun/Assembly.gfa {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly_info.txt",
         memory_mode = f"--memoryMode {config['params']['SHASTA']['MEM_MODE']}",
-        memory_backing = f"--memoryBacking {config['params']['SHASTA']['MEM_BACKING']}"
+        memory_backing = f"--memoryBacking {config['params']['SHASTA']['MEM_BACKING']}",
+        options = f"{config['params']['SHASTA']['OPTIONS']}",
     output:
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly{add_circular_name}{TAG}.fasta",
         gfa = f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly_info.txt",
@@ -338,8 +339,8 @@ rule run_shasta:
         """
         (cd {params.out_dir};
         rm -rf ShastaRun/;
-        shasta-Linux-0.5.1 --command assemble --input {input.reads_on_fasta} {params.memory_mode} {params.memory_backing} --threads {threads};
+        shasta --command assemble --input {input.reads_on_fasta} {params.memory_mode} {params.memory_backing} --threads {threads} {params.options};
         {params.cmd_mv_fasta};
         {params.cmd_mv_gfa} ) 1>{log.output} 2>{log.error}
         """
-# TODO: check if generique name in case of version change not use shasta-Linux-0.5.1
+

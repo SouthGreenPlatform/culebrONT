@@ -206,6 +206,9 @@ properties:
                     MEM_BACKING:
                         type: string
                         description: '--memoryBacking specifies the physical backing of pages allocated via mmap and can take one of the following values: disk, 4K or 2M'
+                    OPTIONS:
+                        type: string
+                        description: "supplementary option for shasta"
             CIRCLATOR:
                 type: object
                 additionalProperties: false

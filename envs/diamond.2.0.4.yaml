@@ -1,7 +1,8 @@
+name: diamond.2.0.4
 channels:
     - bioconda
     - conda-forge
     - defaults
     - anaconda
 dependencies:
-    - flye=2.8.1
+    - diamond=2.0.4

@@ -58,6 +58,7 @@ params:
     SHASTA:
         MEM_MODE: 'filesystem'
         MEM_BACKING: 'disk'
+        OPTIONS: '--Reads.minReadLength 0'
 
 
     #### CIRCULAR
@@ -82,7 +83,7 @@ params:
         MEDAKA_TRAIN_WITH_REF: False    # if 'MEDAKA_TRAIN_WITH_REF' is True, training uses reference found in DATA REF param. 
         
         # Medaka does not take in count other parameters below if MEDAKA_TRAIN_WITH_REF is TRUE.
-        MEDAKA_MODEL_PATH: './Data-Xoo-sub/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
+        MEDAKA_MODEL_PATH: './Data-Xoo-sub/medaka-models/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
         MEDAKA_FEATURES_OPTIONS: '--batch_size 10 --chunk_len 100 --chunk_ovlp 10'
         MEDAKA_TRAIN_OPTIONS: '--batch_size 10 --epochs 500 '
         MEDAKA_CONSENSUS_OPTIONS: '--batch 200 '

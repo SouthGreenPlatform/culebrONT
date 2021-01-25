@@ -10,18 +10,18 @@ Frequently Asked Questions
 
 - This error is obtained if you are not bind your singularity. It's necessary to launch snakemake command line by using ``--singularity-args '--bind $HOME'``  arguments.
 
-**How much space does it take to install the CulebrONT dependances?**
+**How much space does it take to install the CulebrONT dependencies?**
 
 - build_conda_envs takes 2.1G and build singularity about 4.9G (medaka-gpu-1.2.simg takes 2.1G)
 
-**Recomendated Snakemake command line to launch culebrONT**
+**Recommended Snakemake command line to launch CulebrONT**
 
 .. code-block:: bash
 
     snakemake --nolock --use-conda --use-singularity --singularity-args '--bind $HOME' --cores -p -s Snakefile --latency-wait 6000000 --keep-going --restart-times 0 --rerun-incomplete --configfile config.yaml --conda-prefix $PWD/build_conda_envs
 
 
-- Snakemake compiles in each output directory conda enviroments. To avoid this, please use ``--conda-prefix /path/to/build_conda_env`` on snakemake command line. This could be practical on HPC cluster install.
+- Snakemake compiles in each output directory conda environments. To avoid this, please use ``--conda-prefix /path/to/build_conda_env`` on snakemake command line. This could be practical on HPC cluster install.
 
 - Bind mount disks to singularity environment by using ``--singularity-args '--bind $HOME'``. This allows to detect others disks on the singularity container.
 
@@ -37,3 +37,27 @@ Please check conda installation. On i-Trop cluster you can add it on sbatch scri
     [ ! -d $env ] && echo -e "## [$(date) - culebrONT]\t Creating conda environment for snakemake" && conda env create -f envs/environment.yaml -n snakemake
 
     source activate snakemake
+
+** QUAST takes to much time to run**
+
+Add  ``--large`` to quast options
+
+**Problem building conda environments**
+
+CreateCondaEnvironmentException:
+Could not create conda environment from /shared/ifbstor1/home/jorjuela/softs/CulebrONT_pipeline/envs/nanopolish_minimap2_samtools_seqtk.yaml:
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working...
+Building graph of deps: 0%| | 0/8 [00:00<?, ?it/s]
+Examining minimap2=2.17: 0%| | 0/8 [00:00<?, ?it/s]
+Examining seqtk=1.3: 12%|█▎ | 1/8 [00:00<00:00, 138.72it/s]
+Examining @/linux-64::__archspec==1=x86_64: 25%|██▌ | 2/8 [00:00<00:00, 149.47it/s]
+Examining samtools=1.10: 38%|███▊ | 3/8 [00:00<00:00, 220.81it/s]
+Examining python=3.7: 50%|█████ | 4/8 [00:00<00:00, 169.27it/s]
+Examining nanopolish=0.13.2: 62%|██████▎ | 5/8 [00:01<00:00, 3.16it/s]
+Examining nanopolish=0.13.2: 75%|███████▌ | 6/8 [00:01<00:00, 3.79it/s]
+Examining @/linux-64::__unix==0=0: 75%|███████▌ | 6/8 [00:01<00:00, 3.79it/s]
+Examining @/linux-64::__unix==0=0: 88%|████████▊ | 7/8 [00:01<00:00, 3.56it/s]
+Examining @/linux-64::__glibc==2.17=0: 88%|████████▊ | 7/8 [00:01<00:00, 3.56it/s]
+
+test use mamba instead of conda ``--conda-frontend mamba``

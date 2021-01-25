@@ -1,8 +1,9 @@
-name: diamond
+name: minipolish-0.1.2
 channels:
     - bioconda
     - conda-forge
     - defaults
     - anaconda
 dependencies:
-    - diamond=2.0.4
+    - minipolish=0.1.2
+

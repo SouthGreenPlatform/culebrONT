@@ -1,9 +1,7 @@
-name: mauve
+name: circlator-1.5.2
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - mauve=2.4.0.snapshot_2015_02_13
-
-
+  - circlator=1.5.2

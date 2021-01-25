@@ -2,7 +2,7 @@ Bootstrap: docker
 From : ubuntu:18.04
 
 %labels
-	assemblytics
+	assemblytics v1.2
 	created by <aurore.comte@ird.fr>
 
 %post

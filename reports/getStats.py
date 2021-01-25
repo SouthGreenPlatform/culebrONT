@@ -84,7 +84,7 @@ def main():
     df=pd.DataFrame.from_dict(dico_busco_time)
     dataframe_busco= df.T.stack().apply(pd.Series)
     with open(out_stats, "w") as busco_file:
-        print(f"dataframe_busco:\n{dataframe_busco}\n")
+        #print(f"dataframe_busco:\n{dataframe_busco}\n")
         dataframe_busco.to_csv(busco_file, index=True)
 
 

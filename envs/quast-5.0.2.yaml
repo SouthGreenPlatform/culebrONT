@@ -1,4 +1,4 @@
-name: quast
+name: quast-5.0.2
 channels:
     - bioconda
     - conda-forge

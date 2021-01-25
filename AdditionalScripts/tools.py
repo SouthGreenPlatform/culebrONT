@@ -56,17 +56,22 @@ def get_last_version(version_CulebrONT):
             Documentation avail at: https://culebront-pipeline.readthedocs.io/en/latest
             NOTE: The Latest version of CulebrONT 1.3.0 is available at https://github.com/SouthGreenPlatform/CulebrONT_pipeline/releases
     """
-    from urllib.request import urlopen
-    from re import search
-    HTML = urlopen("https://github.com/SouthGreenPlatform/CulebrONT_pipeline/tags").read().decode('utf-8')
-    lastRelease = search('/SouthGreenPlatform/CulebrONT_pipeline/releases/tag/.*',HTML).group(0).split("/")[-1].split('"')[0]
-    epilogTools = """Documentation avail at: https://culebront-pipeline.readthedocs.io/en/latest/ \n"""
-    if version_CulebrONT != lastRelease:
-        if lastRelease < version_CulebrONT:
-            epilogTools += "\n** NOTE: This CulebrONT version is higher than the production version, you are using a dev version\n"
-        elif lastRelease > version_CulebrONT:
-            epilogTools += f"\nNOTE: The Latest version of CulebrONT {lastRelease} is available at https://github.com/SouthGreenPlatform/CulebrONT_pipeline/releases\n"
-    return epilogTools
+    try:
+        from urllib.request import urlopen
+        from re import search
+        HTML = urlopen("https://github.com/SouthGreenPlatform/CulebrONT_pipeline/tags").read().decode('utf-8')
+        lastRelease = \
+        search('/SouthGreenPlatform/CulebrONT_pipeline/releases/tag/.*', HTML).group(0).split("/")[-1].split('"')[0]
+        epilogTools = """Documentation avail at: https://culebront-pipeline.readthedocs.io/en/latest/ \n"""
+        if version_CulebrONT != lastRelease:
+            if lastRelease < version_CulebrONT:
+                epilogTools += "\n** NOTE: This CulebrONT version is higher than the production version, you are using a dev version\n"
+            elif lastRelease > version_CulebrONT:
+                epilogTools += f"\nNOTE: The Latest version of CulebrONT {lastRelease} is available at https://github.com/SouthGreenPlatform/CulebrONT_pipeline/releases\n"
+        return epilogTools
+    except Exception as e:
+        epilogTools = f"\n** ENABLE TO GET LAST VERSION, check internet connection\n{e}\n"
+        return epilogTools
 
 
 def get_version(CULEBRONT):
@@ -264,14 +269,17 @@ class CulebrONT(object):
     def __check_tools_config(self, section, tool, mandatory=[]):
         """Check if path is a file if not empty
         :return absolute path file"""
-        path = Path(self.tools_config[section][tool]).resolve().as_posix()
-        if path:
-            if not Path(path).exists() or not Path(path).is_file():
-                raise FileNotFoundError(f'CONFIG FILE CHECKING FAIL : please check tools_config.yaml in the {section} section, {tool} file "{path}" {"does not exist" if not Path(path).exists() else "is not a valid file"}')
-            else:
-                self.tools_config[section][tool] = path
-        elif len(mandatory) > 0:
-            raise FileNotFoundError(f'CONFIG FILE CHECKING FAIL : please check tools_config.yaml in the {section} section, {tool} file "{path}" {"does not exist" if not Path(path_value).exists() else "is not a valid file"} but is mandatory for tool: {" ".join(mandatory)}')
+        path_file = self.tools_config[section][tool]
+        if not re.findall("shub://SouthGreenPlatform/CulebrONT_pipeline",path_file, flags=re.IGNORECASE):
+            path = Path(path_file).resolve().as_posix()
+            if path:
+                if not Path(path).exists() or not Path(path).is_file():
+                    raise FileNotFoundError(f'CONFIG FILE CHECKING FAIL : please check tools_config.yaml in the {section} section, {tool} file "{path}" {"does not exist" if not Path(path).exists() else "is not a valid file"}')
+                else:
+                    self.tools_config[section][tool] = path
+            elif len(mandatory) > 0:
+                raise FileNotFoundError(f'CONFIG FILE CHECKING FAIL : please check tools_config.yaml in the {section} section, {tool} file "{path}" {"does not exist" if not Path(path_value).exists() else "is not a valid file"} but is mandatory for tool: {" ".join(mandatory)}')
+
 
     def __var_2_bool(self, key, tool, to_convert):
         """convert to boolean"""
@@ -353,7 +361,7 @@ class CulebrONT(object):
         # check if all fastq have the same extension
         if len(fastq_files_list_ext) > 1:
             raise ValueError(
-                f"CONFIG FILE CHECKING FAIL : Please use only the same format for FASTQ data not: {fastq_files_list_ext}")
+                f"CONFIG FILE CHECKING FAIL : Please use only the same format for assembly FASTQ data, not: {fastq_files_list_ext}")
         else:
             self.fastq_files_ext = fastq_files_list_ext[0]
         # check if fastq are gzip
@@ -369,7 +377,7 @@ class CulebrONT(object):
             # check if all fastq have the same extension
             if len(illumina_files_list_ext) > 1:
                 raise ValueError(
-                    f"CONFIG FILE CHECKING FAIL : Please use only the same format for FASTQ data not: {illumina_files_list_ext}")
+                    f"CONFIG FILE CHECKING FAIL : Please use only the same format for ILLUMINA FASTQ data, not: {illumina_files_list_ext}")
             else:
                 self.illumina_files_ext = illumina_files_list_ext[0]
             # check if fastq are gzip
@@ -382,7 +390,7 @@ class CulebrONT(object):
 
         # check files if QUAST
         if bool(self.config["QUALITY"]["QUAST"]):
-            self.__check_file(section="DATA", key="REF", mandatory=["QUAST"])
+            self.__check_file(section="DATA", key="REF")
             genome_pb = convert_genome_size(self.get_config_value('DATA','GENOME_SIZE'))
             self.set_config_value(section="params", subsection="QUAST", key="GENOME_SIZE_PB", value=genome_pb)
         
