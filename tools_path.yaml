@@ -7,6 +7,7 @@ SINGULARITY:
     MEDAKA : './Containers/Singularity.medaka-gpu-1.2.sif'
     KAT : './Containers/Singularity.kat-latest.sif'
     BLOBTOOLS: './Containers/Singularity.blobtools-1.1.1.sif'
+    BUSCO: './Containers/Singularity.busco-4.1.4.sif'
 
 CONDA:
     FLYE : './envs/flye-2.8.1.yaml'
@@ -16,7 +17,6 @@ CONDA:
     SMARTDENOVO : './envs/smartdenovo-1.0.0.yaml'
     CIRCLATOR : './envs/circlator-1.5.2.yaml'
     R : './envs/R_for_culebront.yaml'
-    BUSCO : './envs/busco-4.1.4.yaml'
     DIAMOND : './envs/diamond.2.0.4.yaml'
     MUMMER : './envs/mummer-3.23.yaml'
     MAUVE : './envs/mauve-2.4.0.yaml'

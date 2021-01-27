@@ -36,7 +36,6 @@ def main():
     dico_step_files = {}
     for key, list_files in snakemake.params.dico.items():
         dico_step_files[key] = [path.replace("{fastq}",snakemake.params.sample) for path in list_files]
-    
     stat_time = snakemake.output.stat_time
     sample = snakemake.params.sample
     output_dir = Path(snakemake.params.out_dir)
@@ -51,6 +50,8 @@ def main():
         # check if MINIASM to load MINIASM_MINIPOLISH file
         if assembler in ("MINIASM"):
             df = pd.read_csv(f"{output_dir}/BENCHMARK/ASSEMBLER/MINIASM_MINIPOLISH.txt", sep="\t")
+            df2 = pd.read_csv(f"{output_dir}/BENCHMARK/ASSEMBLER/MINIMAP4MINIASM.txt", sep="\t")
+            dico_benchmark_time["STEP-ASSEMBLERS"][f"MINIMAP"][assembler] = f'{df2["s"][0]:.2f}'
             dico_benchmark_time["STEP-ASSEMBLERS"][f"MINIPOLISH"][assembler] = f'{df["s"][0]:.2f}'
         
         # check if SMARTDENOVO to load FASTQ2FASTA file

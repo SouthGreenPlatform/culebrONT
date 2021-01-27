@@ -98,6 +98,45 @@ rule run_canu:
 
 
 ################################ MINIASM ####################################
+# rule run_miniasm:
+#     """
+#     launch miniasm
+#     """
+#     threads: get_threads('run_miniasm', 4)
+#     input:
+#         fastq = get_fastq,
+#     output:
+#         gfa_miniasm = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_miniasm.gfa", # voir si à utiliser par gfapy
+#     params:
+#         temp_paf = temp(f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minimap2.paf"),
+#     log:
+#         error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM.e",
+#     benchmark:
+#         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIASM.txt"
+#     priority: 30
+#     message:
+#            """
+#            Launching {rule}
+#            threads : {threads}
+#            input:
+#                fastq : {input.fastq}
+#            params:
+#                paf : {params.temp_paf}
+#            output:
+#                gfa : {output.gfa_miniasm}
+#            log:
+#                error: {log.error}
+#            """
+#     conda:
+#         tools_config['CONDA']['MINIASM_MINIMAP2']
+#     shell:
+#          """
+#          (minimap2 -x ava-ont -t {threads} {input.fastq} {input.fastq} 1> {params.temp_paf};
+#          miniasm -f {input.fastq} {params.temp_paf} 1> {output.gfa_miniasm}) 2>{log.error}
+#          """
+
+
+
 rule run_miniasm:
     """
     launch miniasm
@@ -106,9 +145,7 @@ rule run_miniasm:
     input:
         fastq = get_fastq,
     output:
-        gfa_miniasm = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_miniasm.gfa", # voir si à utiliser par gfapy
-    params:
-        temp_paf = temp(f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minimap2.paf"),
+        paf = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minimap2.paf",
     log:
         error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM.e",
     benchmark:
@@ -120,8 +157,40 @@ rule run_miniasm:
            threads : {threads}
            input:
                fastq : {input.fastq}
-           params:
-               paf : {params.temp_paf}
+           output:
+               paf : {output.paf}
+           log:
+               error: {log.error}
+           """
+    conda:
+        tools_config['CONDA']['MINIASM_MINIMAP2']
+    shell:
+         """
+         (minimap2 -x ava-ont -t {threads} {input.fastq} {input.fastq} 1> {output.paf};) 2>{log.error}
+         """
+
+rule run_minimap_for_miniasm:
+    """
+    launch minimap for miniasm
+    """
+    threads: get_threads('run_miniasm', 4)
+    input:
+        fastq = get_fastq,
+        paf = rules.run_miniasm.output.paf
+    output:
+        gfa_miniasm = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_miniasm.gfa", # voir si à utiliser par gfapy
+    log:
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIMAP4MINIASM.txt"
+    priority: 30
+    message:
+           """
+           Launching {rule}
+           threads : {threads}
+           input:
+               fastq : {input.fastq}
+               paf : {input.paf}
            output:
                gfa : {output.gfa_miniasm}
            log:
@@ -131,9 +200,9 @@ rule run_miniasm:
         tools_config['CONDA']['MINIASM_MINIMAP2']
     shell:
          """
-         (minimap2 -x ava-ont -t {threads} {input.fastq} {input.fastq} 1> {params.temp_paf};
-         miniasm -f {input.fastq} {params.temp_paf} 1> {output.gfa_miniasm}) 2>{log.error}
+         (miniasm -f {input.fastq} {input.paf} 1> {output.gfa_miniasm}) 2>{log.error}
          """
+
 
 
 ################################ MINIPOLISH ####################################
@@ -144,7 +213,7 @@ rule run_minipolish:
     threads: get_threads('run_minipolish', 4)
     input:
         fastq = get_fastq,
-        gfa_miniasm = rules.run_miniasm.output.gfa_miniasm
+        gfa_miniasm = rules.run_minimap_for_miniasm.output.gfa_miniasm
     output:
         gfa_minipolish = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minipolish.gfa",
         #fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assembly{add_circular_name}.fasta",

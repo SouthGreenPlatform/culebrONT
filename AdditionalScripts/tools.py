@@ -404,6 +404,7 @@ class CulebrONT(object):
         # check BUSCO database if activate
         if bool(self.config["QUALITY"]["BUSCO"]):
             self.__check_dir(section='params', subsection='BUSCO', key='DATABASE', mandatory=["BUSCO"] )
+            self.__check_tools_config("SINGULARITY","BUSCO", ["BUSCO"])
 
         # check DIAMOND database if activate
         if bool(self.config["QUALITY"]["BLOBTOOLS"]):

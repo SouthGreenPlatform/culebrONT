@@ -148,6 +148,7 @@ rule run_busco:
         out_path = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/",
         busco_name = f"BUSCO_RESULTS",
         database = config['params']['BUSCO']['DATABASE'],
+        augustus_config = f"{output_dir}augustus_config",
         model = config['params']['BUSCO']['MODEL'],
         sp = f" --augustus_species {config['params']['BUSCO']['SP']}" if f"{config['params']['BUSCO']['SP']}"!="" else f"{config['params']['BUSCO']['SP']}",
     log:
@@ -174,11 +175,14 @@ rule run_busco:
             output : {log.output}
             error: {log.error}
         """
-    conda:
-        tools_config['CONDA']['BUSCO']
+    singularity:
+        tools_config['SINGULARITY']['BUSCO']
     shell:
         """
-        (busco -f -i {input.fasta} -o {params.busco_name} --out_path {params.out_path} -l {params.database} --offline -m {params.model} {params.sp} -c {threads};
+        (mkdir -p {params.augustus_config};
+        cp -r /opt/augustus-3.3.3/config/ {params.augustus_config};
+        export AUGUSTUS_CONFIG_PATH={params.augustus_config}/config;
+        busco -f -i {input.fasta} -o {params.busco_name} --out_path {params.out_path} -l {params.database} --offline -m {params.model} {params.sp} -c {threads};
         mv {params.out_path}BUSCO_RESULTS/short_summary*BUSCO_RESULTS.txt {output.summary} )1>{log.output} 2>{log.error}
         """
 

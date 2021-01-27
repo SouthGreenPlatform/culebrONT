@@ -32,6 +32,7 @@ You have three options to obtain singularity build images. Choose one of them!
         MEDAKA : 'shub://SouthGreenPlatform/CulebrONT_pipeline:medaka-gpu-1.2.def'
         BLOBTOOLS : 'shub://SouthGreenPlatform/CulebrONT_pipeline:blobtools-1.1.1.def'
         KAT: 'shub://SouthGreenPlatform/CulebrONT_pipeline:kat-latest.sif'
+        BUSCO: 'shub://SouthGreenPlatform/CulebrONT_pipeline:busco-4.1.4.sif'
 
 2. You can build available *.def* recipes available on the *CulebrONT_pipeline/Containers* repertory. Feel free to build them on your own computer (or cluster); be careful, you need root rights to do it. Use :
 
@@ -44,7 +45,7 @@ Now give to CulebrONT path from build images on ``tools_path.yaml`` such as :
 
 .. literalinclude:: ../../tools_path.yaml
     :language: YAML
-    :lines: 2-9
+    :lines: 2-10
 
 3. Download build available singularity images from i-Trop server https://itrop.ird.fr/culebront_utilities/. Use
 
@@ -78,7 +79,7 @@ A series of Conda environment are available on our repository for each tool used
 
 .. literalinclude:: ../../tools_path.yaml
     :language: YAML
-    :lines: 11-27
+    :lines: 12-
 
 
 .. DANGER::

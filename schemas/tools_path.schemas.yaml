@@ -7,13 +7,16 @@ required:
         type: object
         additionalProperties: false
         required:
-            - MAIN
+            - REPORT
             - SHASTA
             - WEESAM
             - ASSEMBLYTICS
             - MEDAKA
+            - BUSCO
+            - KAT
+            - BLOBTOOLS
         properties:
-            'MAIN' :
+            'REPORT' :
                 type: string
                 description: "binary path for singularity"
             'SHASTA':
@@ -26,5 +29,70 @@ required:
                 type: string
                 description: "binary path for singularity"
             'MEDAKA':
+                type: string
+                description: "binary path for singularity"
+            'BUSCO':
+                type: string
+                description: "binary path for singularity"
+            'KAT':
+                type: string
+                description: "binary path for singularity"
+            'BLOBTOOLS':
+                type: string
+                description: "binary path for singularity"
+
+    CONDA:
+        type: object
+        additionalProperties: false
+        required:
+            - REPORT
+            - SHASTA
+            - WEESAM
+            - ASSEMBLYTICS
+            - MEDAKA
+            - BUSCO
+            - KAT
+            - BLOBTOOLS
+        properties:
+            'FLYE' :
+                type: string
+                description: "binary path for singularity"
+            'CANU':
+                type: string
+                description: "binary path for singularity"
+            'MINIPOLISH':
+                type: string
+                description: "binary path for singularity"
+            'RAVEN':
+                type: string
+                description: "binary path for singularity"
+            'SMARTDENOVO':
+                type: string
+                description: "binary path for singularity"
+            'CIRCLATOR':
+                type: string
+                description: "binary path for singularity"
+            'R':
+                type: string
+                description: "binary path for singularity"
+            'DIAMOND':
+                type: string
+                description: "binary path for singularity"
+            'MUMMER':
+                type: string
+                description: "binary path for singularity"
+            'MAUVE':
+                type: string
+                description: "binary path for singularity"
+            'MINIASM_MINIMAP2':
+                type: string
+                description: "binary path for singularity"
+            'RACON_MINIMAP2':
+                type: string
+                description: "binary path for singularity"
+            'QUAST':
+                type: string
+                description: "binary path for singularity"
+            'NANOPOLISH_MINIMAP2_SAMTOOLS_SEQTK':
                 type: string
                 description: "binary path for singularity"
