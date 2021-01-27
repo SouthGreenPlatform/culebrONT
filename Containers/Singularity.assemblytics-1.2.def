@@ -23,8 +23,6 @@ From : ubuntu:18.04
     apt -y install python3-all-dev python3-pip openjdk-8-jdk python-setuptools
     apt -y install r-base  autoconf autotools-dev 
 
-
-
     wget https://github.com/MariaNattestad/Assemblytics/archive/v1.2.tar.gz
     tar -xvzf v1.2.tar.gz
     chmod a+x Assemblytics-1.2/scripts/Assemblytics*

@@ -28,8 +28,5 @@ chmod ugo+x shasta-Linux-0.7.0
 # symbolic link to rename shasta without version
 ln -s shasta-Linux-0.7.0 shasta
 
-# Run an assembly.
-#./shasta --input input.fasta
-
 %environment
 export  PATH=$PATH:/usr/local/

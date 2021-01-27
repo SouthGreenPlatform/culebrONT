@@ -22,7 +22,6 @@ From: ubuntu:18.04
     pip3 install cython
     python3 -m pip install argparse
     python3 -m pip install pysam
-    #python3 -m pip install statistics
     python3 -m pip install matplotlib
     python3 -m pip install seaborn
     python3 -m pip install numpy
@@ -42,13 +41,7 @@ From: ubuntu:18.04
     tar zxf data/taxdump.tar.gz -C data/ nodes.dmp names.dmp
     ./blobtools nodesdb --nodes data/nodes.dmp --names data/names.dmp
 
-
 %environment
     export PATH=$PATH:/usr/local/blobtools-blobtools_v1.1.1
-
-    #python3 setup.py install 
-    #wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz -P data/
-    #tar zxf data/taxdump.tar.gz -C data/ nodes.dmp names.dmp
-    #./blobtools create -i example/assembly.fna -b example/mapping_1.sorted.bam -t example/blast.out -o example/test && ./blobtools view -i example/test.blobDB.json && ./blobtools plot -i example/test.blobDB.json
 
 

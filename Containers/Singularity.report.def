@@ -71,4 +71,3 @@ From: ubuntu:18.04
 #    Rscript -e "library(remotes); install_github('strengejacke/strengejacke')"
 
 
-

@@ -5,6 +5,7 @@ From : ubuntu:18.04
     November 2019
     maintainer Aurore Comte <aurore.comte@ird.fr>
     weeSAM latest
+
 %help
     This container is for providing `minimap2` `samtools` `python3 lib`  for weesam.
 
