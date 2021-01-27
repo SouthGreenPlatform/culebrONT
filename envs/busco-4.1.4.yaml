@@ -1,8 +1,0 @@
-name: busco-4.1.4.yaml
-channels:
-    - bioconda
-    - conda-forge
-    - defaults
-    - anaconda
-dependencies:
-    - busco=4.1.4
