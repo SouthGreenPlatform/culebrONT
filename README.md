@@ -24,13 +24,9 @@ That’s right.
 
 @Authors:
 
-Aurore Comte (IRD) and Julie Orjuela (IRD), Sebastien Ravel (CIRAD), Florian Charriat (CIRAD) developped CulebrONT.
-
-François Sabot (IRD) was involved in coverage tools implementation.
+Aurore Comte (IRD) and Julie Orjuela (IRD), Sebastien Ravel (CIRAD), Florian Charriat (CIRAD), Tram Vi (IRD), Sebastien Cunnac (IRD) and François Sabot developped CulebrONT and contributed to the overall conceptualization of this pipeline. 
 
 Ndomassi Tando (IRD) helped on Singularity containers creation.
-
-Sebastien Cunnac (IRD) and Tram Vi (IRD) tested on real data and helped for circularisation improvements.
 
 <a name="notes"></a>
 ## Useful notes
