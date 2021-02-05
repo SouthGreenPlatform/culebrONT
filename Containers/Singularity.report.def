@@ -28,7 +28,6 @@ From: ubuntu:18.04
     pip3 install ipython
 
 ############################################################# R
-
 ## Add repository for download latest version of R
 
     curl "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x51716619E084DAB9" | apt-key add -

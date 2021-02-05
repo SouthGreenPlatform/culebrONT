@@ -15,7 +15,6 @@ From : ubuntu:18.04
     apt-get -y install gnuplot build-essential perl autoconf autotools-dev libcrypto++6 curl git
     
     export DEBIAN_FRONTEND=noninteractive
-
     ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
     apt-get install -y tzdata
     dpkg-reconfigure --frontend noninteractive tzdata

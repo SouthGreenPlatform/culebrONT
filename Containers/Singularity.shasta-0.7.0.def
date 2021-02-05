@@ -18,7 +18,6 @@ apt update
 apt install -y build-essential wget zlib1g-dev cmake git curl
 
 cd /usr/local
-
 # Download the executable for the latest release.
 curl -O -L https://github.com/chanzuckerberg/shasta/releases/download/0.7.0/shasta-Linux-0.7.0
 
