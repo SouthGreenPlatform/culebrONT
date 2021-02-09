@@ -24,16 +24,17 @@ That’s right.
 
 @Authors:
 
-Aurore Comte (IRD) and Julie Orjuela (IRD), Sebastien Ravel (CIRAD), Florian Charriat (CIRAD), Tram Vi (IRD), Sebastien Cunnac (IRD) and François Sabot developped CulebrONT and contributed to the overall conceptualization of this pipeline. 
-
-Ndomassi Tando (IRD) helped on Singularity containers creation.
+Julie Orjuela (IRD), Aurore Comte(IRD), Sébastien Ravel(CIRAD), Florian Charriat(CIRAD), Tram Vi(IRD), Francois Sabot(IRD) and Sébastien Cunnac(IRD).
 
 <a name="notes"></a>
+
 ## Useful notes
 
 Before launching CulebrONT, you could base-calling of arbitrarily multiplexed libraries across several Minion runs with sequencing quality control and gather the output files by genome for subsequent steps. For that use https://github.com/vibaotram/baseDmux.
 
 #### Thanks
+
+Thanks to Ndomassi Tando (i-Trop IRD) by administration support.
 
 The authors acknowledge the IRD i-Trop HPC (South Green Platform) at IRD Montpellier for providing HPC resources that have contributed to this work. https://bioinfo.ird.fr/ - http://www.southgreen.fr
 
