@@ -24,7 +24,7 @@ That’s right.
 
 @Authors:
 
-Julie Orjuela (IRD), Aurore Comte(IRD), Sébastien Ravel(CIRAD), Florian Charriat(CIRAD), Tram Vi(IRD), Francois Sabot(IRD) and Sébastien Cunnac(IRD).
+Julie Orjuela (IRD), Aurore Comte(IRD), Sébastien Ravel(CIRAD), Florian Charriat(INRAE), Tram Vi(IRD), Francois Sabot(IRD) and Sébastien Cunnac(IRD).
 
 <a name="notes"></a>
 
