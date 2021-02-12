@@ -3,13 +3,7 @@ Citation
 
 @Authors:
 
-Aurore Comte (IRD), Julie Orjuela (IRD), Sebastien Ravel (CIRAD), Florian Charriat (CIRAD) developed CulebrONT.
-
-Sebastien Cunnac (IRD) and Tram Vi (IRD) tested on real data and helped for circularisation improvements.
-
-François Sabot (IRD) was involved in coverage tools implementation and benchmarking.
-
-Ndomassi Tando (IRD) helped on Singularity containers creation.
+Julie Orjuela (IRD), Aurore Comte(IRD), Sébastien Ravel(CIRAD), Florian Charriat(INRAE), Tram Vi(IRD, AGI), Francois Sabot(IRD) and Sébastien Cunnac(IRD).
 
 Useful notes
 ------------
@@ -18,6 +12,8 @@ Before launching CulebrONT, you could base-calling of arbitrarily multiplexed li
 
 Thanks
 ------
+
+Thanks to Ndomassi Tando (i-Trop IRD) by administration support.
 
 The authors acknowledge the IRD i-Trop HPC (South Green Platform) at IRD Montpellier for providing HPC resources that have contributed to this work. https://bioinfo.ird.fr/ - http://www.southgreen.fr
 
