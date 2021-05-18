@@ -1,0 +1,54 @@
+BootStrap: docker
+From: ubuntu:18.04
+
+%labels
+    Maintainer Ndomassi Tando - IRD Itrop Cluster, DIADE Unit
+    Adapted to snakemake by Julie Orjuela - IRD 
+    base.image="ubuntu:18.04"
+    version="1"
+    software="blobtools"
+    software.version="1.1.1"
+
+%help
+    URL: https://github.com/DRL/blobtools
+    Description: A modular command-line solution for visualisation, quality control and taxonomic partitioning of genome datasets.
+    #Launch the command: singularity run /PATH_TO_CONTAINER/blobtools-1.1.1.simg + arguments                                                 
+
+%post
+    apt -y update && apt -y upgrade
+    apt-get -y install bzip2 g++ zlib1g-dev libbz2-dev liblzma-dev libffi-dev libncurses5-dev libcurl4-gnutls-dev libssl-dev curl make cmake wget python3-all-dev python3-pip python-virtualenv
+    apt-get -y install gnuplot build-essential perl autoconf autotools-dev libcrypto++6 curl git
+
+    pip3 install cython
+    python3 -m pip install argparse
+    python3 -m pip install pysam
+    #python3 -m pip install statistics
+    python3 -m pip install matplotlib
+    python3 -m pip install seaborn
+    python3 -m pip install numpy
+    python3 -m pip install pyyaml
+    python3 -m pip install tqdm
+    python3 -m pip install docopt
+
+
+# installation logiciel
+    cd /usr/local
+    #git clone https://github.com/DRL/blobtools.git
+    wget https://github.com/DRL/blobtools/archive/blobtools_v1.1.1.tar.gz
+    tar xzf blobtools_v1.1.1.tar.gz
+    cd blobtools-blobtools_v1.1.1/
+
+    wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz -P data/
+    tar zxf data/taxdump.tar.gz -C data/ nodes.dmp names.dmp
+    ./blobtools nodesdb --nodes data/nodes.dmp --names data/names.dmp
+
+
+%environment
+    export PATH=$PATH:/usr/local/blobtools-blobtools_v1.1.1
+
+    #python3 setup.py install 
+    #wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz -P data/
+    #tar zxf data/taxdump.tar.gz -C data/ nodes.dmp names.dmp
+    #./blobtools create -i example/assembly.fna -b example/mapping_1.sorted.bam -t example/blast.out -o example/test && ./blobtools view -i example/test.blobDB.json && ./blobtools plot -i example/test.blobDB.json
+
+

@@ -1,0 +1,107 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%labels
+MAINTAINER Ndomassi tando, Aurore Comte
+version="1.0"
+software="Conda4Culebront"
+description="Conda dependances for CulebrONT"
+website="https://culebront-pipeline.readthedocs.io/en/latest/"
+
+%environment
+export PATH="/usr/local/miniconda/miniconda3/envs/flye/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/canu/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/miniasm/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/minimap2/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/minipolish/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/raven/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/smartdenovo/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/circlator/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/racon/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/nanopolish/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/seqtk/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/samtools/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/bwa/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/quast/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/diamond/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/mauve/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/mummer/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/bin:$PATH"
+
+#export PYTHONPATH="/usr/local/miniconda/miniconda3/envs/flye/lib/python3.7/site-packages/:$PATH"
+#export PERL5LIB="/usr/local/miniconda/miniconda3/envs/flye/lib/site_perl/5.26.2:$PATH"
+
+export CONDARC="/.condarc"
+export LC_ALL=C
+
+%post
+apt-get update
+apt update && apt install -y git curl wget less locate build-essential openssh-server python3-all-dev python3-pip python3-venv
+mkdir /usr/local/miniconda && cd /usr/local/miniconda
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+chmod +x Miniconda3-latest-Linux-x86_64.sh
+./Miniconda3-latest-Linux-x86_64.sh -b -p /usr/local/miniconda/miniconda3
+cd /usr/local/miniconda/miniconda3/bin
+export PATH="/usr/local/miniconda/miniconda3/bin:$PATH" >> $SINGULARITY_ENVIRONMENT
+
+pip3 install biopython
+
+conda config --add channels defaults
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+
+conda create -n flye
+conda install flye=2.8.1 -n flye
+
+conda create -n canu
+conda install canu=2.0 -n canu
+
+conda create -n miniasm
+conda install miniasm=0.3_r179 -n miniasm
+
+conda create -n minimap2
+conda install minimap2=2.17 -n minimap2
+
+conda create -n minipolish
+conda install minipolish=0.1.2 -n minipolish
+
+conda create -n raven
+conda install raven-assembler=1.2.2 -n raven
+
+conda create -n smartdenovo
+conda install smartdenovo=1.0.0 -n smartdenovo
+
+conda create -n circlator
+conda install circlator=1.5.5 -n circlator
+
+conda create -n racon
+conda install racon=1.4.13 -n racon
+
+conda create -n nanopolish
+conda install nanopolish=0.13.2 -n nanopolish
+
+conda create -n seqtk
+conda install seqtk=1.3 -n seqtk
+
+conda create -n samtools
+conda install samtools=1.10 -n samtools
+
+conda create -n bwa
+conda install bwa=0.7.17 -n bwa
+
+conda create -n quast
+conda install quast=5.0.2 -n quast
+
+conda create -n diamond
+conda install diamond=2.0.4 -n diamond
+
+conda create -n mauve
+conda install mauve=2.4.0.snapshot_2015_02_13 -n mauve
+
+conda create -n mummer
+conda install mummer4 -n mummer
+
+%runscript
+exec /bin/bash "$@"
+

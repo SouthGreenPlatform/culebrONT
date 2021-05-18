@@ -1,0 +1,45 @@
+digraph snakemake_dag {
+    graph[bgcolor=white, margin=0];
+    node[shape=box, style=rounded, fontname=sans,                 fontsize=10, penwidth=2];
+    edge[penwidth=2, color=grey];
+	2[label = "preparing_fasta_to_quality", color = "0.41 0.6 0.85", style="rounded"];
+	3[label = "nanopolish_merge", color = "0.03 0.6 0.85", style="rounded"];
+	6[label = "racon", color = "0.12 0.6 0.85", style="rounded"];
+	7[label = "canu", color = "0.64 0.6 0.85", style="rounded"];
+	10[label = "medaka_merge", color = "0.03 0.6 0.85", style="rounded"];
+	11[label = "medaka_consensus", color = "0.03 0.6 0.85", style="rounded"];
+	12[label = "medaka_train", color = "0.03 0.6 0.85", style="rounded"];
+	15[label = "flye", color = "0.64 0.6 0.85", style="rounded"];
+	18[label = "raven", color = "0.64 0.6 0.85", style="rounded"];
+	19[label = "smartdenovo", color = "0.64 0.6 0.85", style="rounded"];
+	16[label = "minipolish", color = "0.12 0.6 0.85", style="rounded"];
+	17[label = "miniasm", color = "0.64 0.6 0.85", style="rounded"];
+	22[label = "pilon", color = "0.03 0.6 0.85", style="rounded"];
+	21[label = "shasta", color = "0.64 0.6 0.85", style="rounded"];
+	24[label = "nanopolish_variants", color = "0.03 0.6 0.85", style="rounded"];
+	6 -> 2
+	6 -> 11
+	6 -> 22
+	19 -> 2
+	18 -> 2
+	21 -> 2
+	3 -> 2
+	10 -> 2
+	7 -> 2
+	22 -> 2
+	15 -> 2
+	16 -> 2
+	24 -> 3
+	16 -> 3
+	19 -> 6
+	6 -> 6
+	22 -> 22
+	18 -> 6
+	21 -> 6
+	7 -> 6
+	15 -> 6
+	11 -> 10
+	12 -> 11
+	17 -> 16
+	6 -> 24
+}

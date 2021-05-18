@@ -1,0 +1,42 @@
+Bootstrap: docker
+From : ubuntu:18.04
+
+%labels
+	pilon v1.24
+	samtools v1.11
+	bwa latest
+	created by <aurore.comte@ird.fr>
+
+%post
+    apt update -y
+    apt upgrade -y
+    apt install -y wget sudo git
+    apt install -y zlib1g-dev
+    apt install -y gcc libbz2-dev liblzma-dev libcrypto++6 libcurl4-gnutls-dev libncurses5-dev curl make autoconf autotools-dev
+
+    export DEBIAN_FRONTEND=noninteractive
+    ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+    apt-get install -y tzdata
+    dpkg-reconfigure --frontend noninteractive tzdata
+
+    sudo apt install default-jre -y
+    sudo apt install default-jdk -y
+
+    # samtools 1.11
+    wget https://github.com/samtools/samtools/releases/download/1.11/samtools-1.11.tar.bz2
+    tar xfvj samtools-1.11.tar.bz2
+    cd samtools-1.11
+    ./configure
+    make
+    make install
+    cd ..
+
+    git clone https://github.com/lh3/bwa.git
+    cd bwa; make
+    cd ..
+
+    wget https://github.com/broadinstitute/pilon/releases/download/v1.24/pilon-1.24.jar
+
+%environment
+    export PATH="/samtools-1.11:/bwa:${PATH}"
+

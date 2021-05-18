@@ -1,0 +1,118 @@
+DATA:
+    FASTQ: './Data-Xoo-sub/fastq/'
+    FAST5: './Data-Xoo-sub/fast5/'
+    ILLUMINA: './Data-Xoo-sub/illumina/'
+    GENOME_SIZE: '4.8m'
+    REF: './Data-Xoo-sub/ref/BAI3_Sanger.fsa'
+    OUTPUT: './CulebrONT_OUTPUT/'
+
+############ TOOLS ################
+ASSEMBLY :
+    CANU : False
+    FLYE : True
+    MINIASM : True
+    RAVEN : False
+    SMARTDENOVO :  False
+    SHASTA : False
+
+POLISHING :
+    RACON : True
+
+CIRCULAR : True
+
+CORRECTION :
+    NANOPOLISH : False
+    MEDAKA : True
+    PILON : True
+
+FIXSTART : True
+
+# BUSCO and QUAST will be launched on all activated steps (ASSEMBLY, POLISHING, CORRECTION)
+QUALITY:
+    BUSCO: True
+    QUAST: True
+#### Others quality tools are lauched only in last assemblies
+    WEESAM: True
+    BLOBTOOLS: True
+    ASSEMBLYTICS: True
+#### Others quality softs but illumina reads are required
+    FLAGSTATS : True
+    KAT: True
+
+
+#### Alignment of the various assemblies derived from a fastq file for small genomes (<10-20Mbp);
+MSA:
+    MAUVE: True
+
+############ PARAMS ################
+params:
+    #### ASSEMBLY
+    MINIMAP2:
+        PRESET_OPTION: 'map-ont' # -x minimap2 preset option is map-pb by default (map-pb, map-ont etc)
+    FLYE:
+        OPTIONS: ''
+    CANU:
+        MAX_MEMORY: '50G'
+        OPTIONS: '-fast'
+    SMARTDENOVO:
+        KMER_SIZE: 16
+        OPTIONS: '-J 5000'
+    SHASTA:
+        MEM_MODE: 'filesystem'
+        MEM_BACKING: 'disk'
+        OPTIONS: '--Reads.minReadLength 0'
+
+
+    #### CIRCULAR
+    CIRCLATOR:
+        OPTIONS: ''
+
+
+    #### POLISHING
+    RACON:
+        RACON_ROUNDS: 2                 #1 to 9
+
+
+    #### CORRECTION
+    CORRECTION_MAKERANGE:
+        SEGMENT_LEN: '50000'            # segment length to split assembly and correct it  default=50000
+        OVERLAP_LEN: '200'              # overlap length between segments  default=200
+    
+    NANOPOLISH:
+        OPTIONS: ''
+    
+    MEDAKA:
+        MEDAKA_TRAIN_WITH_REF: False    # if 'MEDAKA_TRAIN_WITH_REF' is True, training uses reference found in DATA REF param. 
+        
+        # Medaka does not take in count other parameters below if MEDAKA_TRAIN_WITH_REF is TRUE.
+        MEDAKA_MODEL_PATH: './Data-Xoo-sub/medaka-models/r941_min_high_g303_model.hdf5' # if empty this param is forgotten.
+        MEDAKA_FEATURES_OPTIONS: '--batch_size 10 --chunk_len 100 --chunk_ovlp 10'
+        MEDAKA_TRAIN_OPTIONS: '--batch_size 10 --epochs 500 '
+        MEDAKA_CONSENSUS_OPTIONS: '--batch 200 '
+
+    PILON:
+        PILON_ROUNDS: 2                 #1 to 9
+        OPTIONS: ''
+
+
+    #### QUALITY
+    BUSCO:
+        DATABASE : './Data-Xoo-sub/bacteria_odb10'
+        MODEL : 'genome'
+        SP : ''                         #--augustus-specie parametter on busco
+    
+    QUAST:
+        GFF: ''
+        OPTIONS : '--large'
+
+    DIAMOND:
+        DATABASE: './Data-Xoo-sub/testBacteria.dmnd'
+    
+    MUMMER:
+        MINMATCH : 100                  # is -l option with default 20 on MUMMER
+        MINCLUSTER: 500                 # is -c option with default 65 on MUMMER
+    
+    ASSEMBLYTICS:
+        UNIQUE_ANCHOR_LEN: 10000
+        MIN_VARIANT_SIZE: 50
+        MAX_VARIANT_SIZE: 10000

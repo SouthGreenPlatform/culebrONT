@@ -1,0 +1,44 @@
+Bootstrap: docker
+From : ubuntu:18.04
+
+%labels
+	assemblytics v1.2
+	created by <aurore.comte@ird.fr>
+
+%post
+    apt update -y
+    apt upgrade -y
+    apt install -y wget sudo
+
+    export DEBIAN_FRONTEND=noninteractive
+    ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+    apt-get install -y tzdata
+    dpkg-reconfigure --frontend noninteractive tzdata
+
+    apt -y install build-essential
+    apt -y install zlib1g
+    apt -y install cmake
+    apt -y install git-core   
+    apt -y install zlib1g-dev
+    apt -y install python3-all-dev python3-pip openjdk-8-jdk python-setuptools
+    apt -y install r-base  autoconf autotools-dev 
+
+
+
+    wget https://github.com/MariaNattestad/Assemblytics/archive/v1.2.tar.gz
+    tar -xvzf v1.2.tar.gz
+    chmod a+x Assemblytics-1.2/scripts/Assemblytics*
+
+    sed -i s/'env python'/'env python3'/ Assemblytics-1.2/scripts/Assemblytics_summary.py
+    sed -i s/'env python'/'env python3'/ Assemblytics-1.2/scripts/Assemblytics_index.py
+    sed -i s/'env python'/'env python3'/ Assemblytics-1.2/scripts/Assemblytics_within_alignment.py
+    sed -i s/'env python'/'env python3'/ Assemblytics-1.2/scripts/Assemblytics_uniq_anchor.py
+
+    python3 -m pip install numpy
+    python3 -m pip install argparse
+
+    Rscript -e 'install.packages(c("ggplot2","plyr","RColorBrewer","scales"))'
+
+%environment
+    export PATH=$PATH:/Assemblytics-1.2/scripts/
+
