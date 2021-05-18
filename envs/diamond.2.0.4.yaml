@@ -1,8 +1,0 @@
-name: diamond.2.0.4
-channels:
-    - bioconda
-    - conda-forge
-    - defaults
-    - anaconda
-dependencies:
-    - diamond=2.0.4

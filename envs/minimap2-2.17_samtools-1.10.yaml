@@ -1,9 +1,0 @@
-name: minimap2-2.17_samtools-1.10
-channels:
-    - bioconda
-    - conda-forge
-    - defaults
-    - anaconda
-dependencies:
-    - minimap2=2.17
-    - samtools=1.10

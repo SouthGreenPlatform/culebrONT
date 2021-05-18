@@ -1,8 +1,0 @@
-name: quast-5.0.2
-channels:
-    - bioconda
-    - conda-forge
-    - defaults
-    - anaconda
-dependencies:
-    - quast=5.0.2

@@ -1,8 +1,0 @@
-name: flye-2.8.1
-channels:
-    - bioconda
-    - conda-forge
-    - defaults
-    - anaconda
-dependencies:
-    - flye=2.8.1
