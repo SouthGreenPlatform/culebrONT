@@ -165,7 +165,7 @@ A ``slurm_wrapper.py`` script is available on CulebrONT projet to manage resourc
    snakemake --nolock --use-conda --use-singularity --cores -p -s Snakefile --latency-wait 60000000 --keep-going --restart-times 0 --rerun-incomplete --configfile config.yaml --cluster "python3 slurm_wrapper.py config.yaml cluster_config.yaml" --cluster-config cluster_config.yaml --cluster-status "python3 slurm_status.py"
 
 .. note::
-    If you have filled in the module load environment "ENVMODULE" on *tools_path.yaml* file, don't forget to yse --use-envmodules parameter in the snakemake command line !
+    If you have filled in the module load environment "ENVMODULE" on *tools_path.yaml* file, don't forget to use --use-envmodules parameter in the snakemake command line !
 
 profiles
 ~~~~~~~~
