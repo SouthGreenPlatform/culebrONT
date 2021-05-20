@@ -89,11 +89,11 @@ def get_ressources(rule):
     else:
        queue = cluster_properties['__default__']['partition']
        cpus = cluster_properties['__default__']['cpus-per-task']
-       mem = cluster_properties['__default__']['mem-per-cpu']
+       #mem = cluster_properties['__default__']['mem-per-cpu']
        if 'mem-per-cpu' in cluster_properties['__default__'].keys():
-          mem = f"--mem-per-cpu {cluster_properties['__default__']['mem-per-cpu']}"
+            mem = f"--mem-per-cpu {cluster_properties['__default__']['mem-per-cpu']}"
        elif 'mem' in cluster_properties['__default__'].keys():
-           mem = f"--mem {cluster_properties[__default__]['mem']}"
+            mem = f"--mem {cluster_properties['__default__']['mem']}"
        return f'--partition {queue} {mem} --cpus-per-task {cpus} '
 
 
