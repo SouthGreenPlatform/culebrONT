@@ -1,4 +1,4 @@
-××#!/bin/bash
+#!/bin/bash
 #SBATCH --job-name CulebrONT
 #SBATCH --output %x_%j.log
 #SBATCH --error %x_%j.log
