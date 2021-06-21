@@ -1,0 +1,44 @@
+digraph snakemake_dag {
+    graph[bgcolor=white, margin=0];
+    node[shape=box, style=rounded, fontname=sans,                 fontsize=10, penwidth=2];
+    edge[penwidth=2, color=grey];
+	1[label = "report", color = "0.19 0.6 0.85", style="rounded"];
+	2[label = "preparing_fasta_to_quality", color = "0.41 0.6 0.85", style="rounded"];
+	30[label = "quast", color = "0.01 0.7 0.99", style="rounded"];
+	32[label = "busco", color = "0.01 0.7 0.99", style="rounded"];
+	33[label = "blobtools", color = "0.01 0.6 0.85", style="rounded"];
+	34[label = "minimap2", color = "0.01 0.6 0.85", style="rounded"];
+	35[label = "diamond", color = "0.01 0.6 0.85", style="rounded"];
+	36[label = "weesam", color = "0.01 0.6 0.85", style="rounded"];
+	37[label = "assemblytics", color = "0.01 0.6 0.85", style="rounded"];
+	38[label = "mummer", color = "0.01 0.6 0.85", style="rounded"];
+	39[label = "KAT", color = "0.01 0.6 0.85", style="rounded"];
+	42[label = "flagstat", color = "0.01 0.6 0.85", style="rounded"];
+	44[label = "mauve", color = "0.52 0.6 0.85", style="rounded"];
+	43[label = "bwa_mem2", color = "0.01 0.6 0.85", style="rounded"];
+	2 -> 1
+	37 -> 1
+	36 -> 1
+	44 -> 1
+	33 -> 1
+	30 -> 1
+	39 -> 1
+	2 -> 30
+	32 -> 1
+	2 -> 32
+	2 -> 33
+	35 -> 33
+	34 -> 33
+	2 -> 34
+	2 -> 35
+	2 -> 36
+	34 -> 36
+	38 -> 37
+	2 -> 38
+	2 -> 39
+	42 -> 1
+	43 -> 42
+	2 -> 43
+	2 -> 44
+}
+

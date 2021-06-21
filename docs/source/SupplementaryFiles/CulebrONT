@@ -1,0 +1,43 @@
+#%Module1.0
+##
+
+## Required internal variables
+set     prefix       $env(HOME)/softs/CulebrONT_pipeline
+set     version      "1.4.0"
+
+# check if install directory exist
+if {![file exists $prefix]} {
+    puts stderr "\t[module-info name] Load Error: $prefix does not exist"
+    break
+    exit 1
+}
+
+## List conflicting modules here
+## conflict CulebrONT
+
+## List prerequisite modules here
+module load singularity
+module load python/3.7
+module load graphviz/2.40.1
+#module load snakemake/5.19.2
+
+set		fullname	CulebrONT-1.4.0
+set		externalurl	"\n\thttps://culebront-pipeline.readthedocs.io/en/latest/\n"
+set		description	"\n\tCulebrONT is an open-source, scalable, modulable and traceable snakemake pipeline,
+\table to launch multiple assembly tools in parallel and providing help for choosing
+\tthe best possible assembly between all possibilities."
+
+## Required for "module help ..."
+proc ModulesHelp { } {
+  global description externalurl
+  puts stderr "Description - $description"
+  puts stderr "More Docs   - $externalurl"
+}
+
+## Required for "module display ..." and SWDB
+module-whatis   "loads the [module-info name] environment"
+
+## Software-specific settings exported to user environment
+
+prepend-path PATH $prefix
+prepend-path CULEBRONT $prefix

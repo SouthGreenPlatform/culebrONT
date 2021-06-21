@@ -1,0 +1,44 @@
+################################ POLISHING ####################################
+rule run_racon:
+    """
+    launch Racon recursively n times (given by config.yaml)
+    """
+    threads: get_threads('run_racon', 4)
+    input:
+        draft = draft_to_racon,
+    params:
+        fastq = get_fastq,
+    output:
+        paf = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{{nb}}/assembly.minimap4racon{{nb}}.paf",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{{nb}}/assembly.racon{{nb}}.fasta"
+    wildcard_constraints:
+        nb = "[0-9]",
+    log:
+        output=f"{output_dir}{{fastq}}/LOGS/POLISHING/RACON/{{fastq}}_{{assemblers}}_RACON{{nb}}.o",
+        error = f"{output_dir}{{fastq}}/LOGS/POLISHING/RACON/{{fastq}}_{{assemblers}}_RACON{{nb}}.e"
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/POLISHING/{{assemblers}}_RACON{{nb}}.txt"
+    message:
+        """
+        Launching {rule}
+        threads : {threads}
+        input:
+            draft : {input.draft}
+            fastq : {params.fastq}
+        output:
+            paf : {output.paf}
+            fasta : {output.fasta}
+        log:
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["RACON"],
+        tools_config["ENVMODULE"]["MINIMAP2"]
+    shell:
+        """
+        [ ! -f {output_dir}versions/racon-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; racon --version > {output_dir}versions/racon-version.txt
+        (minimap2 -t {threads} {input.draft} {params.fastq} 1> {output.paf};
+        racon -t {threads} {params.fastq} {output.paf} {input.draft} 1> {output.fasta}) 2>{log.error}
+        """
