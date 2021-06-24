@@ -130,14 +130,12 @@ rule preparing_ref_to_nanopolish :
         [ ! -f {output_dir}versions/nanopolish-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; nanopolish --version |head -n1 > {output_dir}versions/nanopolish-version.txt
         [ ! -f {output_dir}versions/nanopolish_samtools-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version |head -n1 > {output_dir}versions/nanopolish_samtools-version.txt
         [ ! -f {output_dir}versions/nanopolish_minimap-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version |head -n1 > {output_dir}versions/nanopolish_minimap-version.txt
-        ####[ ! -f {output_dir}versions/nanopolish_seqtk-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; seqtk seqtk 2>&1 |grep 'Version' > {output_dir}versions/nanopolish_seqtk-version.txt
+        [ ! -f {output_dir}versions/nanopolish_seqtk-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py seqtk | grep 'Version' > {output_dir}versions/nanopolish_seqtk-version.txt
          
         (cd {params.dir}
         minimap2 -ax {params.preset} -t {threads} {input.draft} {input.reads_on_fasta} | samtools sort -o {output.bam} -T reads.tmp;
         samtools index {output.bam}) 1> {log.output} 2> {log.error}
         """
-
-#TODO: recuperer seqtk version probleme bash
 
 checkpoint nanopolish_variants_by_segment:
     """

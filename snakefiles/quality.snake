@@ -188,7 +188,7 @@ rule run_busco:
     shell:
         """
         [ ! -f {output_dir}versions/busco-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; busco --version > {output_dir}versions/busco-version.txt
-        #[ ! -f {output_dir}versions/busco_augustus-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; augustus --version | grep 'AUGUSTUS' > {output_dir}versions/busco_augustus-version.txt
+        [ ! -f {output_dir}versions/busco_augustus-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "augustus --version" | grep 'AUGUSTUS' > {output_dir}versions/busco_augustus-version.txt
         (mkdir -p {params.augustus_config};
         augustus_bin=`which augustus`;
         config_path=${{augustus_bin%/*/*}}/config
@@ -356,6 +356,7 @@ rule run_weesam:
         bam = rules.run_minimap2.output.bam,
     output:
         txt = f"{output_dir}FINAL_REPORT/WEESAM/{{fastq}}/{{fastq}}__{{assemblers}}__{{quality_step}}/minimap2mapping.txt",
+        html = f"{output_dir}FINAL_REPORT/WEESAM/{{fastq}}/{{fastq}}__{{assemblers}}__{{quality_step}}/minimap2mapping_html_results/minimap2mapping.html"
     params:
         out_dir = lambda wc, output: Path(output.txt).parent,
     log:
@@ -373,6 +374,7 @@ rule run_weesam:
             bam : {input.bam}
         output:
             txt: {output.txt}
+            html: {output.html}
             out_dir: {params.out_dir}
         log:
             output : {log.output}
@@ -384,10 +386,10 @@ rule run_weesam:
         tools_config["ENVMODULE"]["WEESAM"]
     shell:
         """
-        [ ! -f {output_dir}versions/weesam-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; weeSAM -v | grep 'weeSAM is currently on version number' > {output_dir}versions/weesam-version.txt
-        mkdir -p {params.out_dir}
+        (mkdir -p {params.out_dir}
         cd {params.out_dir}
-        weeSAM --overwrite --bam {input.bam} --html "{params.out_dir}"/minimap2mapping.html --out "{params.out_dir}"/minimap2mapping.txt 1>{log.output} 2>{log.error}
+        weeSAM --overwrite --bam {input.bam} --html {params.out_dir}/minimap2mapping.html --out {params.out_dir}/minimap2mapping.txt) 1>{log.output} 2>{log.error}
+        [ ! -f {output_dir}versions/weesam-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; weeSAM -v | grep 'weeSAM is currently on version number' > {output_dir}versions/weesam-version.txt
         """
 
 
@@ -434,7 +436,7 @@ rule run_mummer:
         tools_config["ENVMODULE"]["MUMMER"]
     shell:
         """
-        #[ ! -f {output_dir}versions/mummer-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; nucmer -V |grep 'NUCmer' > {output_dir}versions/mummer-version.txt
+        [ ! -f {output_dir}versions/mummer-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "nucmer --version" | grep 'version'  > {output_dir}versions/mummer-version.txt;
         (cd {params.dir};
         nucmer -p {params.prefix} --maxmatch  -l {params.minmatch} -c {params.mincluster} {input.reference_file} {input.fasta};
         gzip mummer.delta) 1>{log.output} 2>{log.error}
@@ -674,7 +676,6 @@ rule run_flagstat:
         bam = rules.run_bwa_mem2.output.bam,
     output:
         txt = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/FLAGSTATS/{{assemblers}}-{{quality_step}}-flagstat.txt",
-        #bwa_version_tmp= f"{output_dir}versions/{{fastq}}_{{assemblers}}_{{quality_step}}_tmp_bwa.txt"
     log:
         output = f"{output_dir}{{fastq}}/LOGS/QUALITY/FLAGSTATS/{{fastq}}_{{assemblers}}_{{quality_step}}_FLAGSTATS.o",
         error = f"{output_dir}{{fastq}}/LOGS/QUALITY/FLAGSTATS/{{fastq}}_{{assemblers}}_{{quality_step}}_FLAGSTATS.e",
@@ -699,6 +700,6 @@ rule run_flagstat:
     shell:
         """
         [ ! -f {output_dir}versions/flagstat_samtools.txt ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output_dir}versions/flagstat_samtools-version.txt
-        #[ ! -f {output_dir}versions/flagstat_bwa.txt ] &&  [ ! -d versions ] && mkdir -p versions ; VAR=`bwa 2>&1 | grep 'Version'`; echo ${{VAR}} > {output_dir}versions/flagstat_bwa-version.txt
+        [ ! -f {output_dir}versions/flagstat_bwa.txt ] &&  [ ! -d versions ] && mkdir -p versions ; python {basedir}/AdditionalScripts/which_version.py bwa | grep 'Version' > {output_dir}versions/flagstat_bwa-version.txt;
         (samtools flagstat {input.bam} --threads {threads}) > {output.txt} 2>{log.error}
         """
