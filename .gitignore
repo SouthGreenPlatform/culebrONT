@@ -28,7 +28,6 @@ var/
 .project
 .pydevproject
 .settings/
-settings.json
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -48,7 +47,7 @@ coverage.xml
 *,cover
 .hypothesis/
 .pytest_cache/
-
+.snakemake
 
 # Flask instance folder
 instance/
