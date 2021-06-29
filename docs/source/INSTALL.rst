@@ -71,7 +71,6 @@ Absolute paths are strongly recommended but not mandatory. See the section :ref:
 
     ENVMODULE:
         R : "bioinfo/R/4.0.2"
-        WEESAM : "bioinfo/weeSAM/1.0"
         QUAST : "bioinfo/quast/5.0.2"
         MAUVE : "bioinfo/mauve/2.4.0"
         SHASTA : "bioinfo/shasta/0.1.0"
@@ -91,17 +90,6 @@ Yes, plenty of packages!! That's why we provide build singularity containers rea
 3. Use both SINGULARITY and ENVMODULE. In this case, Snakemake will try to use the modules as a priority, and only in a second time singularity containers.
 So, you can mix them! It's up to you, depending which modules are available on your favorite cluster.
 
-
-.. NOTE::
-
-    If you do not need a particular tool, please leave the path empty as shown below for WEESAM.
-
-    .. code-block:: YAML
-
-        SINGULARITY:
-            REPORT : './Containers/Singularity.report.sif'
-            WEESAM : ''
-            TOOLS: './Containers/Singularity.conda.sif'
 
 
 How to build singularity images

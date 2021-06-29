@@ -343,55 +343,7 @@ rule run_blobtools:
         mv quality.blobDB.*.blobplot.bam0.png {output.blob}) 1>{log.output} 2>{log.error}
         mv {params.tmp_table} {output.table}
         """
-
-
-rule run_weesam:
-    """
-    weesam runs only in the last assemblies
-    """
-    threads: get_threads('run_weesam', 4)
-    input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
-        fastq = get_fastq,
-        bam = rules.run_minimap2.output.bam,
-    output:
-        txt = f"{output_dir}FINAL_REPORT/WEESAM/{{fastq}}/{{fastq}}__{{assemblers}}__{{quality_step}}/minimap2mapping.txt",
-        html = f"{output_dir}FINAL_REPORT/WEESAM/{{fastq}}/{{fastq}}__{{assemblers}}__{{quality_step}}/minimap2mapping_html_results/minimap2mapping.html"
-    params:
-        out_dir = lambda wc, output: Path(output.txt).parent,
-    log:
-        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/WEESAM/{{fastq}}__{{assemblers}}__{{quality_step}}_WEESAM.o",
-        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/WEESAM/{{fastq}}__{{assemblers}}__{{quality_step}}_WEESAM.e",
-    benchmark:
-        f"{output_dir}{{fastq}}/LOGS/QUALITY/WEESAM/{{fastq}}_{{assemblers}}_{{quality_step}}_WEESAM-BENCHMARK.txt"
-    message:
-        """
-        Launching {rule} ...
-        threads : {threads}
-        input:
-            fastq : {input.fastq}
-            fasta : {input.fasta}
-            bam : {input.bam}
-        output:
-            txt: {output.txt}
-            html: {output.html}
-            out_dir: {params.out_dir}
-        log:
-            output : {log.output}
-            error: {log.error}
-        """
-    singularity:
-        tools_config['SINGULARITY']['WEESAM']
-    envmodules:
-        tools_config["ENVMODULE"]["WEESAM"]
-    shell:
-        """
-        (mkdir -p {params.out_dir}
-        cd {params.out_dir}
-        weeSAM --overwrite --bam {input.bam} --html {params.out_dir}/minimap2mapping.html --out {params.out_dir}/minimap2mapping.txt) 1>{log.output} 2>{log.error}
-        [ ! -f {output_dir}versions/weesam-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; weeSAM -v | grep 'weeSAM is currently on version number' > {output_dir}versions/weesam-version.txt
-        """
-
 
 rule run_mummer:
     """

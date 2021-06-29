@@ -5,7 +5,7 @@ __default__:
     partition : "fast"
     output : 'logs/stdout/{rule}/{wildcards}'
     error : 'logs/error/{rule}/{wildcards}'
-    job-name : 'JOBNAME.{rule}.{wildcards}'
+    job-name : '{rule}.{wildcards}'
 
 run_nanopolish :
     cpus-per-task : 8

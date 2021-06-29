@@ -111,7 +111,6 @@ properties:
         required:
             - BUSCO
             - QUAST
-            - WEESAM
             - BLOBTOOLS
             - ASSEMBLYTICS
             - KAT
@@ -124,9 +123,6 @@ properties:
             QUAST:
                 type: boolean
                 description: true if you want to use quast for quality
-            WEESAM:
-                type: boolean
-                description: true if you want to use weesam for quality
             BLOBTOOLS:
                 type: boolean
                 description: true if you want to use blobtools for quality

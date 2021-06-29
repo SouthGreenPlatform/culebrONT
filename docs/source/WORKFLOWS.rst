@@ -70,7 +70,7 @@ With CulebrONT you can use several quality tools to check assemblies.
 
 * If BUSCO or QUAST are used, every fasta generated on the pipeline will be used with them.
 
-* If BLOBTOOLS, ASSEMBLYTICS, WEESAM and KAT are activated only the last draft generated on the pipeline will be used.
+* If BLOBTOOLS, ASSEMBLYTICS, FLAGSTATS and KAT are activated only the last draft generated on the pipeline will be used.
 
 * KAT quality tool can be activate but Illumina reads are mandatory in this case. These reads can be compressed or not.
 

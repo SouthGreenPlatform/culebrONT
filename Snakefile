@@ -370,10 +370,6 @@ def output_final(wildcards):
         dico_final.update({
             "blob_files": expand(rules.run_blobtools.output.table, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list)
         })
-    if config['QUALITY']['WEESAM']:
-        dico_final.update({
-             "weesam_dirs": expand(rules.run_weesam.output.txt, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list)
-        })
     if config['QUALITY']['ASSEMBLYTICS']:
         dico_final.update({
              "assemblytics_files": expand(rules.run_assemblytics.output.summary, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list)

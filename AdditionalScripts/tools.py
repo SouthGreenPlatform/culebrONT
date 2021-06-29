@@ -14,7 +14,7 @@ import re
 AVAIL_ASSEMBLY = ("CANU", "FLYE", "MINIASM", "RAVEN", "SMARTDENOVO", "SHASTA")
 AVAIL_CORRECTION = ("NANOPOLISH", "MEDAKA", "PILON")
 AVAIL_POLISHING = ("RACON")
-AVAIL_QUALITY = ("BUSCO", "QUAST", "WEESAM", "BLOBTOOLS", "ASSEMBLYTICS", "KAT", "FLAGSTATS")
+AVAIL_QUALITY = ("BUSCO", "QUAST", "BLOBTOOLS", "ASSEMBLYTICS", "KAT", "FLAGSTATS")
 
 ALLOW_FASTQ_EXT = (".fastq", ".fq", ".fq.gz", ".fastq.gz")
 
@@ -350,7 +350,10 @@ class CulebrONT(object):
         def check_singularity(tool):
             section = "SINGULARITY"
             path_file = self.tools_config[section][tool]
-            if not re.findall("shub://SouthGreenPlatform/CulebrONT_pipeline", path_file, flags=re.IGNORECASE):
+            if re.findall("shub://SouthGreenPlatform/CulebrONT_pipeline", path_file, flags=re.IGNORECASE):
+                raise ValueError(
+                    f'CONFIG FILE CHECKING FAIL : shub download is obsolete')
+            else :
                 path = Path(path_file).resolve().as_posix()
                 if path and path_file:
                     if not Path(path).exists() or not Path(path).is_file():
@@ -371,13 +374,12 @@ class CulebrONT(object):
             if not envmodule_key:
                 raise ValueError(
                     f'CONFIG FILE CHECKING FAIL : please check tools_config.yaml in the "ENVMODULE" section, {tool} is empty')
-            tool_OK = True
+          not  tool_OK = True
 
         # If envmodule and singularity
         if self.use_env_modules and self.use_singularity:
-            check_singularity("REPORT")     # check singularity image for Report
-            check_singularity("TOOLS")      # check singularity image for conda (contains a lot of conda envs)
-            tool_OK = True
+            raise ValueError(
+                f"CONFIG FILE CHECKING FAIL : Use env-module or singularity but don't mix them")
 
         if len(mandatory) > 0 and not tool_OK:
             raise FileNotFoundError(
@@ -555,10 +557,10 @@ class CulebrONT(object):
                 f"\nWARNING: RACON is automatically launched (2 rounds by default) for minipolish if MINIASM is activated !! . \n")
 
         # check size of genome
-        if int(convert_genome_size(self.get_config_value('DATA', 'GENOME_SIZE'))) >= 100000000:
+        if int(convert_genome_size(self.get_config_value('DATA', 'GENOME_SIZE'))) >= 50000000:
             logger.warning(
-                f"WARNING: CONFIG FILE CHECKING WARNING : Weesam if fixed to FALSE because genome size !! \n")
-            self.config['QUALITY']['WEESAM'] = False
+                f"WARNING: CONFIG FILE CHECKING WARNING : MAUVE if fixed to FALSE because genome size  >= 50 mb !! \n")
+            self.config['QUALITY']['MAUVE'] = False
 
         # Make sure running fixstart makes sense
         if not bool(self.config['CIRCULAR']) and bool(self.config['FIXSTART']):

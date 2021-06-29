@@ -1,5 +1,5 @@
 ---
-title: "CulebrONT report"
+title: "CulebrONT 1.5.2 report"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   rmdformats::readthedown:
@@ -76,7 +76,6 @@ quast_files <- r_to_py(as.list(snakemake@input$quast_files))
 frc_files <- r_to_py(as.list(snakemake@input$frc_files))
 blob_files <- r_to_py(as.list(snakemake@input$blob_files))
 assemblytics_files <- r_to_py(as.list(snakemake@input$assemblytics_files))
-weesam_dirs <- r_to_py(as.list(snakemake@input$weesam_dirs))
 kat_files <- r_to_py(as.list(snakemake@input$kat_files))
 report_snakemake <- r_to_py(snakemake@input$report_snakemake)
 versions <- r_to_py(snakemake@input$versions)
@@ -115,7 +114,6 @@ dico_tools = {
     "ASSEMBLYTICS" : "* ASSEMBLYTICS: http://assemblytics.com/",
     "KAT" : "* KAT : https://github.com/TGAC/KAT",
     "FLAGSTATS" : "* SAMTOOLS FLAGSTATS : http://www.htslib.org/doc/samtools-flagstat.html",
-    "WEESAM" : "* WEESAM : https://github.com/centre-for-virus-research/weeSAM"
 }
 tools = []
 for tool in r.quality_tools_list:
@@ -288,37 +286,6 @@ for assemblytics_file in r.assemblytics_files:
         
     print(f"\n\n#### {quality_step}\n\n")
     print('![thumbnail]('+png_dotplot+') ![thumbnail]('+png_Nchart+') ![thumbnail]('+png_log_all_sizes+')\n\n')
-```
-
-
-```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('WEESAM' %in% quality_tools_vector)}
-print("""# WEESAM {.tabset .tabset-fade}\n\n""")
-sample_found = []
-for weesam_dir in r.weesam_dirs:
-    sample = Path(f"{weesam_dir}").parent.name.split("__")[0]
-    assembler = Path(f"{weesam_dir}").parent.name.split("__")[1]
-    quality_step = Path(f"{weesam_dir}").parent.name.split("__")[2]
-    path = Path(f"{weesam_dir}")
-    
-    #html = path.joinpath("minimap2mapping_html_results/minimap2mapping.html").as_posix()
-    html = f"./WEESAM/{sample}/{sample}__{assembler}__{quality_step}/minimap2mapping_html_results/minimap2mapping.html"
-
-    if sample not in sample_found:
-        print("## "+sample+" {.tabset .tabset-pill}\n\n")
-        assembler_found = []
-        step_found = []
-        sample_found.append(sample)
-    
-    if assembler not in assembler_found:
-        print(f"### {assembler} \n\n")
-        assembler_found.append(assembler)
-        
-    print(f"\n\n#### {quality_step}\n\n")
-    
-    print(f'<a href="{html}" target="_blank">Open WEESAM report on new window</a>\n\n')
-    print('<div class="embed-responsive embed-responsive-4by3">\n')
-    print(f'<iframe class="embed-responsive-item" src="{html}" loading="lazy" allowfullscreen></iframe>\n')
-    print('</div>\n')
 ```
 
 ```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('KAT' %in% quality_tools_vector)}

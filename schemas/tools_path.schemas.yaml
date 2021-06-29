@@ -8,13 +8,9 @@ required:
         additionalProperties: false
         required:
             - REPORT
-            - WEESAM
             - TOOLS
         properties:
             'REPORT' :
-                type: string
-                description: "binary path for singularity"
-            'WEESAM':
                 type: string
                 description: "binary path for singularity"
             'TOOLS':
@@ -25,7 +21,6 @@ required:
         additionalProperties: false
         required:
             - R
-            - WEESAM
             - QUAST
             - MAUVE
             - SHASTA
@@ -52,9 +47,6 @@ required:
             - BAM
         properties:
             'R':
-                type: string
-                description: "module env"
-            'WEESAM':
                 type: string
                 description: "module env"
             'QUAST':

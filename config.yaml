@@ -32,7 +32,6 @@ QUALITY:
     BUSCO: True
     QUAST: True
 #### Others quality tools are lauched only in last assemblies
-    WEESAM: False
     BLOBTOOLS: True
     ASSEMBLYTICS: True
 #### Others quality softs but illumina reads are required

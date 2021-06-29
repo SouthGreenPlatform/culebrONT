@@ -142,13 +142,12 @@ CulebrONT checks the quality of the assemblies with using these optional tools:
     * Assemblytics: compares structural variations of assemblies versus a reference genome
     * KAT: explores kmers frequencies and checks possible contamination
     * Samtools flagstats: calculates remapping stats using illumina reads over assemblies
-    * Weesam: can be used to check the coverage of the reads for each assembled contig (for small genome only).
     * Mauve: allows multiple alignment of several assembles (for small genome only).
 
 
 .. danger::
 
-    Please, only activate these last two tools (weesam and Mauve) for small genomes only.
+    Please, activate Mauve only for small genomes.
 
 Included tools :
 
@@ -158,5 +157,4 @@ Included tools :
 * Assemblytics version >= 1.2
 * KAT version >= 2.4.2
 * Samtools version>= 1.10
-* Weesam version > 1.6
 * Mauve > 2.4.0.snapshot_2015_02_13

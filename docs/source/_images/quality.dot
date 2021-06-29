@@ -9,7 +9,6 @@ digraph snakemake_dag {
 	33[label = "blobtools", color = "0.01 0.6 0.85", style="rounded"];
 	34[label = "minimap2", color = "0.01 0.6 0.85", style="rounded"];
 	35[label = "diamond", color = "0.01 0.6 0.85", style="rounded"];
-	36[label = "weesam", color = "0.01 0.6 0.85", style="rounded"];
 	37[label = "assemblytics", color = "0.01 0.6 0.85", style="rounded"];
 	38[label = "mummer", color = "0.01 0.6 0.85", style="rounded"];
 	39[label = "KAT", color = "0.01 0.6 0.85", style="rounded"];
@@ -18,7 +17,6 @@ digraph snakemake_dag {
 	43[label = "bwa_mem2", color = "0.01 0.6 0.85", style="rounded"];
 	2 -> 1
 	37 -> 1
-	36 -> 1
 	44 -> 1
 	33 -> 1
 	30 -> 1
@@ -31,8 +29,6 @@ digraph snakemake_dag {
 	34 -> 33
 	2 -> 34
 	2 -> 35
-	2 -> 36
-	34 -> 36
 	38 -> 37
 	2 -> 38
 	2 -> 39
