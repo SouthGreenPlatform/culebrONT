@@ -53,7 +53,7 @@ See the section :ref:`6. Check install` for details.
 1. How to configure tools_path.yaml
 -----------------------------------
 
-In the ``tools_path.yaml`` file, you can find two sections: SINGULARITY and ENVMODULES. In order to fill it correctly, you have 3 options:
+In the ``tools_path.yaml`` file, you can find two sections: SINGULARITY and ENVMODULES. In order to fill it correctly, you have 2 options:
 
 1. Use only SINGULARITY containers. In this case, fill only this section. Put the path to the builded singularity images.
 Absolute paths are strongly recommended but not mandatory. See the section :ref:`'How to build singularity images'<How to build singularity images>`  for further details.
@@ -82,15 +82,13 @@ Absolute paths are strongly recommended but not mandatory. See the section :ref:
 CulebrONT needs a wide set of R modules for reporting, if you use ENVMODULE R. Just have a look at dependencies in the ``Containers/Singularity.report.def`` file.
 Yes, plenty of packages!! That's why we provide build singularity containers ready to use and recommend them for the R part.
 
+.. note::
+
+    TIP !! We provide a singularity container for R packages (Singularity.report.def), you can use this one to create a module environment.
+
 .. warning::
     The use of ENVMODULE is constraint with the use the *--use-envmodules* parameter in the snakemake command line.
     More details can be found here: https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html#using-environment-modules
-
-
-3. Use both SINGULARITY and ENVMODULE. In this case, Snakemake will try to use the modules as a priority, and only in a second time singularity containers.
-So, you can mix them! It's up to you, depending which modules are available on your favorite cluster.
-
-
 
 How to build singularity images
 ...............................
@@ -127,7 +125,7 @@ In the ``cluster_config.yaml`` file, you can add partition, memory and threads t
     If more memory or threads are requested, please adapt the content of this file before running on your cluster.
 
 
-Here is a example of the configuration file we used on our :ref:`i-Trop HPC<../../cluster_config.yaml>`.
+Here is a example of the configuration file we used on our `i-Trop HPC <../../cluster_config.yaml>` .
 
 
 
@@ -206,7 +204,7 @@ To run script `submit_culebront.sh` you need export path of installation.
     export PATH=$CULEBRONT:$PATH
 
 or you can adapt the module load file dowload :download:`here<../../gift_files/CulebrONT_envmodules>` or see
-:ref: `here<../../gift_files/CulebrONT_envmodules>`
+`here <https://raw.githubusercontent.com/SouthGreenPlatform/CulebrONT_pipeline/master/gift_files/CulebrONT_envmodules>`
 
 5. Adapt `submit_culebront.sh`
 ------------------------------
