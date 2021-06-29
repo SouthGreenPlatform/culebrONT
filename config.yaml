@@ -50,8 +50,7 @@ params:
     FLYE:
         OPTIONS: ''
     CANU:
-        MAX_MEMORY: '50G'
-        OPTIONS: '-fast'
+        OPTIONS: 'gridOptions="-p long" useGrid=true'
     SMARTDENOVO:
         KMER_SIZE: 16
         OPTIONS: '-J 5000'

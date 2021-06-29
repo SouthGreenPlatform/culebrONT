@@ -63,7 +63,6 @@ rule run_canu:
     params:
         out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/"),
         genome_size = f"{config['DATA']['GENOME_SIZE']}",
-        max_memory = f"{config['params']['CANU']['MAX_MEMORY']}",
         options = f"{config['params']['CANU']['OPTIONS']}",
     log:
         output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.o",
@@ -83,7 +82,6 @@ rule run_canu:
         params:
             out_dir: {params.out_dir}
             genome_size: {params.genome_size}
-            maxMemory: {params.max_memory}
             options: {params.options}
         log:
             output : {log.output}
@@ -96,7 +94,7 @@ rule run_canu:
     shell:
         """
         [ ! -f {output_dir}versions/canu-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; canu --version > {output_dir}versions/canu-version.txt
-        (canu -p out_canu useGrid=false maxThreads={threads} maxMemory={params.max_memory} -d {params.out_dir} genomeSize={params.genome_size} -nanopore-raw {input.fastq} {params.options};
+        (canu -p out_canu -d {params.out_dir} genomeSize={params.genome_size} -nanopore-raw {input.fastq} {params.options};
         ln -s {output.fasta_canu} {output.fasta}) 1>{log.output} 2>{log.error}
         """
 
