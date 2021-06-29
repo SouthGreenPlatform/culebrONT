@@ -147,6 +147,7 @@ We followed the documentation found here https://github.com/Snakemake-Profiles/s
 
 .. code-block:: bash
 
+    $ mkdir CulebrONT_pipeline/profiles
     $ cd CulebrONT_pipeline/profiles
     $ cookiecutter https://github.com/Snakemake-Profiles/slurm.git
     profile_name [slurm]: CulebrONT
@@ -191,7 +192,7 @@ Now, your basic profile is created. To finalize it, change the ``CulebrONT_pipel
     In addition, snakemake will search for a corresponding folder *profile_name* in /etc/xdg/snakemake and in $HOME/.config/snakemake, where globally accessible profiles can be placed.
 
 .. note::
-   You can find the generated files  when profiles are created following this documentation. IFB profile example can be found on the `̀ gift_files/CulebrONT_SLURM`` repertory on our github repository as well as a CulebrONT module example to make life easier for our cluster administrators ^^.
+   You can find the generated files  when profiles are created following this documentation. IFB profile example can be found on the `̀ gift_files/CulebrONT_SLURM/`` repertory on our github repository.
 
 4. Export CulebrONT to $PATH
 ----------------------------
@@ -206,7 +207,8 @@ To run script `submit_culebront.sh` you need export path of installation.
     # to call submit_culebront.sh script anywhere
     export PATH=$CULEBRONT:$PATH
 
-or you can adapt the module load file :download:`available here<../../gift_files/CulebrONT_envmodules>`
+or you can adapt the module load file dowload :download:`here<../../gift_files/CulebrONT_envmodules>` or see
+:ref: `here<../../gift_files/CulebrONT_envmodules>`
 
 5. Adapt `submit_culebront.sh`
 ------------------------------
