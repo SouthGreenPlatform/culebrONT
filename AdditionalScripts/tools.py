@@ -346,7 +346,8 @@ class CulebrONT(object):
         """Check if path is a file if not empty
         :return absolute path file"""
         tool_OK = False
-
+        if tool in ["FLAGSTATS"]:
+            tool = "SAMTOOLS"
         def check_singularity(tool):
             section = "SINGULARITY"
             path_file = self.tools_config[section][tool]
