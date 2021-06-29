@@ -127,9 +127,7 @@ In the ``cluster_config.yaml`` file, you can add partition, memory and threads t
     If more memory or threads are requested, please adapt the content of this file before running on your cluster.
 
 
-Here is a example of the configuration file we used on our :download:`i-Trop HPC<../../cluster_config.yaml>`.
-
-
+Here is a example of the configuration file we used on our :ref:`i-Trop HPC<../../cluster_config.yaml>`.
 
 
 
