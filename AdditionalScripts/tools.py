@@ -374,7 +374,7 @@ class CulebrONT(object):
             if not envmodule_key:
                 raise ValueError(
                     f'CONFIG FILE CHECKING FAIL : please check tools_config.yaml in the "ENVMODULE" section, {tool} is empty')
-          not  tool_OK = True
+            tool_OK = True
 
         # If envmodule and singularity
         if self.use_env_modules and self.use_singularity:
