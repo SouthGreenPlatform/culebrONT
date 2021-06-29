@@ -343,7 +343,6 @@ rule run_blobtools:
         mv quality.blobDB.*.blobplot.bam0.png {output.blob}) 1>{log.output} 2>{log.error}
         mv {params.tmp_table} {output.table}
         """
-        fasta = rules.preparing_fasta_to_quality.output.renamed,
 
 rule run_mummer:
     """
