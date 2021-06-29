@@ -1,0 +1,6 @@
+{
+    "SBATCH_DEFAULTS": "--export=ALL --job-name={rule}",
+    "CLUSTER_NAME": "",
+    "CLUSTER_CONFIG": "$HOME/.config/snakemake/CulebrONT/cluster_config.yaml",
+    "ADVANCED_ARGUMENT_CONVERSION": "no"
+}
