@@ -14,8 +14,7 @@ Frequently Asked Questions
 
 **How much space does it take to install the CulebrONT dependencies?**
 
-- build_conda_envs takes 2.1G and build singularity about 4.9G (medaka-gpu-1.2.simg takes 2.1G)
-
+- Built containers singularity.culebront_tools.sif and singularity.report.sig take 5G and 781M respectively.  
 
 **Recommended Snakemake command line to launch CulebrONT**
 
