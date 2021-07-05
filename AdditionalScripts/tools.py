@@ -561,7 +561,7 @@ class CulebrONT(object):
         if int(convert_genome_size(self.get_config_value('DATA', 'GENOME_SIZE'))) >= 50000000:
             logger.warning(
                 f"WARNING: CONFIG FILE CHECKING WARNING : MAUVE if fixed to FALSE because genome size  >= 50 mb !! \n")
-            self.config['QUALITY']['MAUVE'] = False
+            self.config['MSA']['MAUVE'] = False
 
         # Make sure running fixstart makes sense
         if not bool(self.config['CIRCULAR']) and bool(self.config['FIXSTART']):
