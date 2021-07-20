@@ -198,7 +198,7 @@ rule rule_graph:
     """
     threads: get_threads('rule_graph', 1)
     input:
-        conf = f"{output_dir}/config_corrected.yaml",
+        conf = f"{output_dir}config_corrected.yaml",
     params:
         tmp = f"{output_dir}FINAL_REPORT/dag.tmp"
     output:
@@ -206,13 +206,13 @@ rule rule_graph:
     message:
         """
         making dag ...
-        snakemake -n --rulegraph --configfile {input.conf} > {params.tmp}
+        snakemake -s {CULEBRONT_PATH}/Snakefile -n --rulegraph --configfile {input.conf} >{params.tmp}
         dot -Tpng {params.tmp}
         """
     shell:
         """
         cd {output_dir}
-        snakemake -s {CULEBRONT_PATH}/Snakefile --use-envmodules -n --rulegraph --configfile {input.conf} >{params.tmp}
+        snakemake -s {CULEBRONT_PATH}/Snakefile -n --rulegraph --configfile {input.conf} --use-singularity >{params.tmp}
         dot -Tpng {params.tmp} >{output.dag}
         rm {params.tmp}
         """
@@ -280,11 +280,11 @@ rule run_busco_stats:
     script:
         f"{basedir}/reports/get_stats_busco.py"
 
+
 def get_inputs_benchmark(wildcards):
     dico_benchmark_inputs = {
             "assembly_list": expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/ASSEMBLER/{{assemblers}}.txt", assemblers=culebront.assembly_tools_activated)
-            
-        }
+    }
     if culebront.polishing_tools_activated:
         dico_benchmark_inputs["polishers_list"] = expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/POLISHING/{{assemblers}}_{{polishers}}{{nb}}.txt",
                     assemblers=[ass for ass in culebront.assembly_tools_activated if ass not in ["MINIASM"]], 
@@ -300,8 +300,6 @@ def get_inputs_benchmark(wildcards):
                         assemblers=culebront.assembly_tools_activated,
                         correction=['PILON'],
                         nb = range(1, int(nb_pilon_rounds)+1))
-
-
     # if culebront.quality_tools_activated:
         # dico_benchmark_inputs["quality_list"] = expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/POLISHING/{{assemblers}}_{{polishers}}{{nb}}.txt", 
                     # assemblers=culebront.assembly_tools_activated, 
@@ -332,12 +330,24 @@ rule run_benchmark_time:
         f"{basedir}/reports/get_benchmark.py"
 
 
+def get_input_version (wildcards):
+    dico_version_inputs = {
+        "assembly_list": expand(f"{output_dir}versions/{{assemblers}}-version.txt", assemblers=map(str.lower,culebront.assembly_tools_activated))
+    }
+    if culebront.polishing_tools_activated:
+        dico_version_inputs["polishers_list"] = expand(f"{output_dir}versions/{{polishers}}-version.txt", polishers=map(str.lower,culebront.polishing_tools_activated))
+    if culebront.correction_tools_activated:
+        dico_version_inputs["correction_list"] = expand(f"{output_dir}versions/{{correction}}-version.txt", correction=map(str.lower,culebront.correction_tools_activated))
+    return dico_version_inputs
+
+
 rule run_get_versions:
     """
     recovery soft versions
     """
     threads: get_threads('run_get_versions', 1)
     input:
+        unpack(get_input_version),
         dir =f'{output_dir}'
     output:
         csv = f"{output_dir}versions.csv",
@@ -353,8 +363,8 @@ rule run_get_versions:
 def output_final(wildcards):
     dico_final = {
         "fasta_list" : expand(rules.preparing_fasta_to_quality.output.renamed, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.quality_step),
-        "dag" : rules.rule_graph.output.dag,
         "bench_list" : expand(rules.run_benchmark_time.output.stat_time,fastq=FASTQ),
+        "dag" : rules.rule_graph.output.dag,
         "versions" : rules.run_get_versions.output.csv
          # "report_snakemake" : rules.run_report_snakemake.output.report_snakemake,
         }
