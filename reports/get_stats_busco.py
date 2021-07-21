@@ -58,7 +58,7 @@ def main():
     
     dico_busco_time = AutoVivification()
 
-    # f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BUSCO_RESULTS/{{assemblers}}_{{quality_step}}_short-summary-BUSCO.txt",
+    # f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BUSCO/{{assemblers}}_{{quality_step}}_short-summary-BUSCO.txt",
 
     for busco_file in sorted(summary_busco):
         busco_file_path = Path(busco_file)

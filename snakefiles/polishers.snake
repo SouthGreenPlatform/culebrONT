@@ -46,7 +46,7 @@ rule run_racon_version:
     """
     launch Racon version
     """
-    threads: get_threads('run_racon_version', 4)
+    threads: get_threads('run_racon_version', 1)
     input:
         fastq = get_fastq,
     output:

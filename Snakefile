@@ -281,6 +281,32 @@ rule run_busco_stats:
         f"{basedir}/reports/get_stats_busco.py"
 
 
+rule run_busco_version:
+    """
+    busco version 
+    """
+    threads: get_threads('run_busco_version', 1)
+    input:
+        stats = rules.run_busco_stats.output.stat
+    output:
+        busco_version = f"{output_dir}{{fastq}}/REPORT/BUSCO-version.txt",
+        augustus_version = f"{output_dir}{{fastq}}/REPORT/BUSCO_AUGUSTUS-version.txt",
+    message:
+        """
+        busco version 
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["BUSCO"]
+    shell:
+        """
+        [ ! -f {output.busco_version} ] &&  [ ! -d versions ] && mkdir -p versions; busco --version > {output.busco_version}
+        ln -s -f {output.busco_version} {output_dir}versions/BUSCO-version.txt
+        [ ! -f {output.augustus_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "augustus --version" | grep 'AUGUSTUS' > {output.augustus_version}
+        ln -s -f {output.augustus_version} {output_dir}versions/BUSCO_AUGUSTUS-version.txt
+        """
+
 def get_inputs_benchmark(wildcards):
     dico_benchmark_inputs = {
             "assembly_list": expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/ASSEMBLER/{{assemblers}}.txt", assemblers=culebront.assembly_tools_activated)
@@ -335,13 +361,14 @@ rule run_get_versions:
     """
     threads: get_threads('run_get_versions', 1)
     input:
-        assemblers_versions = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/{{assemblers}}-version.txt", fastq = FASTQ, assemblers=culebront.assembly_tools_activated),
-        polishers_versions= expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/{{polishers}}-version.txt",fastq=FASTQ, assemblers=culebront.assembly_tools_activated,polishers=culebront.polishing_tools_activated),
-        correction_versions= expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/{{correction}}/{{correction}}-version.txt", assemblers=culebront.assembly_tools_activated,fastq=FASTQ,correction=culebront.correction_tools_activated),
-        circular_versions= expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR-version.txt",assemblers=[ass for ass in culebront.assembly_tools_activated if ass in ["CANU","SMARTDENOVO"]],fastq=FASTQ),
-        quality_versions= expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/{{quality}}/{{quality}}-version.txt",assemblers=culebront.assembly_tools_activated,fastq=FASTQ,quality_step= culebront.last_steps_list,quality=[qual for qual in culebront.quality_tools_activated if qual not in ["QUAST", "MAUVE"]]),
-        quast = expand(f"{output_dir}{{fastq}}/AGGREGATED_QC/QUAST_RESULTS/{{quality}}-version.txt",fastq=FASTQ,quality=[qual for qual in culebront.quality_tools_activated if qual in ["QUAST"]]),
-        mauve = expand(f"{output_dir}/versions/{{quality}}-version.txt",quality=[qual for qual in culebront.quality_tools_activated if qual in ["MAUVE"]]),
+        assemblers = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/{{assemblers}}-version.txt", fastq = FASTQ, assemblers=culebront.assembly_tools_activated),
+        polishers = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/{{polishers}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated,polishers=culebront.polishing_tools_activated),
+        correction = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/{{correction}}/{{correction}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated, correction=culebront.correction_tools_activated),
+        circular = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR-version.txt", fastq=FASTQ, assemblers=[ass for ass in culebront.assembly_tools_activated if ass in ["CANU","SMARTDENOVO"]]),
+        quality = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/{{quality}}/{{quality}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list, quality=[qual for qual in culebront.quality_tools_activated if qual not in ["QUAST", "MAUVE", "BUSCO"]]),
+        quast = expand(rules.run_quast.output.version, fastq=FASTQ, quality=[qual for qual in culebront.quality_tools_activated if qual in ["QUAST"]]),
+        busco = expand(rules.run_busco_version.output.busco_version, fastq=FASTQ),
+        mauve = expand(f"{output_dir}/versions/{{quality}}-version.txt", quality=[qual for qual in culebront.quality_tools_activated if qual in ["MAUVE"]]),
         dir =f'{output_dir}'
     output:
         csv = f"{output_dir}versions.csv",

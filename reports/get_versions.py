@@ -11,7 +11,6 @@ import pandas as pd
 from pathlib import Path
 
 def main():
-
     dir = snakemake.input.dir
     dir = f"{dir}/versions"
     output = snakemake.output.csv

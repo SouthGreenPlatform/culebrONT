@@ -152,8 +152,6 @@ rule run_busco:
         fasta = rules.preparing_fasta_to_quality.output.renamed
     output:
         summary = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BUSCO/{{assemblers}}-{{quality_step}}-BUSCO.txt",
-        busco_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BUSCO/BUSCO-version.txt",
-        augustus_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BUSCO/BUSCO_AUGUSTUS-version.txt",
     params:
         out_path = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/",
         busco_name = f"BUSCO",
@@ -191,10 +189,6 @@ rule run_busco:
         tools_config["ENVMODULE"]["BUSCO"]
     shell:
         """
-        [ ! -f {output.busco_version} ] &&  [ ! -d versions ] && mkdir -p versions; busco --version > {output.busco_version}
-        ln -s -f {output.busco_version} {output_dir}versions/BUSCO-version.txt
-        [ ! -f {output.augustus_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "augustus --version" | grep 'AUGUSTUS' > {output.augustus_version}
-        ln -s -f {output.augustus_version} {output_dir}versions/BUSCO_AUGUSTUS-version.txt
         (mkdir -p {params.augustus_config};
         augustus_bin=`which augustus`;
         config_path=${{augustus_bin%/*/*}}/config
