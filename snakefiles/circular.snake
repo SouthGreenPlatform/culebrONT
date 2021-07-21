@@ -10,6 +10,7 @@ rule run_circlator:
     output:
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED{TAG}.fasta",
         info = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly_info.txt",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR-version.txt",
     params:
         log_mv = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/circlator.log",
         out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR/"),
@@ -41,8 +42,9 @@ rule run_circlator:
         tools_config["ENVMODULE"]["CIRCLATOR"]
     shell:
         """
-        [ ! -f {output_dir}versions/circlator-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; circlator version > {output_dir}versions/circlator-version.txt
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; circlator version > {output.version}
         (rm -rf {params.out_dir};
+        ln -s {output.version} {output_dir}versions/CIRCLATOR-version.txt
         circlator all --thread {threads} {params.options} --verbose --bwa_opts "-x ont2d" {input.draft} {input.fastq} {params.out_dir};
         mv {params.out_dir}06.fixstart.fasta {output.fasta};
         mv {params.out_dir}06.fixstart.log {params.log_mv};

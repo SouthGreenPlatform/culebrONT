@@ -97,6 +97,10 @@ rule preparing_ref_to_nanopolish :
         reads_on_fasta = rules.run_nanopolish_index.output.reads_on_fasta,
     output:
         bam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/reads.sorted.bam",
+        nanopolish_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/NANOPOLISH-version.txt",
+        nanopolish_samtools_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/NANOPOLISH_SAMTOOLS-version.txt",
+        nanopolish_minimap2_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/NANOPOLISH_MINIMAP2-version.txt",
+        nanopolish_seqtk_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/NANOPOLISH_SEQTK-version.txt",
     params:
         dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/",
         preset = f"{config['params']['MINIMAP2']['PRESET_OPTION']}" if {config['params']['MINIMAP2']['PRESET_OPTION']}!='' else 'map-ont',
@@ -127,11 +131,15 @@ rule preparing_ref_to_nanopolish :
         tools_config["ENVMODULE"]["SEQTK"]
     shell:
         """
-        [ ! -f {output_dir}versions/nanopolish-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; nanopolish --version |head -n1 > {output_dir}versions/nanopolish-version.txt
-        [ ! -f {output_dir}versions/nanopolish_samtools-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version |head -n1 > {output_dir}versions/nanopolish_samtools-version.txt
-        [ ! -f {output_dir}versions/nanopolish_minimap-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version |head -n1 > {output_dir}versions/nanopolish_minimap-version.txt
-        [ ! -f {output_dir}versions/nanopolish_seqtk-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py seqtk | grep 'Version' > {output_dir}versions/nanopolish_seqtk-version.txt
-         
+        [ ! -f {output.nanopolish_version} ] &&  [ ! -d versions ] && mkdir -p versions; nanopolish --version |head -n1 > {output.nanopolish_version}
+        ln -s {output.nanopolish_version} {output_dir}versions/NANOPOLISH-version.txt
+        [ ! -f {output.nanopolish_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version |head -n1 > {output.nanopolish_samtools_version}
+        ln -s {output.nanopolish_samtools_version} {output_dir}versions/NANOPOLISH_SAMTOOLS-version.txt
+        [ ! -f {output.nanopolish_minimap2_version} ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version |head -n1 > {output.nanopolish_minimap2_version}
+        ln -s {output.nanopolish_minimap2_version} {output_dir}versions/NANOPOLISH_MINIMAP2-version.txt
+        [ ! -f {output.nanopolish_seqtk_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py seqtk | grep 'Version' > {output.nanopolish_seqtk_version}
+        ln -s {output.nanopolish_seqtk_version} {output_dir}versions/NANOPOLISH_SEQTK-version.txt
+
         (cd {params.dir}
         minimap2 -ax {params.preset} -t {threads} {input.draft} {input.reads_on_fasta} | samtools sort -o {output.bam} -T reads.tmp;
         samtools index {output.bam}) 1> {log.output} 2> {log.error}
@@ -459,6 +467,7 @@ rule run_medaka_merge:
         draft = rules.index_fasta_to_correction.output.fasta,
     output:
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/consensus.fasta",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/MEDAKA-version.txt",
     params:
         hdf_dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/HDFS/",
     log:
@@ -485,7 +494,8 @@ rule run_medaka_merge:
         tools_config["ENVMODULE"]["MEDAKA"]
     shell:
         """
-        [ ! -f {output_dir}versions/medaka-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; medaka --version > {output_dir}versions/medaka-version.txt
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; medaka --version > {output.version}
+        ln -s {output.version} {output_dir}versions/MEDAKA-version.txt
         medaka stitch --threads {threads} {params.hdf_dir}/*.medaka-segment.hdf {input.draft} {output.fasta} 1>{log.output} 2>{log.error}
         """
 
@@ -507,7 +517,8 @@ rule run_pilon_first_round:
         bam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_1/assembly_pilon.pilon1.bam",
     output:
         pilon = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_1/assembly_pilon.pilon1.fasta",
-        corrected = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_1/assembly.pilon1.fasta"
+        corrected = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_1/assembly.pilon1.fasta",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/PILON-version.txt",
     log:
         output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/PILON/{{fastq}}_{{assemblers}}_PILON1.o",
         error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/PILON/{{fastq}}_{{assemblers}}_PILON1.e",
@@ -534,7 +545,8 @@ rule run_pilon_first_round:
         tools_config["ENVMODULE"]["PILON"]
     shell:
         """
-        [ ! -f {output_dir}versions/pilon-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; pilon | head -n1 > {output_dir}versions/pilon-version.txt
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; pilon | head -n1 > {output.version}
+        ln -s {output.version} {output_dir}versions/PILON-version.txt
         (bwa index {input.draft}
         bwa mem -t {threads} {input.draft} {params.illumina} | samtools view - -Sb | samtools sort - -@{threads} -o {params.bam}
         samtools index {params.bam}

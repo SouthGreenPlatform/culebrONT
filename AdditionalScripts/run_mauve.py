@@ -26,7 +26,7 @@ for src in fasta_files:
 stringList = ' '.join([str(item) for item in dest_paths])
 
 #recovery version of mauve
-version_file = f"{dir}/versions/mauve-version.txt"
+version_file = f"{dir}/versions/MAUVE-version.txt"
 cmd = f"progressiveMauve --version "
 subprocess.run(cmd, shell=True, capture_output=False, stderr=open(version_file, 'w'))
 

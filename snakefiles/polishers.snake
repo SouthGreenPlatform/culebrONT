@@ -10,7 +10,7 @@ rule run_racon:
         fastq = get_fastq,
     output:
         paf = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{{nb}}/assembly.minimap4racon{{nb}}.paf",
-        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{{nb}}/assembly.racon{{nb}}.fasta"
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{{nb}}/assembly.racon{{nb}}.fasta",
     wildcard_constraints:
         nb = "[0-9]",
     log:
@@ -38,7 +38,26 @@ rule run_racon:
         tools_config["ENVMODULE"]["MINIMAP2"]
     shell:
         """
-        [ ! -f {output_dir}versions/racon-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; racon --version > {output_dir}versions/racon-version.txt
         (minimap2 -t {threads} {input.draft} {params.fastq} 1> {output.paf};
         racon -t {threads} {params.fastq} {output.paf} {input.draft} 1> {output.fasta}) 2>{log.error}
+        """
+
+rule run_racon_version:
+    """
+    launch Racon version
+    """
+    threads: get_threads('run_racon_version', 4)
+    input:
+        fastq = get_fastq,
+    output:
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON-version.txt",
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["RACON"],
+        tools_config["ENVMODULE"]["MINIMAP2"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; racon --version > {output.version}
+        ln -s {output.version} {output_dir}versions/RACON-version.txt
         """

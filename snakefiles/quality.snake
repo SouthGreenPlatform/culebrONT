@@ -95,6 +95,7 @@ rule run_quast:
         liste = expand(rules.preparing_fasta_to_quality.output.renamed, fastq='{fastq}', assemblers=culebront.assembly_tools_activated, quality_step=culebront.quality_step),
     output:
         report_file = f"{output_dir}FINAL_REPORT/QUAST/{{fastq}}/icarus.html",
+        version = f"{output_dir}{{fastq}}/AGGREGATED_QC/QUAST_RESULTS/QUAST-version.txt",
     params:
         final_dir = f"{output_dir}FINAL_REPORT/QUAST/{{fastq}}/",
         report = f"{output_dir}{{fastq}}/AGGREGATED_QC/QUAST_RESULTS/report.html",
@@ -133,7 +134,8 @@ rule run_quast:
         tools_config["ENVMODULE"]["QUAST"]
     shell:
         """
-        [ ! -f {output_dir}versions/quast-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; quast.py --version | grep 'QUAST' > {output_dir}versions/quast-version.txt
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; quast.py --version | grep 'QUAST' > {output.version}
+        ln -s {output.version} {output_dir}versions/QUAST-version.txt
         (mkdir -p {params.final_dir}
         quast.py -t {threads} -o {params.directory} {params.gff} {params.reference_file} {params.options} {input.liste}
         cp {params.icarus} {output.report_file}
@@ -149,10 +151,12 @@ rule run_busco:
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed
     output:
-        summary = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BUSCO_RESULTS/{{assemblers}}-{{quality_step}}-BUSCO.txt",
+        summary = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BUSCO/{{assemblers}}-{{quality_step}}-BUSCO.txt",
+        busco_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BUSCO/BUSCO-version.txt",
+        augustus_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BUSCO/BUSCO_AUGUSTUS-version.txt",
     params:
         out_path = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/",
-        busco_name = f"BUSCO_RESULTS",
+        busco_name = f"BUSCO",
         database = config['params']['BUSCO']['DATABASE'],
         augustus_config = temp(f"{output_dir}augustus_config"),
         busco_downloads = temp(f"{output_dir}busco_downloads"),
@@ -187,15 +191,17 @@ rule run_busco:
         tools_config["ENVMODULE"]["BUSCO"]
     shell:
         """
-        [ ! -f {output_dir}versions/busco-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; busco --version > {output_dir}versions/busco-version.txt
-        [ ! -f {output_dir}versions/busco_augustus-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "augustus --version" | grep 'AUGUSTUS' > {output_dir}versions/busco_augustus-version.txt
+        [ ! -f {output.busco_version} ] &&  [ ! -d versions ] && mkdir -p versions; busco --version > {output.busco_version}
+        ln -s {output.busco_version} {output_dir}versions/BUSCO-version.txt
+        [ ! -f {output.augustus_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "augustus --version" | grep 'AUGUSTUS' > {output.augustus_version}
+        ln -s {output.augustus_version} {output_dir}versions/BUSCO_AUGUSTUS-version.txt
         (mkdir -p {params.augustus_config};
         augustus_bin=`which augustus`;
         config_path=${{augustus_bin%/*/*}}/config
         cp -r $config_path {params.augustus_config};
         export AUGUSTUS_CONFIG_PATH={params.augustus_config}/config;
         busco -f -i {input.fasta} -o {params.busco_name} --out_path {params.out_path} -l {params.database} -m {params.model} {params.sp} -c {threads};
-        mv {params.out_path}BUSCO_RESULTS/short_summary*BUSCO_RESULTS.txt {output.summary} ;) 1>{log.output} 2>{log.error}
+        mv {params.out_path}BUSCO/short_summary*BUSCO.txt {output.summary} ;) 1>{log.output} 2>{log.error}
         """
 
 rule run_diamond:
@@ -207,6 +213,7 @@ rule run_diamond:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
     output:
         csv = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/DIAMOND/diamond.csv",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/DIAMOND/DIAMOND-version.txt",
     params:
         db = f"{config['params']['DIAMOND']['DATABASE']}",
         dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/DIAMOND/",
@@ -239,7 +246,8 @@ rule run_diamond:
         tools_config["ENVMODULE"]["DIAMOND"]
     shell:
         """
-        [ ! -f {output_dir}versions/blobtools_diamond-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; diamond --version > {output_dir}versions/blobtools_diamond-version.txt
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; diamond --version > {output.version}
+        ln -s {output.version} {output_dir}versions/DIAMOND-version.txt
         (mkdir -p {params.dir};
         diamond {params.mode} --query {input.fasta} --db {params.db} --outfmt {params.format} --threads {threads} --sensitive --max-target-seqs 1 --evalue 1e-25 --threads {threads} --out {output.csv}) 1>{log.output} 2>{log.error}
         """
@@ -254,6 +262,8 @@ rule run_minimap2:
         fastq = get_fastq,
     output:
         bam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MINIMAP2/minimap2mapping.bam",
+        blob_minimap2_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MINIMAP2/BLOBTOOLS_MINIMAP2-version.txt",
+        blob_samtools_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MINIMAP2/BLOBTOOLS_SAMTOOLS-version.txt",
     params:
         preset = f"{config['params']['MINIMAP2']['PRESET_OPTION']}" if {config['params']['MINIMAP2']['PRESET_OPTION']}!='' else 'map-pb',
         out_dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MINIMAP2/"
@@ -282,8 +292,10 @@ rule run_minimap2:
         tools_config["ENVMODULE"]["SAMTOOLS"]
     shell: #TODO: gerer la sortie standard de minimap2 dans les logs
         """
-        [ ! -f {output_dir}versions/blobtools_minimap2-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version > {output_dir}versions/blobtools_minimap2-version.txt
-        [ ! -f {output_dir}versions/blobtools_samtools-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output_dir}versions/blobtools_samtools-version.txt
+        [ ! -f {output.blob_minimap2_version} ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version > {output.blob_minimap2_version}
+        ln -s {output.blob_minimap2_version} {output_dir}versions/BLOBTOOLS_MINIMAP2-version.txt
+        [ ! -f {output.blob_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.blob_samtools_version}
+        ln -s {output.blob_samtools_version} {output_dir}versions/BLOBTOOLS_SAMTOOLS-version.txt
         (minimap2 -x {params.preset} -t {threads} {input.fasta} {input.fastq} -a | samtools sort -o {output.bam};
         samtools index {output.bam})  1>{log.output} 2>{log.error}
         """
@@ -300,7 +312,8 @@ rule run_blobtools:
     output:
         table = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{quality_step}}.txt",
         read_cov = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/read_cov.png",
-        blob = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/blob.png"
+        blob = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/blob.png",
+        blob_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/BLOBTOOLS-version.txt",
     params:
         dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/",
         tmp_table = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/output.quality.blobDB.table.txt",
@@ -334,7 +347,8 @@ rule run_blobtools:
         tools_config["ENVMODULE"]["BLOBTOOLS"]
     shell:
         """
-        [ ! -f {output_dir}versions/blobtools-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; blobtools --version > {output_dir}versions/blobtools-version.txt
+        [ ! -f {output.blob_version} ] &&  [ ! -d versions ] && mkdir -p versions; blobtools --version > {output.blob_version}
+        ln -s {output.blob_version} {output_dir}versions/BLOBTOOLS-version.txt
         (cd {params.dir} ;
         blobtools create -i {input.fasta} -b {input.sorted_bam} -t {input.diamond} -o quality --names {params.names} --nodes {params.nodes} --db nodesDB.txt;
         blobtools view -i quality.blobDB.json --cov -o output;
@@ -354,6 +368,7 @@ rule run_mummer:
         reference_file = reference_file
     output:
         delta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MUMMER/mummer.delta.gz",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MUMMER/MUMMER-version.txt",
     params:
         minmatch = config['params']['MUMMER']['MINMATCH'], #option -l  20
         mincluster = config['params']['MUMMER']['MINCLUSTER'], #option -c 65
@@ -387,7 +402,8 @@ rule run_mummer:
         tools_config["ENVMODULE"]["MUMMER"]
     shell:
         """
-        [ ! -f {output_dir}versions/mummer-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "nucmer --version" | grep 'version'  > {output_dir}versions/mummer-version.txt;
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "nucmer --version" | grep 'version'  > {output.version};
+        ln -s {output.version} {output_dir}versions/MUMMER-version.txt
         (cd {params.dir};
         nucmer -p {params.prefix} --maxmatch  -l {params.minmatch} -c {params.mincluster} {input.reference_file} {input.fasta};
         gzip mummer.delta) 1>{log.output} 2>{log.error}
@@ -405,6 +421,7 @@ rule run_assemblytics:
         png_dotplot = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/{{fastq}}__{{assemblers}}__{{quality_step}}.Assemblytics.Dotplot_filtered.png",
         png_Nchart = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/{{fastq}}__{{assemblers}}__{{quality_step}}.Assemblytics.Nchart.png",
         png_log_all_sizes = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/{{fastq}}__{{assemblers}}__{{quality_step}}.Assemblytics.size_distributions.all_variants.log_all_sizes.png",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/ASSEMBLYTICS-version.txt"
     params:
         dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/",
         unique_anchor_length = config['params']['ASSEMBLYTICS']['UNIQUE_ANCHOR_LEN'],
@@ -439,7 +456,8 @@ rule run_assemblytics:
         tools_config["ENVMODULE"]["ASSEMBLYTICS"]
     shell:
         """
-        [ ! -f {output_dir}versions/assemblytics-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; whereis Assemblytics > {output_dir}versions/assemblytics-version.txt
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; whereis Assemblytics > {output.version}
+        ln -s {output.version} {output_dir}versions/ASSEMBLYTICS-version.txt
         (cd {params.dir};
         Assemblytics {input.delta} {params.prefix} {params.unique_anchor_length} {params.min_variant_size} {params.max_variant_size}) 1>{log.output} 2>{log.error}
         """
@@ -495,6 +513,7 @@ rule run_KAT:
         png_density = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat-density.png",
         png_gcp_mx = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/{{fastq}}_{{assemblers}}_{{quality_step}}.gcp.mx.png",
         png_comp_main_mx_spectra_cn = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat.comp-main.mx.spectra-cn.png",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/KAT-version.txt"
     params:
         hist = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat.hist",
         cmp = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat.comp", #matrix
@@ -531,7 +550,8 @@ rule run_KAT:
         tools_config["ENVMODULE"]["KAT"]
     shell:
         """
-        [ ! -f {output_dir}versions/kat-version.txt ] &&  [ ! -d versions ] && mkdir -p versions; kat --version > {output_dir}versions/kat-version.txt
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; kat --version > {output.version}
+        ln -s {output.version} {output_dir}versions/KAT-version.txt
         (cd {params.dir};
         kat hist -t {threads} -o {params.hist} {input.combined_data};
         kat gcp -t {threads} -o {output.gcp} {input.combined_data};
@@ -627,6 +647,8 @@ rule run_flagstat:
         bam = rules.run_bwa_mem2.output.bam,
     output:
         txt = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/FLAGSTATS/{{assemblers}}-{{quality_step}}-flagstat.txt",
+        flagstats_samtools_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/FLAGSTATS/FLAGSTATS-version.txt",
+        flagstats_bwa_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/FLAGSTATS/FLAGSTATS_BWA-version.txt",
     log:
         output = f"{output_dir}{{fastq}}/LOGS/QUALITY/FLAGSTATS/{{fastq}}_{{assemblers}}_{{quality_step}}_FLAGSTATS.o",
         error = f"{output_dir}{{fastq}}/LOGS/QUALITY/FLAGSTATS/{{fastq}}_{{assemblers}}_{{quality_step}}_FLAGSTATS.e",
@@ -650,7 +672,9 @@ rule run_flagstat:
         tools_config["ENVMODULE"]["SAMTOOLS"]
     shell:
         """
-        [ ! -f {output_dir}versions/flagstat_samtools.txt ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output_dir}versions/flagstat_samtools-version.txt
-        [ ! -f {output_dir}versions/flagstat_bwa.txt ] &&  [ ! -d versions ] && mkdir -p versions ; python {basedir}/AdditionalScripts/which_version.py bwa | grep 'Version' > {output_dir}versions/flagstat_bwa-version.txt;
+        [ ! -f {output.flagstats_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.flagstats_samtools_version}
+        ln -s {output.flagstats_samtools_version} {output_dir}versions/FLAGSTATS_SAMTOOLS-version.txt
+        [ ! -f {output.flagstats_bwa_version} ] &&  [ ! -d versions ] && mkdir -p versions ; python {basedir}/AdditionalScripts/which_version.py bwa | grep 'Version' > {output.flagstats_bwa_version};
+        ln -s {output.flagstats_bwa_version} {output_dir}versions/FLAGSTATS_BWA-version.txt
         (samtools flagstat {input.bam} --threads {threads}) > {output.txt} 2>{log.error}
         """

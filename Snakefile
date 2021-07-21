@@ -54,7 +54,7 @@ cluster_config = culebront.cluster_config
 # pp(culebront.export_use_yaml)
 
 # print for debug:
-#logger.debug(pp(culebront))
+logger.debug(pp(culebront))
 # exit()
 
 # Getting paths on usefully variables
@@ -329,25 +329,19 @@ rule run_benchmark_time:
     script:
         f"{basedir}/reports/get_benchmark.py"
 
-
-def get_input_version (wildcards):
-    dico_version_inputs = {
-        "assembly_list": expand(f"{output_dir}versions/{{assemblers}}-version.txt", assemblers=map(str.lower,culebront.assembly_tools_activated))
-    }
-    if culebront.polishing_tools_activated:
-        dico_version_inputs["polishers_list"] = expand(f"{output_dir}versions/{{polishers}}-version.txt", polishers=map(str.lower,culebront.polishing_tools_activated))
-    if culebront.correction_tools_activated:
-        dico_version_inputs["correction_list"] = expand(f"{output_dir}versions/{{correction}}-version.txt", correction=map(str.lower,culebront.correction_tools_activated))
-    return dico_version_inputs
-
-
 rule run_get_versions:
     """
     recovery soft versions
     """
     threads: get_threads('run_get_versions', 1)
     input:
-        unpack(get_input_version),
+        assemblers_versions = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/{{assemblers}}-version.txt", fastq = FASTQ, assemblers=culebront.assembly_tools_activated),
+        polishers_versions= expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/{{polishers}}-version.txt",fastq=FASTQ, assemblers=culebront.assembly_tools_activated,polishers=culebront.polishing_tools_activated),
+        correction_versions= expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/{{correction}}/{{correction}}-version.txt", assemblers=culebront.assembly_tools_activated,fastq=FASTQ,correction=culebront.correction_tools_activated),
+        circular_versions= expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR-version.txt",assemblers=[ass for ass in culebront.assembly_tools_activated if ass in ["CANU","SMARTDENOVO"]],fastq=FASTQ),
+        quality_versions= expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/{{quality}}/{{quality}}-version.txt",assemblers=culebront.assembly_tools_activated,fastq=FASTQ,quality_step= culebront.last_steps_list,quality=[qual for qual in culebront.quality_tools_activated if qual not in ["QUAST", "MAUVE"]]),
+        quast = expand(f"{output_dir}{{fastq}}/AGGREGATED_QC/QUAST_RESULTS/{{quality}}-version.txt",fastq=FASTQ,quality=[qual for qual in culebront.quality_tools_activated if qual in ["QUAST"]]),
+        mauve = expand(f"{output_dir}/versions/{{quality}}-version.txt",quality=[qual for qual in culebront.quality_tools_activated if qual in ["MAUVE"]]),
         dir =f'{output_dir}'
     output:
         csv = f"{output_dir}versions.csv",
@@ -357,7 +351,6 @@ rule run_get_versions:
         """
     script:
         f"{basedir}/reports/get_versions.py"
-
 
 
 def output_final(wildcards):
