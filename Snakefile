@@ -212,7 +212,7 @@ rule rule_graph:
     shell:
         """
         cd {output_dir}
-        snakemake -s {CULEBRONT_PATH}/Snakefile -n --rulegraph --configfile {input.conf} --use-singularity >{params.tmp}
+        snakemake -s {CULEBRONT_PATH}/Snakefile -n --rulegraph --configfile {input.conf} --use-singularity use-envmodules >{params.tmp}
         dot -Tpng {params.tmp} >{output.dag}
         rm {params.tmp}
         """
