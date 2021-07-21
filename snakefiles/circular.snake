@@ -44,7 +44,7 @@ rule run_circlator:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; circlator version > {output.version}
         (rm -rf {params.out_dir};
-        ln -s {output.version} {output_dir}versions/CIRCLATOR-version.txt
+        ln -s -f {output.version} {output_dir}versions/CIRCLATOR-version.txt
         circlator all --thread {threads} {params.options} --verbose --bwa_opts "-x ont2d" {input.draft} {input.fastq} {params.out_dir};
         mv {params.out_dir}06.fixstart.fasta {output.fasta};
         mv {params.out_dir}06.fixstart.log {params.log_mv};

@@ -44,7 +44,7 @@ rule run_flye:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; flye --version > {output.version}
-        ln -s {output.version} {output_dir}versions/FLYE-version.txt
+        ln -s -f {output.version} {output_dir}versions/FLYE-version.txt
         (flye --nano-raw {input.fastq} --genome-size {params.genome_size} {params.circular} --out-dir {params.fasta_dir} --threads {threads};
         {params.move} {params.fasta_dir}/assembly.fasta {output.fasta}) 1>{log.output} 2>{log.error}
         """
@@ -97,9 +97,9 @@ rule run_canu:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; canu --version > {output.version}
-        ln -s {output.version} {output_dir}versions/CANU-version.txt
+        ln -s -f {output.version} {output_dir}versions/CANU-version.txt
         (canu -p out_canu -d {params.out_dir} genomeSize={params.genome_size} -nanopore-raw {input.fastq} {params.options};
-        ln -s {output.fasta_canu} {output.fasta}) 1>{log.output} 2>{log.error}
+        ln -s -f {output.fasta_canu} {output.fasta}) 1>{log.output} 2>{log.error}
         """
 
 
@@ -136,7 +136,7 @@ rule run_minimap_for_miniasm:
     shell:
          """
          [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version > {output.version}
-         ln -s {output.version} {output_dir}versions/MINIMAP2-version.txt
+         ln -s -f {output.version} {output_dir}versions/MINIMAP2-version.txt
          (minimap2 -x ava-ont -t {threads} {input.fastq} {input.fastq} 1> {output.paf};) 2>{log.error}
          """
 
@@ -175,7 +175,7 @@ rule run_miniasm:
     shell:
          """
          [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; miniasm -V > {output.version}
-         ln -s {output.version} {output_dir}versions/MINIASM-version.txt
+         ln -s -f {output.version} {output_dir}versions/MINIASM-version.txt
          (miniasm -f {input.fastq} {input.paf} 1> {output.gfa_miniasm}) 2>{log.error}
          """
 
@@ -225,7 +225,7 @@ rule run_minipolish:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; minipolish --version > {output.version}
-        ln -s {output.version} {output_dir}versions/MINIPOLISH-version.txt
+        ln -s -f {output.version} {output_dir}versions/MINIPOLISH-version.txt
         minipolish -t {threads} --rounds {params.racon_rounds} {input.fastq} {input.gfa_miniasm} 1> {output.gfa_minipolish} 2>{log.error}
         awk '/^S/{{print \">\"$2\"\\n\"$3}}' {output.gfa_minipolish} | fold > {output.fasta}
         ln -s {output.gfa_minipolish} {output.info} 2>>{log.error}
@@ -268,7 +268,7 @@ rule run_raven:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; raven --version > {output.version}
-        ln -s {output.version} {output_dir}versions/RAVEN-version.txt
+        ln -s -f {output.version} {output_dir}versions/RAVEN-version.txt
         raven -p 0 --graphical-fragment-assembly {output.gfa} -t {threads} {input.fastq} >{output.fasta} 2>{log.error}
         rm $PWD/raven.cereal
         """
@@ -343,7 +343,7 @@ rule run_smartdenovo:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; echo "smartdenovo [unknown]" > {output.version}
-        ln -s {output.version} {output_dir}versions/SMARTDENOVO-version.txt
+        ln -s -f {output.version} {output_dir}versions/SMARTDENOVO-version.txt
         cd {params.dir} 1>{log.output} 2>{log.error}
         smartdenovo.pl {params.options} -t {threads} -k {params.kmersize} -p  {params.prefix} -c 1 {input.reads_on_fasta} 1>{params.mak} 2>>{log.error}
         make -f {params.mak} 1>>{log.output} 2>>{log.error}
@@ -397,7 +397,7 @@ rule run_shasta:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; shasta --version | head -n1 > {output.version}
-        ln -s {output.version} {output_dir}versions/SHASTA-version.txt
+        ln -s -f {output.version} {output_dir}versions/SHASTA-version.txt
         (cd {params.out_dir};
         rm -rf ShastaRun/;
         shasta --command assemble --input {input.reads_on_fasta} {params.memory_mode} {params.memory_backing} --threads {threads} {params.options};

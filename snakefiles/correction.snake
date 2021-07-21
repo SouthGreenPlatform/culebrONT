@@ -132,13 +132,13 @@ rule preparing_ref_to_nanopolish :
     shell:
         """
         [ ! -f {output.nanopolish_version} ] &&  [ ! -d versions ] && mkdir -p versions; nanopolish --version |head -n1 > {output.nanopolish_version}
-        ln -s {output.nanopolish_version} {output_dir}versions/NANOPOLISH-version.txt
+        ln -s -f {output.nanopolish_version} {output_dir}versions/NANOPOLISH-version.txt
         [ ! -f {output.nanopolish_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version |head -n1 > {output.nanopolish_samtools_version}
-        ln -s {output.nanopolish_samtools_version} {output_dir}versions/NANOPOLISH_SAMTOOLS-version.txt
+        ln -s -f {output.nanopolish_samtools_version} {output_dir}versions/NANOPOLISH_SAMTOOLS-version.txt
         [ ! -f {output.nanopolish_minimap2_version} ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version |head -n1 > {output.nanopolish_minimap2_version}
-        ln -s {output.nanopolish_minimap2_version} {output_dir}versions/NANOPOLISH_MINIMAP2-version.txt
+        ln -s -f {output.nanopolish_minimap2_version} {output_dir}versions/NANOPOLISH_MINIMAP2-version.txt
         [ ! -f {output.nanopolish_seqtk_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py seqtk | grep 'Version' > {output.nanopolish_seqtk_version}
-        ln -s {output.nanopolish_seqtk_version} {output_dir}versions/NANOPOLISH_SEQTK-version.txt
+        ln -s -f {output.nanopolish_seqtk_version} {output_dir}versions/NANOPOLISH_SEQTK-version.txt
 
         (cd {params.dir}
         minimap2 -ax {params.preset} -t {threads} {input.draft} {input.reads_on_fasta} | samtools sort -o {output.bam} -T reads.tmp;
@@ -495,7 +495,7 @@ rule run_medaka_merge:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; medaka --version > {output.version}
-        ln -s {output.version} {output_dir}versions/MEDAKA-version.txt
+        ln -s -f {output.version} {output_dir}versions/MEDAKA-version.txt
         medaka stitch --threads {threads} {params.hdf_dir}/*.medaka-segment.hdf {input.draft} {output.fasta} 1>{log.output} 2>{log.error}
         """
 
@@ -546,7 +546,7 @@ rule run_pilon_first_round:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; pilon | head -n1 > {output.version}
-        ln -s {output.version} {output_dir}versions/PILON-version.txt
+        ln -s -f {output.version} {output_dir}versions/PILON-version.txt
         (bwa index {input.draft}
         bwa mem -t {threads} {input.draft} {params.illumina} | samtools view - -Sb | samtools sort - -@{threads} -o {params.bam}
         samtools index {params.bam}

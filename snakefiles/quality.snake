@@ -135,7 +135,7 @@ rule run_quast:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; quast.py --version | grep 'QUAST' > {output.version}
-        ln -s {output.version} {output_dir}versions/QUAST-version.txt
+        ln -s -f {output.version} {output_dir}versions/QUAST-version.txt
         (mkdir -p {params.final_dir}
         quast.py -t {threads} -o {params.directory} {params.gff} {params.reference_file} {params.options} {input.liste}
         cp {params.icarus} {output.report_file}
@@ -192,9 +192,9 @@ rule run_busco:
     shell:
         """
         [ ! -f {output.busco_version} ] &&  [ ! -d versions ] && mkdir -p versions; busco --version > {output.busco_version}
-        ln -s {output.busco_version} {output_dir}versions/BUSCO-version.txt
+        ln -s -f {output.busco_version} {output_dir}versions/BUSCO-version.txt
         [ ! -f {output.augustus_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "augustus --version" | grep 'AUGUSTUS' > {output.augustus_version}
-        ln -s {output.augustus_version} {output_dir}versions/BUSCO_AUGUSTUS-version.txt
+        ln -s -f {output.augustus_version} {output_dir}versions/BUSCO_AUGUSTUS-version.txt
         (mkdir -p {params.augustus_config};
         augustus_bin=`which augustus`;
         config_path=${{augustus_bin%/*/*}}/config
@@ -247,7 +247,7 @@ rule run_diamond:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; diamond --version > {output.version}
-        ln -s {output.version} {output_dir}versions/DIAMOND-version.txt
+        ln -s -f {output.version} {output_dir}versions/DIAMOND-version.txt
         (mkdir -p {params.dir};
         diamond {params.mode} --query {input.fasta} --db {params.db} --outfmt {params.format} --threads {threads} --sensitive --max-target-seqs 1 --evalue 1e-25 --threads {threads} --out {output.csv}) 1>{log.output} 2>{log.error}
         """
@@ -293,9 +293,9 @@ rule run_minimap2:
     shell: #TODO: gerer la sortie standard de minimap2 dans les logs
         """
         [ ! -f {output.blob_minimap2_version} ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version > {output.blob_minimap2_version}
-        ln -s {output.blob_minimap2_version} {output_dir}versions/BLOBTOOLS_MINIMAP2-version.txt
+        ln -s -f {output.blob_minimap2_version} {output_dir}versions/BLOBTOOLS_MINIMAP2-version.txt
         [ ! -f {output.blob_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.blob_samtools_version}
-        ln -s {output.blob_samtools_version} {output_dir}versions/BLOBTOOLS_SAMTOOLS-version.txt
+        ln -s -f {output.blob_samtools_version} {output_dir}versions/BLOBTOOLS_SAMTOOLS-version.txt
         (minimap2 -x {params.preset} -t {threads} {input.fasta} {input.fastq} -a | samtools sort -o {output.bam};
         samtools index {output.bam})  1>{log.output} 2>{log.error}
         """
@@ -348,7 +348,7 @@ rule run_blobtools:
     shell:
         """
         [ ! -f {output.blob_version} ] &&  [ ! -d versions ] && mkdir -p versions; blobtools --version > {output.blob_version}
-        ln -s {output.blob_version} {output_dir}versions/BLOBTOOLS-version.txt
+        ln -s -f {output.blob_version} {output_dir}versions/BLOBTOOLS-version.txt
         (cd {params.dir} ;
         blobtools create -i {input.fasta} -b {input.sorted_bam} -t {input.diamond} -o quality --names {params.names} --nodes {params.nodes} --db nodesDB.txt;
         blobtools view -i quality.blobDB.json --cov -o output;
@@ -403,7 +403,7 @@ rule run_mummer:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "nucmer --version" | grep 'version'  > {output.version};
-        ln -s {output.version} {output_dir}versions/MUMMER-version.txt
+        ln -s -f {output.version} {output_dir}versions/MUMMER-version.txt
         (cd {params.dir};
         nucmer -p {params.prefix} --maxmatch  -l {params.minmatch} -c {params.mincluster} {input.reference_file} {input.fasta};
         gzip mummer.delta) 1>{log.output} 2>{log.error}
@@ -457,7 +457,7 @@ rule run_assemblytics:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; whereis Assemblytics > {output.version}
-        ln -s {output.version} {output_dir}versions/ASSEMBLYTICS-version.txt
+        ln -s -f {output.version} {output_dir}versions/ASSEMBLYTICS-version.txt
         (cd {params.dir};
         Assemblytics {input.delta} {params.prefix} {params.unique_anchor_length} {params.min_variant_size} {params.max_variant_size}) 1>{log.output} 2>{log.error}
         """
@@ -551,7 +551,7 @@ rule run_KAT:
     shell:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; kat --version > {output.version}
-        ln -s {output.version} {output_dir}versions/KAT-version.txt
+        ln -s -f {output.version} {output_dir}versions/KAT-version.txt
         (cd {params.dir};
         kat hist -t {threads} -o {params.hist} {input.combined_data};
         kat gcp -t {threads} -o {output.gcp} {input.combined_data};
@@ -673,8 +673,8 @@ rule run_flagstat:
     shell:
         """
         [ ! -f {output.flagstats_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.flagstats_samtools_version}
-        ln -s {output.flagstats_samtools_version} {output_dir}versions/FLAGSTATS_SAMTOOLS-version.txt
+        ln -s -f {output.flagstats_samtools_version} {output_dir}versions/FLAGSTATS_SAMTOOLS-version.txt
         [ ! -f {output.flagstats_bwa_version} ] &&  [ ! -d versions ] && mkdir -p versions ; python {basedir}/AdditionalScripts/which_version.py bwa | grep 'Version' > {output.flagstats_bwa_version};
-        ln -s {output.flagstats_bwa_version} {output_dir}versions/FLAGSTATS_BWA-version.txt
+        ln -s -f {output.flagstats_bwa_version} {output_dir}versions/FLAGSTATS_BWA-version.txt
         (samtools flagstat {input.bam} --threads {threads}) > {output.txt} 2>{log.error}
         """
