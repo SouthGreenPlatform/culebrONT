@@ -54,7 +54,7 @@ cluster_config = culebront.cluster_config
 # pp(culebront.export_use_yaml)
 
 # print for debug:
-logger.debug(pp(culebront))
+#logger.debug(pp(culebront))
 # exit()
 
 # Getting paths on usefully variables
