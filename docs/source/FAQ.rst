@@ -25,8 +25,9 @@ Frequently Asked Questions
 - Bind mount disks to singularity environment by using ``--singularity-args '--bind $HOME'``. This allows to detect others disks on the singularity container.
 
 
-** How to include others SLURM options on ``cluster_config.yaml``
-   When a SLUMR profile is created, default slurm options are created in a dictionary on the profiles/CulebrONT/slurm-submit.py script. You can add other keys into this dictionary (ex. nodelist) and populate cluster_config.yaml with these options.
+**How to include others SLURM options on cluster_config.yaml**
+
+   When a SLUMR profile is created, default slurm options are created in a 'RESOURCE_MAPPING' dictionary on the profiles/CulebrONT/slurm-submit.py script. You can add other keys into this dictionary (ex. nodelist) and populate ``cluster_config.yaml`` with new options.
 
 
 **The conda command is not available in the shell /bin/bash that will be used by Snakemake**
