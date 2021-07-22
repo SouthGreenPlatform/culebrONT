@@ -188,7 +188,7 @@ Now, your basic profile is created. To finalize it, change the ``CulebrONT_pipel
     In addition, snakemake will search for a corresponding folder *profile_name* in /etc/xdg/snakemake and in $HOME/.config/snakemake, where globally accessible profiles can be placed.
 
 .. note::
-   You can find the generated files  when profiles are created following this documentation. IFB profile example can be found on the `̀ gift_files/CulebrONT_SLURM/`` repertory on our github repository.
+   You can find the generated files when profiles are created following this documentation. IFB profile example can be found on the `̀ gift_files/CulebrONT_SLURM/`` repertory on our github repository.
 
 4. Export CulebrONT to $PATH
 ----------------------------

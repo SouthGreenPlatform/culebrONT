@@ -14,18 +14,19 @@ Frequently Asked Questions
 
 **How much space does it take to install the CulebrONT dependencies?**
 
-- Built containers singularity.culebront_tools.sif and singularity.report.sig take 5G and 781M respectively.  
+- Built containers singularity.culebront_tools.sif and singularity.report.sig take 5G and 781M respectively.
 
 **Recommended Snakemake command line to launch CulebrONT**
 
 .. code-block:: bash
 
-    snakemake --nolock --use-conda --use-singularity --singularity-args '--bind $HOME' --cores -p -s Snakefile --latency-wait 6000000 --keep-going --restart-times 0 --rerun-incomplete --configfile config.yaml --conda-prefix $PWD/build_conda_envs
-
-
-- Snakemake compiles in each output directory conda environments. To avoid this, please use ``--conda-prefix /path/to/build_conda_env`` on snakemake command line. This could be practical on HPC cluster install.
+    snakemake --nolock --use-singularity --singularity-args '--bind $HOME' --cores -p -s Snakefile --latency-wait 6000000 --keep-going --restart-times 0 --rerun-incomplete --configfile config.yaml
 
 - Bind mount disks to singularity environment by using ``--singularity-args '--bind $HOME'``. This allows to detect others disks on the singularity container.
+
+
+** How to include others SLURM options on ``cluster_config.yaml``
+   When a SLUMR profile is created, default slurm options are created in a dictionary on the profiles/CulebrONT/slurm-submit.py script. You can add other keys into this dictionary (ex. nodelist) and populate cluster_config.yaml with these options.
 
 
 **The conda command is not available in the shell /bin/bash that will be used by Snakemake**
