@@ -12,6 +12,7 @@ from pathlib import Path
 
 def main():
     dir = snakemake.params.dir
+    #print(dir)
     output = snakemake.output.csv
     rep = Path(dir)
     rows = []
