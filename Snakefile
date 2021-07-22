@@ -369,13 +369,17 @@ rule run_get_versions:
         quast = expand(rules.run_quast.output.version, fastq=FASTQ, quality=[qual for qual in culebront.quality_tools_activated if qual in ["QUAST"]]),
         busco = expand(rules.run_busco_version.output.busco_version, fastq=FASTQ),
         mauve = expand(f"{output_dir}/versions/{{quality}}-version.txt", quality=[qual for qual in culebront.quality_tools_activated if qual in ["MAUVE"]]),
-        dir =f'{output_dir}'
+    params:
+        dir =f'{output_dir}/versions/'
     output:
         csv = f"{output_dir}versions.csv",
     message:
         """
         picking software versions used by CulebrONT
         """
+    log:
+        output=f"{output_dir}/LOGS/GETVERSIONS/get_versions.o",
+        error = f"{output_dir}/LOGS/GETVERSIONS/get_versions.e"
     script:
         f"{basedir}/reports/get_versions.py"
 

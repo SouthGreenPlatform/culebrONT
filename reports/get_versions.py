@@ -11,10 +11,8 @@ import pandas as pd
 from pathlib import Path
 
 def main():
-    dir = snakemake.input.dir
-    dir = f"{dir}/versions"
+    dir = snakemake.params.dir
     output = snakemake.output.csv
-
     rep = Path(dir)
     rows = []
     paths = Path(rep).glob('*-version.txt')
