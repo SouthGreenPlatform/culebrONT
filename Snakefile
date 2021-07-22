@@ -212,7 +212,7 @@ rule rule_graph:
     shell:
         """
         cd {output_dir}
-        snakemake -s {CULEBRONT_PATH}/Snakefile -n --rulegraph --configfile {input.conf} --use-singularity use-envmodules >{params.tmp}
+        snakemake -s {CULEBRONT_PATH}/Snakefile -n --rulegraph --configfile {input.conf} >{params.tmp}
         dot -Tpng {params.tmp} >{output.dag}
         rm {params.tmp}
         """
@@ -230,7 +230,7 @@ rule run_report_snakemake:
     message:
         """
         making report ...
-        snakemake -n --configfile {input.conf} --report {output.report_snakemake}
+        snakemake -n {basedir}/Snakefile --configfile {input.conf} --report {output.report_snakemake}
         """
     shell:
         """
