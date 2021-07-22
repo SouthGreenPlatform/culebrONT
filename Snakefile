@@ -370,7 +370,7 @@ rule run_get_versions:
         busco = expand(rules.run_busco_version.output.busco_version, fastq=FASTQ),
         mauve = expand(f"{output_dir}/versions/{{quality}}-version.txt", quality=[qual for qual in culebront.quality_tools_activated if qual in ["MAUVE"]]),
     params:
-        dir =f'{output_dir}/versions/'
+        dir =f'{output_dir}versions/'
     output:
         csv = f"{output_dir}versions.csv",
     message:
