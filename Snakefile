@@ -381,8 +381,8 @@ rule run_get_versions:
         picking software versions used by CulebrONT
         """
     log:
-        output=f"{output_dir}/LOGS/GETVERSIONS/get_versions.o",
-        error = f"{output_dir}/LOGS/GETVERSIONS/get_versions.e"
+        output=f"{output_dir}LOGS/GETVERSIONS/get_versions.o",
+        error = f"{output_dir}LOGS/GETVERSIONS/get_versions.e"
     script:
         f"{basedir}/reports/get_versions.py"
 
