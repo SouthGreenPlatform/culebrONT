@@ -51,11 +51,12 @@ logger.info(f"""
 culebront = CulebrONT(workflow, config, CULEBRONT_PATH)
 tools_config = culebront.tools_config
 cluster_config = culebront.cluster_config
+#print(culebront.string_to_dag)
 # pp(culebront.export_use_yaml)
 
 # print for debug:
 #logger.debug(pp(culebront))
-# exit()
+#exit()
 
 # Getting paths on usefully variables
 output_dir = config['DATA']['OUTPUT']
@@ -198,23 +199,25 @@ rule rule_graph:
     """
     threads: get_threads('rule_graph', 1)
     input:
-        conf = f"{output_dir}config_corrected.yaml",
+        config = f"{output_dir}config_corrected.yaml",
     params:
-        tmp = f"{output_dir}FINAL_REPORT/dag.tmp"
+        tmp = temp(f"{output_dir}FINAL_REPORT/dag.tmp"),
+        cmd = culebront.string_to_dag
     output:
         dag = f"{output_dir}FINAL_REPORT/dag.png"
+    log:
+        output = f"{output_dir}LOGS/Graph.o",
+        error = f"{output_dir}LOGS/Graph.e"
     message:
         """
         making dag ...
-        snakemake -s {CULEBRONT_PATH}/Snakefile -n --rulegraph --configfile {input.conf} >{params.tmp}
-        dot -Tpng {params.tmp}
+        {params.cmd} --configfile {input.config} >{params.tmp}
+        dot -Tpng {params.tmp}  >{output.dag}
         """
     shell:
         """
-        cd {output_dir}
-        snakemake -s {CULEBRONT_PATH}/Snakefile -n --rulegraph --configfile {input.conf} >{params.tmp}
-        dot -Tpng {params.tmp} >{output.dag}
-        rm {params.tmp}
+        ({params.cmd} --configfile {input.config} >{params.tmp}
+        dot -Tpng {params.tmp}  >{output.dag}) 1>{log.output} 2>{log.error}
         """
 
 
