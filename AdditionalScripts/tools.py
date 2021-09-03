@@ -141,6 +141,8 @@ class CulebrONT(object):
 
         # print(workflow.overwrite_clusterconfig)
         # culebront_path = Path(workflow.snakefile).parent
+        #workflow is availbale only in __init 
+        self.snakefile = workflow.snakefile
 
         if not workflow.overwrite_configfiles:
             raise ValueError("ERROR CulebrONT: You need to use --configfile option to snakemake command line")
@@ -385,6 +387,11 @@ class CulebrONT(object):
         if len(mandatory) > 0 and not tool_OK:
             raise FileNotFoundError(
                 f'CONFIG FILE CHECKING FAIL : please check tools_config.yaml in the  {tool} params, please append Singularity or module load, is mandatory for tool: {" ".join(mandatory)}')
+
+    @property
+    def string_to_dag(self):
+        """ return command line for rule graph """
+        return f"""snakemake -s {self.snakefile} {'--use-singularity' if self.use_singularity else ''} {'--use-envmodules' if self.use_env_modules else ''}  --rulegraph"""        
 
     def __var_2_bool(self, key, tool, to_convert):
         """convert to boolean"""
