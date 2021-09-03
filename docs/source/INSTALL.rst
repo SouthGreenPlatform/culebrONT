@@ -166,7 +166,6 @@ Now, your basic profile is created. To finalize it, change the ``CulebrONT_pipel
     jobs: 200                   # edit to limit number jobs submit
     max-jobs-per-second: 1
     max-status-checks-per-second: 10
-    local-cores: 1
     latency-wait: 6000
     use-singularity: True       # if False, please install all R package on tools_config.yaml ENVMODULE/R
     use-envmodules: True        # Adapt True/False
