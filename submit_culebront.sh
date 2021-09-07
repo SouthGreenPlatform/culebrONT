@@ -1,10 +1,4 @@
 #!/bin/bash
-#SBATCH --job-name culebrONT
-#SBATCH --output slurm-%x_%j.log
-#SBATCH --error slurm-%x_%j.log
-#SBATCH --partition=long
-
-profile=$HOME"/.config/snakemake/CulebrONT"
 
 # module help
 function help
@@ -13,27 +7,38 @@ function help
     printf "#                     submit_culebrONT                             #\n";
     printf "####################################################################\n";
     printf "
- Input:
-    Configuration file for snakemake
-
- Exemple Usage: ./submit_culebrONT.sh -c config.yaml -k cluster_config.yaml
-
- Usage: ./submit_culebrONT.sh -c {file} -k {file}
+ Usage: ./submit_culebrONT.sh -c {file} -k {file} -a {additional} -p {profile}
     options:
         -c {file} = Configuration file for run CulebrONT
         -k {file} = Configuration file cluster for run CulebrONT
+        -p {path} = Cluster profile
+        -a {string} =  additional snakemake arguments
+        -h = see help
 
-        -h = see help\n\n"
+ Exemple usage LOCAL:
+       ./submit_culebrONT.sh -c config.yaml
+       ./submit_culebrONT.sh -c config.yaml -a \"--dry-run --cores 1\"
+ Exemple usage CLUSTER:
+       ./submit_culebrONT.sh -c config.yaml -p CulebrONT_SLURM
+       ./submit_culebrONT.sh -c config.yaml -p CulebrONT_SLURM -k cluster_config.yaml
+       ./submit_culebrONT.sh -c config.yaml -p CulebrONT_SLURM -k cluster_config.yaml -a \"--dry-run --cores 1\"
+
+ At least a config.yaml file is needed to lauch CulebrONT*
+ If you are on LOCAL MODE, -p and -k arguments are NOT needed
+ If you are on CLUSTER MODE, please provide the profile path generated according of your favorite scheduler (-p ).
+    * You can modify cluster ressources giving a cluster_config.yaml (-k) (overwrite profile cluster configutation)\n"
     exit 0
 }
 
 
 ##################################################
 ## Parse command line options.
-while getopts c:k:h: OPT;
+while getopts c:k:h:p:a: OPT;
     do case $OPT in
         c)    config=$OPTARG;;
         k)    cluster_config=$OPTARG;;
+        p)    profile=$OPTARG;;
+        a)    additional=$OPTARG;;
         h)    help;;
         \?)    help;;
     esac
@@ -44,31 +49,66 @@ if [ $# -eq 0 ]; then
 fi
 
 ##################################################
-## Main code
+## main
 ##################################################
 
+# check config
 if [ ! -z "$config" ] && [ -e $config ]; then
-
-    config=`readlink -m $config`
-    echo "CONFIG FILE IS $config"
-    # SLURM JOBS PROFILES
-    if [ ! -z "$cluster_config" ] && [ -e $cluster_config ]; then
-    cluster_config=`readlink -m $cluster_config`
-    echo "CLUSTER CONFIG FILE IS $cluster_config"
-    snakemake -p -s $CULEBRONT"/Snakefile" \
-    --configfile $config \
-    --cluster-config $cluster_config \
-    --profile $profile
-  else
-    snakemake -p -s $CULEBRONT"/Snakefile" \
-    --configfile $config \
-    --cluster-config $profile"/cluster_config.yaml" \
-    --profile $profile
-  fi
+  config=`readlink -m $config`
+  echo "CONFIG FILE IS $config"
 else
-    echo "configfile = "$config
-    echo "cluster_config = "$cluster_config
-    echo "profile = "$profile
-    printf "\033[31m \n\n You must add a valid config file !!!!!!!!!!!! \n\n"
-    help
+  printf "\033[31m \n\n ERROR : you need to provide a valid CONFIG FILE ! \n\n"
+  exit;
+fi
+
+# cluster_config T et profile T
+if [[ -d "${profile}" ]] && [[ ! -z ${cluster_config} ]] && [[ -e $cluster_config ]]; then
+  local=false
+  profile=$(realpath $profile)
+  cluster_config=$(realpath $cluster_config)
+  echo "PROFILE DIR IS" $profile
+  echo "CLUSTER CONFIG IS" $cluster_config
+  echo "snakemake -p -s $CULEBRONT"/Snakefile" \
+      --configfile $config \
+      --cluster-config $cluster_config \
+      --profile $profile \
+      $additional"
+  snakemake -p -s $CULEBRONT"/Snakefile" \
+      --configfile $config \
+      --cluster-config $cluster_config \
+      --profile $profile \
+      $additional
+
+# cluster_config F et profile T
+elif [[ -d "${profile}" ]] && [[ -z ${cluster_config} ]] && [[ ! -e $cluster_config ]]; then
+  local=false
+  profile=$(realpath $profile)
+  #cluster_config="$profile/cluster_config.yaml"
+  #cluster_config=$(realpath $cluster_config)
+  echo "PROFILE DIR IS "$profile
+  echo "CLUSTER CONFIG IN PROFILE IS ${profile}/${cluster_config}"
+  echo "snakemake -p -s $CULEBRONT"/Snakefile" \
+      --configfile $config \
+      --profile $profile \
+      $additional"
+  snakemake -p -s $CULEBRONT"/Snakefile" \
+      --configfile $config \
+      --profile $profile \
+      $additional
+
+# cluster_config F, profile F
+elif [[ ! $profile ]] && [[ ! $cluster_config ]]; then
+  local=true
+  echo "snakemake -p -s $CULEBRONT"/Snakefile" \
+  --configfile $config \
+  $additional"
+  snakemake -p -s $CULEBRONT"/Snakefile" \
+  --configfile $config \
+  $additional
+
+# cluster_config T, profile F
+elif [[ ! $profile ]] && [[ $cluster_config ]]; then
+  echo "You need verify CulebrONT arguments compatiblity. Please provide path to CLUSTER profile and cluster_config.yaml"
+  help
+  exit;
 fi
