@@ -232,6 +232,10 @@ conda install kat -n kat
 #Clone CulebrONT
 mkdir -p /usr/local
 git clone --recursive https://github.com/SouthGreenPlatform/CulebrONT_pipeline.git /usr/local/CulebrONT_pipeline
+cd /usr/local/CulebrONT_pipeline/
+git checkout supersingularity
+
+export CULEBRONT="/usr/local/CulebrONT_pipeline/"
 
 %runscript
 exec /usr/local/CulebrONT_pipeline/submit_culebront.sh "$@"
