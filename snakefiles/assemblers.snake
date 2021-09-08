@@ -59,11 +59,11 @@ rule run_canu:
     input:
         fastq = get_fastq,
     output:
-        fasta_canu = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/out_canu.contigs.fasta",
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/assembly2Circ.fasta" if bool(config['CIRCULAR']) else f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/assembly.fasta",
         trim_corr_fq = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/out_canu.trimmedReads.fasta.gz",
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/CANU-version.txt"
     params:
+        fasta_canu = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/out_canu.contigs.fasta",
         out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/"),
         genome_size = f"{config['DATA']['GENOME_SIZE']}",
         options = f"{config['params']['CANU']['OPTIONS']}",
@@ -79,10 +79,10 @@ rule run_canu:
         input:
             fastq: {input.fastq}
         output:
-            fasta_canu: {output.fasta_canu}
             fasta: {output.fasta}
             trim_forr_fq: {output.trim_corr_fq}
         params:
+            fasta_canu: {params.fasta_canu}
             out_dir: {params.out_dir}
             genome_size: {params.genome_size}
             options: {params.options}
@@ -99,7 +99,7 @@ rule run_canu:
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; canu --version > {output.version}
         ln -s -f {output.version} {output_dir}versions/CANU-version.txt
         (canu -p out_canu -d {params.out_dir} genomeSize={params.genome_size} -nanopore-raw {input.fastq} {params.options};
-        ln -s -f {output.fasta_canu} {output.fasta}) 1>{log.output} 2>{log.error}
+        ln -s -f {params.fasta_canu} {output.fasta}) 1>{log.output} 2>{log.error}
         """
 
 
