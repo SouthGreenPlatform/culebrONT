@@ -82,10 +82,8 @@ if [[ -d "${profile}" ]] && [[ -n "${cluster_config}" ]] && [[ -e "$cluster_conf
 # cluster_config F et profile T
 elif [[ -d "${profile}" ]] && [[ -z ${cluster_config} ]] && [[ ! -e $cluster_config ]]; then
   profile=$(realpath "$profile")
-  #cluster_config="$profile/cluster_config.yaml"
-  #cluster_config=$(realpath $cluster_config)
   echo "PROFILE DIR IS $profile"
-  echo "CLUSTER CONFIG IN PROFILE IS ${profile}/${cluster_config}"
+  echo "CLUSTER CONFIG IN PROFILE IS ${profile}/cluster_config.yaml"
   echo "snakemake -p -s $CULEBRONT/Snakefile \
       --configfile $config \
       --profile $profile \
@@ -97,12 +95,14 @@ elif [[ -d "${profile}" ]] && [[ -z ${cluster_config} ]] && [[ ! -e $cluster_con
 
 # cluster_config F, profile F
 elif [[ ! $profile ]] && [[ ! $cluster_config ]]; then
-  echo "run on local"
+  echo "You are running on $(uname -a)"
   echo "snakemake -p -s $CULEBRONT/Snakefile \
   --configfile $config \
+  --use-singularity  \
   $additional"
   snakemake -p -s "$CULEBRONT/Snakefile" \
   --configfile "$config" \
+  --use-singularity \
   "$additional"
 
 # cluster_config T, profile F
