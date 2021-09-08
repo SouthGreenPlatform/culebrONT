@@ -54,10 +54,11 @@ fi
 
 # check config
 if [ ! -z "$config" ] && [ -e $config ]; then
-  config=`readlink -m $config`
+  config=$(realpath $config)
   echo "CONFIG FILE IS $config"
 else
   printf "\033[31m \n\n ERROR : you need to provide a valid CONFIG FILE ! \n\n"
+  echo "CONFIG FILE IS $config"
   exit;
 fi
 
