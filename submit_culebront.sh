@@ -73,11 +73,11 @@ if [[ -d "${profile}" ]] && [[ -n "${cluster_config}" ]] && [[ -e "$cluster_conf
       --cluster-config $cluster_config \
       --profile $profile \
       $additional"
-  snakemake -p -s "$CULEBRONT/Snakefile" \
-      --configfile "$config" \
-      --cluster-config "$cluster_config" \
-      --profile "$profile" \
-      "$additional"
+  snakemake -p -s ${CULEBRONT}/Snakefile \
+      --configfile ${config} \
+      --cluster-config ${cluster_config} \
+      --profile ${profile} \
+      ${additional}
 
 # cluster_config F et profile T
 elif [[ -d "${profile}" ]] && [[ -z ${cluster_config} ]] && [[ ! -e $cluster_config ]]; then
@@ -88,10 +88,10 @@ elif [[ -d "${profile}" ]] && [[ -z ${cluster_config} ]] && [[ ! -e $cluster_con
       --configfile $config \
       --profile $profile \
       $additional"
-  snakemake -p -s "$CULEBRONT/Snakefile" \
-      --configfile "$config" \
-      --profile "$profile" \
-      "$additional"
+  snakemake -p -s ${CULEBRONT}/Snakefile \
+      --configfile ${config} \
+      --profile ${profile} \
+      ${additional}
 
 # cluster_config F, profile F
 elif [[ ! $profile ]] && [[ ! $cluster_config ]]; then
@@ -100,10 +100,10 @@ elif [[ ! $profile ]] && [[ ! $cluster_config ]]; then
   --configfile $config \
   --use-singularity  \
   $additional"
-  snakemake -p -s "$CULEBRONT/Snakefile" \
-  --configfile "$config" \
+  snakemake -p -s ${CULEBRONT}/Snakefile \
+  --configfile ${config} \
   --use-singularity \
-  "$additional"
+  ${additional}
 
 # cluster_config T, profile F
 elif [[ ! $profile ]] && [[ $cluster_config ]]; then
