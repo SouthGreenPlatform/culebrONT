@@ -624,7 +624,8 @@ rule run_bwa_mem2:
     singularity:
         tools_config['SINGULARITY']['TOOLS']
     envmodules:
-        tools_config["ENVMODULE"]["BWA"]
+        tools_config["ENVMODULE"]["BWA"],
+        tools_config["ENVMODULE"]["SAMTOOLS"]
     shell:
         """
         (bwa index {input.draft}
