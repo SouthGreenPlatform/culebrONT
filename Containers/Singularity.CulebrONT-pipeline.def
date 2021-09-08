@@ -65,8 +65,8 @@ conda create -n snakemake
 conda install mamba
 mamba install snakemake
 
-# installing GO to Singularity
-sudo apt-get install -y singularity-container
+# installing Singularity
+apt install -y singularity-container
 
 # Clone CulebrONT
 mkdir -p /usr/local
