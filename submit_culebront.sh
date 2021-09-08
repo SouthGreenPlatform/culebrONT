@@ -102,7 +102,7 @@ elif [[ ! $profile ]] && [[ ! $cluster_config ]]; then
   $additional"
   snakemake -p -s ${CULEBRONT}/Snakefile \
   --configfile ${config} \
-  --use-singularity \
+  --use-singularity --singularity-args "--bind ${HOME}" \
   ${additional}
 
 # cluster_config T, profile F
