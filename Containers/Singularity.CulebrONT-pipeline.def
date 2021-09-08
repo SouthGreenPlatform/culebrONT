@@ -48,7 +48,6 @@ export PATH="/usr/local/miniconda/miniconda3/bin:$PATH"
 export PATH="/usr/local/miniconda/miniconda3/envs/busco/bin:$PATH"
 export LD_LIBRARY_PATH="/usr/local/miniconda/miniconda3/envs/busco/lib:$LD_LIBRARY_PATH"
 export CPATH="/usr/local/miniconda/miniconda3/envs/busco/include:$CPATH"
-
 export CONDARC="/.condarc"
 export LC_ALL=C
 
@@ -69,6 +68,8 @@ chmod +x Miniconda3-latest-Linux-x86_64.sh
 ./Miniconda3-latest-Linux-x86_64.sh -b -p /usr/local/miniconda/miniconda3
 cd /usr/local/miniconda/miniconda3/bin
 export PATH="/usr/local/miniconda/miniconda3/bin:$PATH" >> $SINGULARITY_ENVIRONMENT
+
+export CULEBRONT="/usr/local/CulebrONT_pipeline/"
 
 python3 -m pip install biopython
 python3 -m pip install tqdm pyyaml pysam docopt==0.6.2
@@ -234,8 +235,6 @@ mkdir -p /usr/local
 git clone --recursive https://github.com/SouthGreenPlatform/CulebrONT_pipeline.git /usr/local/CulebrONT_pipeline
 cd /usr/local/CulebrONT_pipeline/
 git checkout supersingularity
-
-export CULEBRONT="/usr/local/CulebrONT_pipeline/"
 
 %runscript
 exec /usr/local/CulebrONT_pipeline/submit_culebront.sh "$@"
