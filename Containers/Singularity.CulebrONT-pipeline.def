@@ -2,7 +2,7 @@ Bootstrap: docker
 From: ubuntu:18.04
 
 %labels
-MAINTAINER Ndomassi tando, Aurore Comte, Julie Orjuela
+MAINTAINER Julie Orjuela
 version="1.0"
 software="all Culebront dependencies"
 description="All dependencies used to launch CulebrONT in LOCAL mode"
@@ -16,45 +16,14 @@ singularity run <image.simg> -c <config path> -k <threads>
 To manually run the workflow :
 singularity exec <image.simg> snakemake --snakefile /opt/annot_pipeline/Snakefile [other arguments....]
 
-
 %environment
-export PATH="/usr/local/miniconda/miniconda3/envs/flye/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/canu/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/miniasm/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/minimap2/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/minipolish/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/raven/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/smartdenovo/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/circlator/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/racon/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/nanopolish/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/seqtk/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/samtools/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/bwa/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/quast/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/diamond/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/mauve/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/mummer/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/medaka/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/blobtools/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/pilon/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/shasta/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/assemblytics/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/kat/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/assemblytics/bin/R:$PATH"
-
-# to busco
-export PATH="/usr/local/miniconda/miniconda3/bin:$PATH"
-export PATH="/usr/local/miniconda/miniconda3/envs/busco/bin:$PATH"
-export LD_LIBRARY_PATH="/usr/local/miniconda/miniconda3/envs/busco/lib:$LD_LIBRARY_PATH"
-export CPATH="/usr/local/miniconda/miniconda3/envs/busco/include:$CPATH"
-export CONDARC="/.condarc"
-export LC_ALL=C
+export CULEBRONT="/usr/local/CulebrONT_pipeline/"
 
 %post
+
 apt-get update
 apt update && apt install -y git curl wget less locate build-essential openssh-server python3-all-dev python3-pip python3-venv
-apt install -y graphviz
+apt install -y graphviz build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev pkg-config
 
 export DEBIAN_FRONTEND=noninteractive
 ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
@@ -69,82 +38,24 @@ chmod +x Miniconda3-latest-Linux-x86_64.sh
 cd /usr/local/miniconda/miniconda3/bin
 export PATH="/usr/local/miniconda/miniconda3/bin:$PATH" >> $SINGULARITY_ENVIRONMENT
 
-export CULEBRONT="/usr/local/CulebrONT_pipeline/"
-
+echo 'export LC_ALL=C.UTF-8' >> /environment
+echo 'export LANG=C.UTF-8' >> /environment
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+apt -y update
+apt install -y rsync gzip libcairo2-dev libxt-dev
+apt install -y build-essential zlib1g-dev cmake curl
+python3 -m pip install PyYAML
+python3 -m pip install pandas
+python3 -m pip install seaborn
+python3 -m pip install matplotlib
+python3 -m pip install tabulate
+python3 -m pip install rpy2
+python3 -m pip install ipython
 python3 -m pip install biopython
 python3 -m pip install tqdm pyyaml pysam docopt==0.6.2
 python3 -m pip install numpy
 python3 -m pip install argparse
-
-Rscript -e 'install.packages(c("ggplot2","plyr","RColorBrewer","scales"))'
-
-## Install dependance of R software
-    echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-    apt install -y software-properties-common locales
-    apt install -y libpng16-16 libblas3 libblas-dev liblapack-dev liblapack3 libreadline7 r-recommended r-doc-html libxml2-dev libcurl4-openssl-dev libssl-dev libmagick++-dev libcurl3-gnutls perl
-    apt install -y dirmngr
-    apt install -y libv8-3.14-dev
-
-    echo 'export LC_ALL=C.UTF-8' >> /environment
-    echo 'export LANG=C.UTF-8' >> /environment
-    export LC_ALL=C.UTF-8
-    export LANG=C.UTF-8
-    apt -y update
-    apt install -y git wget rsync tzdata gzip libcairo2-dev libxt-dev
-    apt install -y build-essential zlib1g-dev cmake curl
-    python3 -m pip install PyYAML
-    python3 -m pip install pandas
-    python3 -m pip install seaborn
-    python3 -m pip install matplotlib
-    python3 -m pip install tabulate
-    python3 -m pip install rpy2
-    python3 -m pip install ipython
-
-## Add repository for download latest version of R
-
-    curl "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x51716619E084DAB9" | apt-key add -
-
-    #apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9
-    add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/"
-    apt -y update
-
-## Install R
-    apt install -y r-base-core pandoc
-
-##  add R packages from CRAN
-### Install RMarkdown and TinyTeX
-    R --slave -e 'install.packages(c("rmarkdown","tinytex"))'
-
-# add R packages from bioconductor
-    Rscript -e "install.packages('BiocManager')"
-    Rscript -e "library(BiocManager); install('remotes')"
-    Rscript -e "library(BiocManager); install('Gviz')"
-    Rscript -e "library(BiocManager); install('Biostrings')"
-    R -e "install.packages('ggplot2')"
-    R -e "install.packages('Cairo')"
-    R -e "install.packages('svglite')"
-    R -e "install.packages('nloptr')"
-    R -e "install.packages('optparse')"
-    R -e "install.packages('DT')"
-    R -e "install.packages('knitr')"
-    R -e "install.packages('stringr')"
-    R -e "install.packages('tidyverse')"
-    R -e "install.packages('plotly')"
-    R -e "install.packages('dplyr')"
-    R -e "install.packages('htmltools')"
-    R -e "install.packages('rmdformats')"
-    R -e "install.packages('magrittr')"
-    R -e "install.packages('yaml')"
-    R -e "install.packages('png')"
-    R -e "install.packages('here')"
-    R -e "install.packages('htmlwidgets')"
-    R -e "install.packages('gridExtra')"
-    R -e "install.packages('cowplot')"
-    R -e "install.packages('magick')"
-    R -e "install.packages('reticulate')"
-
-# add R packages from github
-#    Rscript -e "library(remotes); install_github('strengejacke/strengejacke')"
 
 conda config --add channels defaults
 conda config --add channels bioconda
@@ -154,87 +65,30 @@ conda create -n snakemake
 conda install mamba
 mamba install snakemake
 
-conda create -n flye
-conda install flye=2.8.1 -n flye
+# install Singularity
+export VERSION=3.8.3 && # adjust this as necessary \
+    mkdir -p /usr/local/src/github.com/sylabs && \
+    cd /usr/local/src/github.com/sylabs && \
+    wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-ce-${VERSION}.tar.gz && \
+    tar -xzf singularity-ce-${VERSION}.tar.gz && \
+    cd ./singularity-ce-${VERSION} && \
+    ./mconfig && \
+    make -C ./builddir && \
+    sudo make -C ./builddir install
 
-conda create -n canu
-conda install canu=2.0 -n canu
-
-conda create -n miniasm
-conda install miniasm=0.3_r179 -n miniasm
-
-conda create -n minimap2
-conda install minimap2=2.17 -n minimap2
-
-conda create -n minipolish
-conda install minipolish=0.1.2 -n minipolish
-
-conda create -n raven
-conda install raven-assembler=1.2.2 -n raven
-
-conda create -n smartdenovo
-conda install smartdenovo=1.0.0 -n smartdenovo
-
-conda create -n circlator
-conda install circlator=1.5.5 -n circlator
-
-conda create -n racon
-conda install racon=1.4.13 -n racon
-
-conda create -n nanopolish
-conda install nanopolish=0.13.2 -n nanopolish
-
-conda create -n medaka
-conda install medaka=1.4.1 -n medaka
-
-conda create -n seqtk
-conda install seqtk=1.3 -n seqtk
-
-conda create -n samtools
-conda install samtools=1.10 -n samtools
-
-conda create -n bwa
-conda install bwa=0.7.17 -n bwa
-
-conda create -n quast
-conda install quast=5.0.2 -n quast
-
-conda create -n diamond
-conda install diamond=2.0.4 -n diamond
-
-conda create -n mauve
-conda install mauve=2.4.0.snapshot_2015_02_13 -n mauve
-
-conda create -n mummer
-conda install mummer4 -n mummer
-
-conda create -n blobtools
-conda install blobtools -n blobtools
-
-conda create -n busco
-conda install r-plyr -n busco
-conda install busco=5.1.3 -n busco
-
-conda create -n pilon
-conda install pilon=1.24-0 -n pilon
-sed -i "s/-Xmx1g/-Xmx8g/g" /usr/local/miniconda/miniconda3/envs/pilon/bin/pilon
-cp /usr/local/miniconda/miniconda3/envs/pilon/share/pilon-1.24-0/pilon.jar /usr/local/miniconda/miniconda3/envs/pilon/bin/pilon.jar
-
-conda create -n shasta
-conda install shasta -n shasta
-
-conda create -n assemblytics
-conda install r-plyr -n assemblytics
-conda install assemblytics -n assemblytics
-
-conda create -n kat
-conda install kat -n kat
-
-#Clone CulebrONT
+# Clone CulebrONT
 mkdir -p /usr/local
 git clone --recursive https://github.com/SouthGreenPlatform/CulebrONT_pipeline.git /usr/local/CulebrONT_pipeline
 cd /usr/local/CulebrONT_pipeline/
 git checkout supersingularity
+
+# download build singularity
+cd /usr/local/CulebrONT_pipeline/Containers
+wget --no-check-certificate -rm -nH --cut-dirs=2 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/singularity_build/
+
+# sed toolpath.yaml
+cd /usr/local/CulebrONT_pipeline/
+sed -i "s|/path/to/|/usr/local/CulebrONT_pipeline/|g" /usr/local/CulebrONT_pipeline/tools_path.yaml
 
 %runscript
 exec /usr/local/CulebrONT_pipeline/submit_culebront.sh "$@"
