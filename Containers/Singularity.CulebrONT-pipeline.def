@@ -23,7 +23,7 @@ export PATH="/usr/local/miniconda/miniconda3/envs/snakemake/bin:$PATH"
 %post
 
 apt-get update
-apt update && apt install -y git curl wget less locate build-essential openssh-server python3-all-dev python3-pip python3-venv
+apt update && apt install -y git vim curl wget less locate build-essential openssh-server python3-all-dev python3-pip python3-venv
 apt install -y graphviz build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev pkg-config
 
 export DEBIAN_FRONTEND=noninteractive
