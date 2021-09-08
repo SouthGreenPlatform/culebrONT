@@ -1,10 +1,9 @@
 __default__:
     cpus-per-task : 4
-    ntasks : 10
     mem-per-cpu : 10G
     partition : "long"
-    output : 'logs/stdout/{rule}/{wildcards}.o'
-    error : 'logs/error/{rule}/{wildcards}.e'
+    output : 'slurm_logs/stdout/{rule}/{wildcards}.o'
+    error : 'slurm_logs/error/{rule}/{wildcards}.e'
 
 run_nanopolish :
     cpus-per-task : 8
@@ -18,7 +17,6 @@ run_flye:
 
 run_canu:
     cpus-per-task : 10
-    ntasks : 10
     mem-per-cpu : 25G
     partition : "long"
 
@@ -76,3 +74,19 @@ run_kat:
     cpus-per-task : 1
     mem-per-cpu : 8G
     partition : "long"
+
+rule_graph:
+    output : 'slurm_logs/stdout/{rule}/rule_graph.o'
+    error : 'slurm_logs/error/{rule}/rule_graph.e'
+
+run_get_versions:
+    output : 'slurm_logs/stdout/{rule}/run_get_versions.o'
+    error : 'slurm_logs/error/{rule}/run_get_versions.e'
+
+run_report_snakemake:
+    output : 'slurm_logs/stdout/{rule}/run_report_snakemake.o'
+    error : 'slurm_logs/error/{rule}/run_report_snakemake.e'
+
+run_report:
+    output : 'slurm_logs/stdout/{rule}/run_report.o'
+    error : 'slurm_logs/error/{rule}/run_report.e'

@@ -6,7 +6,7 @@ jobs: 200
 max-jobs-per-second: 1
 max-status-checks-per-second: 10
 latency-wait: 6000
-use-envmodules: False
+use-envmodules: True
 use-singularity: False
 rerun-incomplete: True
 printshellcmds: True
