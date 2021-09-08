@@ -18,7 +18,8 @@ singularity exec <image.simg> snakemake --snakefile /opt/annot_pipeline/Snakefil
 
 %environment
 export CULEBRONT="/usr/local/CulebrONT_pipeline/"
-
+export PATH="/usr/local/miniconda/miniconda3/bin:$PATH"
+export PATH="/usr/local/miniconda/miniconda3/envs/snakemake/bin:$PATH"
 %post
 
 apt-get update
