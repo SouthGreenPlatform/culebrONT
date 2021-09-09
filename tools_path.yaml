@@ -1,7 +1,7 @@
 ## BUILD SINGULARITY IMAGES PATH
 SINGULARITY:
     REPORT : '/path/to/Containers/Singularity.report.sif'
-    TOOLS : '/path/to/Singularity.culebront_tools.sif'
+    TOOLS : '/path/to/Containers/Singularity.culebront_tools.sif'
 
 ENVMODULE:
     R : "bioinfo/R/4.0.2"
