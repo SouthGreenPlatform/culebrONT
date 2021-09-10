@@ -62,31 +62,28 @@ RUN /usr/local/miniconda/miniconda3/bin/mamba install snakemake
 
 # installing Singularity
 ##Install Go
-#RUN export VERSION=1.16.4 OS=linux ARCH=amd64
+
 RUN wget https://dl.google.com/go/go1.16.4.linux-amd64.tar.gz 
 RUN tar -C /usr/local -xzvf go1.16.4.linux-amd64.tar.gz 
 RUN rm go1.16.4.linux-amd64.tar.gz 
 ENV PATH=/usr/local/go/bin:$PATH
-#RUN /bin/bash/source /etc/profile
 
-#RUN export VERSION=3.8.1 
+##Install Singularity itself
 RUN wget https://github.com/sylabs/singularity/releases/download/v3.8.1/singularity-ce-3.8.1.tar.gz 
 RUN tar -xzf singularity-ce-3.8.1.tar.gz
-RUN cd /singularity-ce-3.8.1 && ./mconfig && make -C builddir 
-RUN sudo make -C builddir install
+ENV PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig/
+RUN cd /singularity-ce-3.8.1 && ./mconfig -p /usr/local && make -C builddir && make -C builddir install
 
 # Clone CulebrONT
 RUN mkdir -p /usr/local
 RUN git clone --recursive https://github.com/SouthGreenPlatform/CulebrONT_pipeline.git /usr/local/CulebrONT_pipeline
-RUN cd /usr/local/CulebrONT_pipeline/
-RUN git checkout supersingularity
+RUN cd /usr/local/CulebrONT_pipeline/ && git checkout supersingularity
 
 # download build singularity
-RUN cd /usr/local/CulebrONT_pipeline/Containers
-RUN wget --no-check-certificate -rm -nH --cut-dirs=2 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/singularity_build/
+RUN cd /usr/local/CulebrONT_pipeline/Containers && wget --no-check-certificate -rm -nH --cut-dirs=2 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/singularity_build/
 
 # sed toolpath.yaml
-RUN cd /usr/local/CulebrONT_pipeline/
-RUN sed -i "s|/path/to/|/usr/local/CulebrONT_pipeline/|g" /usr/local/CulebrONT_pipeline/tools_path.yaml
+RUN cd /usr/local/CulebrONT_pipeline/ && sed -i "s|/path/to/|/usr/local/CulebrONT_pipeline/|g" /usr/local/CulebrONT_pipeline/tools_path.yaml
+ENV PATH="/usr/local/CulebrONT_pipeline":$PATH
 
 
