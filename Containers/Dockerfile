@@ -87,3 +87,4 @@ RUN cd /usr/local/CulebrONT_pipeline/ && sed -i "s|/path/to/|/usr/local/CulebrON
 ENV PATH="/usr/local/CulebrONT_pipeline":$PATH
 
 
+
