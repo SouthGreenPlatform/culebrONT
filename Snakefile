@@ -306,7 +306,7 @@ rule run_busco_version:
         """
         [ ! -f {output.busco_version} ] &&  [ ! -d versions ] && mkdir -p versions; busco --version > {output.busco_version}
         ln -s -f {output.busco_version} {output_dir}versions/BUSCO-version.txt
-        [ ! -f {output.augustus_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "augustus --version" | grep 'AUGUSTUS' > {output.augustus_version}
+        [ ! -f {output.augustus_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {CULEBRONT_PATH}/AdditionalScripts/which_version.py "augustus --version" | grep 'AUGUSTUS' > {output.augustus_version}
         ln -s -f {output.augustus_version} {output_dir}versions/BUSCO_AUGUSTUS-version.txt
         """
 

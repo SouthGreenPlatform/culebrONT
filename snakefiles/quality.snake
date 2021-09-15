@@ -669,7 +669,7 @@ rule run_flagstat:
         """
         [ ! -f {output.flagstats_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.flagstats_samtools_version}
         ln -s -f {output.flagstats_samtools_version} {output_dir}versions/FLAGSTATS_SAMTOOLS-version.txt
-        [ ! -f {output.flagstats_bwa_version} ] &&  [ ! -d versions ] && mkdir -p versions ; python {basedir}/AdditionalScripts/which_version.py bwa | grep 'Version' > {output.flagstats_bwa_version};
+        [ ! -f {output.flagstats_bwa_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {CULEBRONT_PATH}/AdditionalScripts/which_version.py bwa | grep 'Version' > {output.flagstats_bwa_version};
         ln -s -f {output.flagstats_bwa_version} {output_dir}versions/FLAGSTATS_BWA-version.txt
         (samtools flagstat {input.bam} --threads {threads}) > {output.txt} 2>{log.error}
         """

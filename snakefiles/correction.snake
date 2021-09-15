@@ -137,7 +137,7 @@ rule preparing_ref_to_nanopolish :
         ln -s -f {output.nanopolish_samtools_version} {output_dir}versions/NANOPOLISH_SAMTOOLS-version.txt
         [ ! -f {output.nanopolish_minimap2_version} ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version |head -n1 > {output.nanopolish_minimap2_version}
         ln -s -f {output.nanopolish_minimap2_version} {output_dir}versions/NANOPOLISH_MINIMAP2-version.txt
-        [ ! -f {output.nanopolish_seqtk_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py seqtk | grep 'Version' > {output.nanopolish_seqtk_version}
+        [ ! -f {output.nanopolish_seqtk_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {CULEBRONT_PATH}/AdditionalScripts/which_version.py seqtk | grep 'Version' > {output.nanopolish_seqtk_version}
         ln -s -f {output.nanopolish_seqtk_version} {output_dir}versions/NANOPOLISH_SEQTK-version.txt
 
         (cd {params.dir}
