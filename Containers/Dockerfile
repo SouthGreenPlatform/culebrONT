@@ -85,7 +85,9 @@ RUN cd /usr/local/CulebrONT_pipeline/ && sed -i "s|/path/to/|/usr/local/CulebrON
 ENV PATH="/usr/local/CulebrONT_pipeline":$PATH
 
 # Adding singularity binding
-ENV export SINGULARITY_BIND=/usr/local/CulebrONT_pipeline/
+ENV SINGULARITY_BIND=/usr/local/CulebrONT_pipeline/
 
+# horrible sed to rule_graph
+RUN cd /usr/local/CulebrONT_pipeline/ && sed -i "s|{params.cmd}|snakemake -s /usr/local/CulebrONT_pipeline/Snakefile --use-singularity --rulegraph |g" /usr/local/CulebrONT_pipeline/Snakefile
 
 
