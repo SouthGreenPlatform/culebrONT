@@ -74,7 +74,7 @@ RUN cd /singularity-ce-3.8.1 && ./mconfig -p /usr/local && make -C builddir && m
 
 # Clone CulebrONT ... yeah!
 RUN mkdir -p /usr/local
-RUN git clone --recursive https://github.com/SouthGreenPlatform/CulebrONT_pipeline.git /usr/local/CulebrONT_pipeline
+RUN git clone  --recursive https://github.com/SouthGreenPlatform/CulebrONT_pipeline.git /usr/local/CulebrONT_pipeline
 RUN cd /usr/local/CulebrONT_pipeline/ && git checkout supersingularity
 
 # Download build singularity
