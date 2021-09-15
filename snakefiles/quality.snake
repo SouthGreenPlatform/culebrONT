@@ -396,7 +396,7 @@ rule run_mummer:
         tools_config["ENVMODULE"]["MUMMER"]
     shell:
         """
-        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; python {basedir}/AdditionalScripts/which_version.py "nucmer --version" | grep 'version'  > {output.version};
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; python {CULEBRONT_PATH}/AdditionalScripts/which_version.py "nucmer --version" | grep 'version'  > {output.version};
         ln -s -f {output.version} {output_dir}versions/MUMMER-version.txt
         (cd {params.dir};
         nucmer -p {params.prefix} --maxmatch  -l {params.minmatch} -c {params.mincluster} {input.reference_file} {input.fasta};
