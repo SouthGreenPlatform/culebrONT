@@ -63,7 +63,7 @@ rule tag_circular:
         info = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly_info.txt",
     params:
         assembler = f"{{assemblers}}",
-        basedir = basedir
+        basedir =  f"{CULEBRONT_PATH}"
     output:
         tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED_circTag.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED.fasta"
     log:
@@ -106,7 +106,7 @@ rule tag_circular_to_minipolish:
         info = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assembly_info{TMP}.txt",
     params:
         assembler = "MINIASM",
-        basedir = basedir
+        basedir =  f"{CULEBRONT_PATH}"
     output:
         tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TCM}.fasta"
         #tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TCM}.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assemblyCIRCULARISED.fasta",
@@ -149,7 +149,7 @@ rule rotate_circular:
     output:
         rotated = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/ROTATE/rotate_{{nb}}/assembly.racon{{nb}}.fasta"
     params:
-        basedir = basedir
+        basedir =  f"{CULEBRONT_PATH}"
     log:
         output=f"{output_dir}{{fastq}}/LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}.o",
         error = f"{output_dir}{{fastq}}/LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}.e"
