@@ -133,22 +133,62 @@ How to run the workflow
 
 Before run CulebrONT please be sure you have already modified the ``config.yaml`` file as was explained on :ref:`1. Providing data`
 
-In any case, this launcher can be submitted to the SLURM queue typing:
+Through the ``submit_culebront.sh`` snakemake creates a pipeline from the configuration files you give to him.
+
+.. code-block:: txt
+
+    -c option : config.yaml file
+    -k option : cluster_config.yaml
+    -p option : profile path
+    -a option : additional snakemake options (--dryrun, --cores ...)
+
+
+If you are on LOCAL mode, give at least the -c option to `submit_culebront.sh` .
+
+If you are on HPC mode, give at least the -c option and -p options to the `submit_culebront.sh` script.
+
+You can use -k option to overwrite cluster resources.
+
+You can optionally also pass to snakemake more options by using the -a parameter (check it https://snakemake.readthedocs.io/en/stable/executing/cli.html).
 
 .. code-block:: bash
 
-    sbatch submit_culebront.sh -c config.yaml
+    # in LOCAL using maximum 8 threads
+    submit_culebront.sh -c config.yaml -a "--cores 8 "
 
-Now, take a coffee or tea, and enjoy !!!!!!
+    # in LOCAL using 6 threads for Canu assembly from the total 8 threads
+    submit_culebront.sh -c config.yaml -a "--cores 8 --set-threads run_canu=6"
+    submit_culebront.sh -c config.yaml -a '--cores 8'
+
 
 Expert mode (more resources)
 ----------------------------
 
-If cluster default resources are not sufficient, you can overwrite ``cluster_config.yaml`` file use by profile like this:
+You can use profiles to manage cluster resources. Go to :ref:`3. Snakemake profiles` for details.
 
 .. code-block:: bash
 
-    sbatch submit_culebront.sh -c config.yaml -k cluster_config.yaml
+    # in HPC using cluster_config.yaml directly from profile
+    submit_culebront.sh -c config.yaml --profiles $profile
+
+If cluster default resources are not sufficient, you can overwrite ``cluster_config.yaml`` file used by the profile doing:
+
+.. code-block:: bash
+
+    # in HPC overwriting cluster_config.yaml given by user
+    submit_culebront.sh -c config.yaml -k cluster_config.yaml --profiles $profile
+
+
+In any case, `submit_culebront.sh` launcher can be submitted to SLURM queue typing:
+
+.. code-block:: bash
+
+    sbatch CulebrONT.sbatch
+
+Now, take a coffee or tea, and enjoy !!!!!!
+
+
+
 
 
 Output on CulebrONT
