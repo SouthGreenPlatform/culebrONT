@@ -5,22 +5,90 @@
 Requirements
 ============
 
-CulebrONT has been mostly developed to work on an HPC. Let's see how to install it.
-
 CulebrONT requires |PythonVersions|, |SnakemakeVersions| and |graphviz|.
 
-Additionally, as Culebront uses many tools, you must install and use them through two possibilities:
+CulebrONT has been mostly developed to work on an HPC but a local installation is also possible.
+
+
+
+------------------------------------------------------------------------
+
+Steps for **LOCAL** installation
+================================
+
+1. Using a Docker Virtual Machine
+---------------------------------
+
+CulebrONT and dependencies and also every tool used to create a pipeline are available through a Docker virtual machine (VM). To install CulebrONT on *local* mode please follow this steps:
+
+1. Pull the build docker virtual machine
+........................................
+
+.. code-block:: bash
+
+    docker pull julieaorjuela/culebront-docker:latest
+
+2. Run the docker container
+...........................
+
+Run the docker. Docker -v option allows mount a repertory from your local machine.
+
+.. code-block:: bash
+
+    docker run -i -t --privileged -v /path/where/you/have/your/data/local/:/Data julieaorjuela/culebront-docker:latest
+
+
+3. Prepare you to create a pipeline
+...................................
+
+Download data and adapt *config.yaml* file. See :ref:`How to create a workflow` for further details.
+
+* 3.1 Download available dataset into the `/path/where/you/have/your/local/data/` to test CulebrONT.
+
+.. code-block:: bash
+
+    cd /path/where/you/have/your/local/data/
+    wget --no-check-certificat -rm -nH --cut-dirs=1 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/Data-Xoo-sub/
+
+* 3.2 Adapt *config.yaml* file. It can be copied from CulebrONT repository (found inside Docker VM)
+
+.. code-block:: bash
+
+    cp /usr/local/CulebrONT_pipeline/config.yaml .
+
+4. Run CulebrONT
+................
+
+Run CulebrONT using the `script submit.sh`
+
+.. code-block:: bash
+
+    ## For example in *dryrun* mode
+    submit_culebront.sh -c config.yaml -a "--dryrun"
+
+    # or using maximum 8 threads
+    submit_culebront.sh -c config.yaml -a "--cores 8 "
+
+    # or using 6 threads to Canu from the 8 in total (https://snakemake.readthedocs.io/en/stable/executing/cli.html)
+    submit_culebront.sh -c config.yaml -a "--cores 8 --set-threads run_canu=6"
+
+
+------------------------------------------------------------------------
+
+Steps for **HPC** installation
+==============================
+
+CulebrONT has been mostly developed to work on an HPC. Let's see how to install it on HPC.
+
+As CulebrONT uses many tools, you must install them through two possibilities:
 
 1. Either through the |Singularity| containers,
 
 2. Or using the ``module load`` mode,
 
-3. Or you can also mix both! (yes we know it is a third possibility :D)
+Let's check steps for **HPC installation** :
 
-Steps for installation
-======================
-
-First of all clone our repository or download last version from https://github.com/SouthGreenPlatform/CulebrONT_pipeline.
+First of all clone our repository or download last version from https://github.com/SouthGreenPlatform/CulebrONT_pipeline and go inside our repository.
 
 .. code-block:: bash
 
@@ -28,23 +96,19 @@ First of all clone our repository or download last version from https://github.c
    cd CulebrONT_pipeline
 
 
-When you have cloned it and went into the folder,
-
 1. Adapt the file :file:`tools_path.yaml` - in YAML (Yet Another Markup Language) - format  to indicate to CulebrONT where the tools are installed.
 See the section :ref:`1. How to configure tools_path.yaml` for details.
-
 
 2. Adapt the :file:`cluster_config.yaml` file to manage cluster resources such as partition, memory and threads available for each job.
 See the section :ref:`2. Preparing *cluster_config.yaml*` for further details.
 
-
 3. Create a *snakemake profile* to configure cluster options.
 See the section :ref:`3. Snakemake profiles` for details.
 
-4. Create CulebrONT envmodules file.
-See the section :ref:`4. Export CulebrONT to $PATH` for details.
+4. Create a CulebrONT module file.
+See the section :ref:`4. Export CulebrONT to PATH` for details.
 
-5. Modify run script. See the section :ref:`5. Adapt `submit_culebront.sh`` for details.
+5. Adapt the `submit_culebront.sh` script through the `CulebrONT.sbatch` example. See the section :ref:`5. Adapt CulebrONT.sbatch` for details (example done here for SLURM).
 
 6. Test CulebrONT install (Optional but recommended) using an available dataset.
 See the section :ref:`6. Check install` for details.
@@ -124,9 +188,10 @@ In the ``cluster_config.yaml`` file, you can add partition, memory and threads t
 .. warning::
     If more memory or threads are requested, please adapt the content of this file before running on your cluster.
 
+.. warning::
+    Please give to *cluster_config.yaml* specific parameters to rules get_versions and rule_graph without using wildcards into log files.
 
 Here is a example of the configuration file we used on our `i-Trop HPC <../../cluster_config.yaml>`_ .
-
 
 
 3. Snakemake profiles
@@ -175,11 +240,7 @@ Now, your basic profile is created. To finalize it, change the ``CulebrONT_pipel
 .. warning::
 
     If you decided to create a profile in another path than ``CulebrONT_pipeline/profiles/CulebrONT``.
-    Don't forget to change also the profile path in ``submit_culebront.sh``.
-
-.. danger::
-    If you used profiles with:
-    *use-singularity: False* AND *use-envmodules: False*, all CulebrONT tools must be available on $PATH !!!!!!!!!
+    Don't forget to change also the profile path in ``CulebrONT.sbatch``.
 
 .. note::
 
@@ -189,10 +250,11 @@ Now, your basic profile is created. To finalize it, change the ``CulebrONT_pipel
 .. note::
    You can find the generated files when profiles are created following this documentation. IFB profile example can be found on the `̀ gift_files/CulebrONT_SLURM/`` repertory on our github repository.
 
-4. Export CulebrONT to $PATH
-----------------------------
 
-To run script `submit_culebront.sh` you need export path of installation.
+4. Export CulebrONT to PATH
+---------------------------
+
+Through the `submit_culebront.sh` script snakemake creates a pipeline from the configuration file you give him. You need to indicate to `submit_culebront.sh` where culebront is installed, so you need export path of CulebrONT installation.
 
 .. code-block:: bash
 
@@ -202,17 +264,20 @@ To run script `submit_culebront.sh` you need export path of installation.
     # to call submit_culebront.sh script anywhere
     export PATH=$CULEBRONT:$PATH
 
-or you can adapt the module load file dowload :download:`here<../../gift_files/CulebrONT_envmodules>` or see
+or you can adapt the module load file download :download:`here<../../gift_files/CulebrONT_envmodules>` or see
 `here <https://raw.githubusercontent.com/SouthGreenPlatform/CulebrONT_pipeline/master/gift_files/CulebrONT_envmodules>`_
 
-5. Adapt `submit_culebront.sh`
-------------------------------
 
-Finally, modify the header of `submit_culebront.sh` file according to your scheduler.
+5. Adapt CulebrONT.sbatch
+-------------------------
 
-.. literalinclude:: ../../submit_culebront.sh
+For SLURM scheduler system, a `CulebrONT.sbatch` sbatch script is available into our github repository. `CulebrONT.sbatch` needs to be adapted if you are using other job scheduling systems than SLURM (SGE, Grid middleware, or cloud computing).  Optionally, in this one you can also included in step 4 :ref:`4. Export CulebrONT to $PATH`.
+
+
+.. literalinclude:: ../../CulebrONT.sbatch
     :language: sh
-    :lines: 1-8
+    :lines: 1-10
+
 
 6. Check install
 ----------------
@@ -226,8 +291,13 @@ Feel free to download it using ``wget`` and put it on CulebrONT directory.
     wget --no-check-certificat -rm -nH --cut-dirs=1 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/Data-Xoo-sub/
 
 
+Now, it is time to prepare the configuration file ``config.yaml`` file to indicate to CulebrONT which kind of pipeline you want to create and to run on your data ! :ref:`How to create a workflow`.
 
-Now, it is time to prepare the configuration file ``config.yaml`` file to indicate to CulebrONT which kind of pipeline you want to create and to run on your data !
+Finally run CulebrONT!!
+
+.. code-block:: bash
+
+    sbatch CulebrONT.sbatch
 
 
 .. |PythonVersions| image:: https://img.shields.io/badge/python-3.7%2B-blue
