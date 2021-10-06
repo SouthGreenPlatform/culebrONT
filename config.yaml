@@ -3,29 +3,29 @@ DATA:
     FAST5: './Data-Xoo-sub/fast5/'
     ILLUMINA: './Data-Xoo-sub/illumina/'
     GENOME_SIZE: '4.8m'
-    REF: './Data-Xoo-sub/ref/BAI3_Sanger.fsa'
+    REF: './Data-Xoo-sub/ref/BAI3.fasta'
     OUTPUT: './CulebrONT_OUTPUT/'
 
 ############ TOOLS ################
 ASSEMBLY:
     CANU: False
-    FLYE: True
-    MINIASM: True
-    RAVEN: True
+    FLYE: False
+    MINIASM: False
+    RAVEN: False
     SMARTDENOVO:  True
     SHASTA: False
 
 POLISHING:
     RACON: True
 
-CIRCULAR: True
+CIRCULAR: False
 
 CORRECTION:
     NANOPOLISH: False
     MEDAKA: False
     PILON: True
 
-FIXSTART: True
+FIXSTART: False
 
 # BUSCO and QUAST will be launched on all activated steps (ASSEMBLY, POLISHING, CORRECTION)
 QUALITY:
