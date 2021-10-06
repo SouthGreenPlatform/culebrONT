@@ -9,57 +9,107 @@ CulebrONT requires |PythonVersions|, |SnakemakeVersions| and |graphviz|.
 
 CulebrONT has been mostly developed to work on an HPC but a local installation is also possible.
 
-
-
 ------------------------------------------------------------------------
 
-Steps for **LOCAL** installation
-================================
+Steps for LOCAL installation
+============================
 
-1. Using a Docker Virtual Machine
----------------------------------
+CulebrONT and dependencies and also every tool used to create a pipeline are available through a ``Docker Virtual Machine``. To install CulebrONT on *local* mode please follow this steps:
 
-CulebrONT and dependencies and also every tool used to create a pipeline are available through a Docker virtual machine (VM). To install CulebrONT on *local* mode please follow this steps:
+1. Pull the build docker virtual machine and obtain test dataset
+----------------------------------------------------------------
 
-1. Pull the build docker virtual machine
-........................................
+First get the necessary distant files for installation of the CulebrONT Docker container and the test dataset. Note that this may take quite a while (several minutes to hours) depending on your internet speed. Downloaded files takes 5Gb of disk space.
 
 .. code-block:: bash
 
+    # Create a working dir where input data and output will be written
+    test_dir="$HOME/CulebrONT-Docker"
+    mkdir ${test_dir}
+
+    # Use it as a working directory
+    cd ${test_dir}
+
+    # Pull the docker container for CulebrONT
     docker pull julieaorjuela/culebront-docker:latest
 
-2. Run the docker container
-...........................
-
-Run the docker. Docker -v option allows mount a repertory from your local machine.
-
-.. code-block:: bash
-
-    docker run -i -t --privileged -v /path/where/you/have/your/data/local/:/Data julieaorjuela/culebront-docker:latest
-
-
-3. Prepare you to create a pipeline
-...................................
-
-Download data and adapt *config.yaml* file. See :ref:`How to create a workflow` for further details.
-
-* 3.1 Download available dataset into the `/path/where/you/have/your/local/data/` to test CulebrONT.
-
-.. code-block:: bash
-
-    cd /path/where/you/have/your/local/data/
+    # Get the test data set OR put inside your data
     wget --no-check-certificat -rm -nH --cut-dirs=1 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/Data-Xoo-sub/
 
-* 3.2 Adapt *config.yaml* file. It can be copied from CulebrONT repository (found inside Docker VM)
+Now let's run a test run with the provided dataset inside the docker container.
+
+
+2. Run the docker container
+---------------------------
+
+Run the CulebrONT docker container. Docker *-v* option allows you mount a repertory from your local machine into the container. You need mount your local ``test_dir`` inside the Docker container. For more details about docker follow this documentation https://docs.docker.com/storage/bind-mounts/.
 
 .. code-block:: bash
 
+    docker run -i -t --privileged -e "test_dir=$test_dir" -v $test_dir:$test_dir julieaorjuela/culebront-docker:latest
+
+You now have the container prompt in the terminal. You are inside the Docker container!
+
+
+3. Create a pipeline using the config.yaml file
+-----------------------------------------------
+
+Adapt *config.yaml* file. See :ref:`How to create a workflow` for further details. It can be copied from CulebrONT repository (found inside Docker VM). Modify file access if you want to edit it from outside the container.
+
+.. code-block:: bash
+
+    # Go in your working dir
+    cd $test_dir/
+    # cp le config.yaml file in workdir
     cp /usr/local/CulebrONT_pipeline/config.yaml .
+    # change access
+    chmod 777 config.yaml
+
 
 4. Run CulebrONT
-................
+----------------
 
-Run CulebrONT using the `script submit.sh`
+Using standard Snakemake command line
+......................................
+
+Run CulebrONT with a standard snakemake command like ...
+
+.. code-block:: bash
+
+    snakemake -p -s ${CULEBRONT}/Snakefile \
+      --configfile config.yaml \
+      --dryrun
+    # ... for a dryrun
+
+Or for an actual run to start with the downloaded test data and the specified config file. Set the value of '--cores' considering the capabilities of your machine
+
+.. code-block:: bash
+
+    snakemake -p -s ${CULEBRONT}/Snakefile \
+      --configfile config.yaml \
+      --cores 6 \
+      --use-singularity --singularity-args "--bind /Data"
+
+If you want to change the number of cores or threads on a rule basis. Use the snakemake '--set-threads' arguments like:
+
+.. code-block:: bash
+
+    snakemake -p -s ${CULEBRONT}/Snakefile \
+      --configfile Config.yaml \
+      --cores 6 \
+      --set-threads run_flye=4 \
+      --use-singularity --singularity-args "--bind /Data"
+
+For more options go to the snakemake documentation https://snakemake.readthedocs.io/en/stable/executing/cli.html
+
+.. warning::
+    Local install must to use Singularity. The use of Singularity is constraint with the use the *--use-singularity* parameter in the snakemake command line.  Bind mount disks to singularity environment by using ``--singularity-args '--bind $YOURMOUNTDISK'``. It allows to detect others disk inside of the singularity container. Mount could be $HOME or another disk path. In the CulebrONT Docker virtual machine you need to put same mount path of the Docker one witch is ``$test_dir``.
+
+
+Or using a submit_culebrONT.sh script
+.....................................
+
+Optionally, you can run CulebrONT using the ``submit_culebront.sh`` script. A nutshell, this script is just assembling a snakemake command line depending on the situation of the user. It can be expense of flexibility.
 
 .. code-block:: bash
 
@@ -75,8 +125,8 @@ Run CulebrONT using the `script submit.sh`
 
 ------------------------------------------------------------------------
 
-Steps for **HPC** installation
-==============================
+Steps for HPC installation
+==========================
 
 CulebrONT has been mostly developed to work on an HPC. Let's see how to install it on HPC.
 
@@ -271,7 +321,7 @@ or you can adapt the module load file download :download:`here<../../gift_files/
 5. Adapt CulebrONT.sbatch
 -------------------------
 
-For SLURM scheduler system, a `CulebrONT.sbatch` sbatch script is available into our github repository. `CulebrONT.sbatch` needs to be adapted if you are using other job scheduling systems than SLURM (SGE, Grid middleware, or cloud computing).  Optionally, in this one you can also included in step 4 :ref:`4. Export CulebrONT to $PATH`.
+For SLURM scheduler system, a `CulebrONT.sbatch` sbatch script is available into our github repository. `CulebrONT.sbatch` needs to be adapted if you are using other job scheduling systems than SLURM (SGE, Grid middleware, or cloud computing).  Optionally, in this one you can also included in step 4 :ref:`4. Export CulebrONT to PATH`.
 
 
 .. literalinclude:: ../../CulebrONT.sbatch
