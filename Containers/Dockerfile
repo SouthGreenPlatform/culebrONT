@@ -9,7 +9,7 @@ FROM ubuntu:bionic
 USER root
 
 # ENVIRONMENT
-ENV CULEBRONT="/usr/local/CulebrONT_pipeline/"
+ENV CULEBRONT="/usr/local/CulebrONT_pipeline"
 ENV PATH="/usr/local/miniconda/miniconda3/bin:$PATH"
 ENV PATH="/usr/local/miniconda/miniconda3/envs/snakemake/bin:$PATH"
 
