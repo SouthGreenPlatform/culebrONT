@@ -285,10 +285,10 @@ rule convert_fastq_to_fasta:
     params:
         command = "zcat " if culebront.fastq_gzip else  "cat ",
     output:
-        reads_on_fasta = f"{output_dir}{{fastq}}/DIVERS/FASTQ2FASTA/{{fastq}}.fasta",
+        reads_on_fasta = f"{output_dir}{{fastq}}/MISC/FASTQ2FASTA/{{fastq}}.fasta",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/DIVERS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.o",
-        error = f"{output_dir}{{fastq}}/LOGS/DIVERS/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.e",
+        output = f"{output_dir}{{fastq}}/LOGS/MISC/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.o",
+        error = f"{output_dir}{{fastq}}/LOGS/MISC/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/FASTQ2FASTA.txt"
     shell:
