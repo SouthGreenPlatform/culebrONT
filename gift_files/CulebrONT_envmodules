@@ -3,8 +3,8 @@
 
 ## Required internal variables
 set     prefix       /path/to/CulebrONT_pipeline
-set     version      "1.5.2"
-set     fullname     CulebrONT-1.5.2
+set     version      "1.6.0"
+set     fullname     CulebrONT-1.6.0
 set     externalurl  "\n\thttps://culebront-pipeline.readthedocs.io/en/latest/\n"
 set     description  "\n\tCulebrONT is an open-source, scalable, modulable and traceable snakemake pipeline,
 \table to launch multiple assembly tools in parallel and providing help for choosing
