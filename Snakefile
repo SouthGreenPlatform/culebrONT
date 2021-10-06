@@ -367,7 +367,7 @@ rule run_get_versions:
         assemblers = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/{{assemblers}}-version.txt", fastq = FASTQ, assemblers=culebront.assembly_tools_activated),
         polishers = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/{{polishers}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated,polishers=culebront.polishing_tools_activated),
         correction = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/{{correction}}/{{correction}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated, correction=culebront.correction_tools_activated),
-        circular = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR-version.txt", fastq=FASTQ, assemblers=[ass for ass in culebront.assembly_tools_activated if ass in ["CANU","SMARTDENOVO"]]),
+        circular = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR-version.txt", fastq=FASTQ, assemblers=[ass for ass in culebront.assembly_tools_activated if ass in ["CANU","SMARTDENOVO"] and bool(culebront.config['CIRCULAR'])]),
         quality = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/{{quality}}/{{quality}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list, quality=[qual for qual in culebront.quality_tools_activated if qual not in ["QUAST", "MAUVE", "BUSCO"]]),
         quast = expand(rules.run_quast.output.version, fastq=FASTQ, quality=[qual for qual in culebront.quality_tools_activated if qual in ["QUAST"]]),
         busco = expand(rules.run_busco_version.output.busco_version, fastq=FASTQ),
