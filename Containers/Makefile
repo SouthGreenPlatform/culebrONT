@@ -10,7 +10,7 @@ all:
 	make install
 	@echo ""
 	@echo "Success!"
-	@echo "CulebrONT installed in ${TARGET_DIR}/bin/canu"
+	@echo "CulebrONT installed in ${TARGET_DIR}"
 
 .PHONY=build
 build:
