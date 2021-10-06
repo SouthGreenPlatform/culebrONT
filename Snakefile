@@ -284,6 +284,27 @@ rule run_busco_stats:
         f"{basedir}/reports/get_stats_busco.py"
 
 
+rule run_racon_version:
+    """
+    launch Racon version
+    """
+    threads: get_threads('run_racon_version', 1)
+    input:
+        fastq = get_fastq,
+    output:
+        version = f"{output_dir}{{fastq}}/REPORT/RACON-version.txt",
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["RACON"],
+        tools_config["ENVMODULE"]["MINIMAP2"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; racon --version > {output.version}
+        ln -s -f {output.version} {output_dir}versions/RACON-version.txt
+        """
+
+
 rule run_busco_version:
     """
     busco version 
@@ -365,7 +386,7 @@ rule run_get_versions:
     threads: get_threads('run_get_versions', 1)
     input:
         assemblers = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/{{assemblers}}-version.txt", fastq = FASTQ, assemblers=culebront.assembly_tools_activated),
-        polishers = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/{{polishers}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated,polishers=culebront.polishing_tools_activated),
+        polishers = expand(rules.run_racon_version.output.version, fastq=FASTQ),
         correction = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/{{correction}}/{{correction}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated, correction=culebront.correction_tools_activated),
         circular = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR-version.txt", fastq=FASTQ, assemblers=[ass for ass in culebront.assembly_tools_activated if ass in ["CANU","SMARTDENOVO"] and bool(culebront.config['CIRCULAR'])]),
         quality = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/{{quality}}/{{quality}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list, quality=[qual for qual in culebront.quality_tools_activated if qual not in ["QUAST", "MAUVE", "BUSCO"]]),
