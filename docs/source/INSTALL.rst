@@ -59,7 +59,7 @@ Adapt *config.yaml* file. See :ref:`How to create a workflow` for further detail
 .. code-block:: bash
 
     # Go in your working dir
-    cd $test_dir/
+    cd $test_dir
     # cp le config.yaml file in workdir
     cp /usr/local/CulebrONT_pipeline/config.yaml .
     # change access
@@ -78,19 +78,20 @@ Run CulebrONT with a standard snakemake command like ...
 
     snakemake -p -s ${CULEBRONT}/Snakefile \
       --configfile config.yaml \
+      --use-singularity --singularity-args "--bind $test_dir" \
       --dryrun
     # ... for a dryrun
 
-Or for an actual run to start with the downloaded test data and the specified config file. Set the value of '--cores' considering the capabilities of your machine
+Or for an actual run to start with the downloaded test data and the specified config file. Set the value of ``--cores`` considering the capabilities of your machine
 
 .. code-block:: bash
 
     snakemake -p -s ${CULEBRONT}/Snakefile \
       --configfile config.yaml \
       --cores 6 \
-      --use-singularity --singularity-args "--bind /Data"
+      --use-singularity --singularity-args "--bind $test_dir"
 
-If you want to change the number of cores or threads on a rule basis. Use the snakemake '--set-threads' arguments like:
+If you want to change the number of cores or threads on a rule basis. Use the snakemake ``--set-threads`` arguments like:
 
 .. code-block:: bash
 
@@ -98,9 +99,11 @@ If you want to change the number of cores or threads on a rule basis. Use the sn
       --configfile Config.yaml \
       --cores 6 \
       --set-threads run_flye=4 \
-      --use-singularity --singularity-args "--bind /Data"
+      --use-singularity --singularity-args "--bind $test_dir"
 
 For more options go to the snakemake documentation https://snakemake.readthedocs.io/en/stable/executing/cli.html
+
+A list of rules names can be found in the section :ref:`Rules inside CulebrONT`.
 
 .. warning::
     Local install must to use Singularity. The use of Singularity is constraint with the use the *--use-singularity* parameter in the snakemake command line.  Bind mount disks to singularity environment by using ``--singularity-args '--bind $YOURMOUNTDISK'``. It allows to detect others disk inside of the singularity container. Mount could be $HOME or another disk path. In the CulebrONT Docker virtual machine you need to put same mount path of the Docker one witch is ``$test_dir``.
@@ -119,7 +122,7 @@ Optionally, you can run CulebrONT using the ``submit_culebront.sh`` script. A nu
     # or using maximum 8 threads
     submit_culebront.sh -c config.yaml -a "--cores 8 "
 
-    # or using 6 threads to Canu from the 8 in total (https://snakemake.readthedocs.io/en/stable/executing/cli.html)
+    # or using 6 threads to Canu from the 8 in total
     submit_culebront.sh -c config.yaml -a "--cores 8 --set-threads run_canu=6"
 
 
@@ -238,10 +241,12 @@ In the ``cluster_config.yaml`` file, you can add partition, memory and threads t
 .. warning::
     If more memory or threads are requested, please adapt the content of this file before running on your cluster.
 
+Here is a example of the configuration file we used on our `i-Trop HPC <../../cluster_config.yaml>`_ .
+
+A list of rules names can be found in the section :ref:`Rules inside CulebrONT`
+
 .. warning::
     Please give to *cluster_config.yaml* specific parameters to rules get_versions and rule_graph without using wildcards into log files.
-
-Here is a example of the configuration file we used on our `i-Trop HPC <../../cluster_config.yaml>`_ .
 
 
 3. Snakemake profiles
@@ -348,6 +353,65 @@ Finally run CulebrONT!!
 .. code-block:: bash
 
     sbatch CulebrONT.sbatch
+
+------------------------------------------------------------------------
+
+Rules inside CulebrONT
+======================
+
+Please find here the rules names found in CulebrONT code. It could be useful to set threads in local running using the snakemake command or in the cluster configuration to manage cluster resources. This would save the user a painful exploration of the snakefiles code of CulebrONT.
+
+.. code-block:: bash
+
+    rule_graph
+    run_report_snakemake
+    run_flagstats_stats
+    run_busco_stats
+    run_busco_version
+    run_benchmark_time
+    run_get_versions
+    run_report
+    run_flye
+    run_canu
+    run_minimap_for_miniasm
+    run_miniasm
+    run_minipolish
+    run_raven
+    convert_fastq_to_fasta
+    run_smartdenovo
+    run_shasta
+    run_circlator
+    tag_circular
+    tag_circular_to_minipolish
+    rotate_circular
+    run_fixstart
+    run_makerange
+    run_nanopolish_index
+    preparing_ref_to_nanopolish
+    run_nanopolish_variants
+    run_nanopolish_merge
+    index_fasta_to_correction
+    run_minialign_to_medaka
+    run_medaka_train
+    run_medaka_consensus
+    run_medaka_merge
+    run_pilon_first_round
+    run_pilon
+    run_racon
+    run_racon_version
+    preparing_fasta_to_quality
+    run_quast
+    run_busco
+    run_diamond
+    run_minimap2
+    run_blobtools
+    run_mummer
+    run_assemblytics
+    combined_fastq
+    run_KAT
+    run_mauve
+    run_bwa_mem2
+    run_flagstat
 
 
 .. |PythonVersions| image:: https://img.shields.io/badge/python-3.7%2B-blue
