@@ -98,11 +98,11 @@ elif [[ ! $profile ]] && [[ ! $cluster_config ]]; then
   echo "You are running on $(uname -a)"
   echo "snakemake -p -s $CULEBRONT/Snakefile \
   --configfile $config \
-  --use-singularity --singularity-args --bind /Data  \
+  --use-singularity --singularity-args --bind ${test_dir} \
   $additional"
   snakemake -p -s ${CULEBRONT}/Snakefile \
   --configfile ${config} \
-  --use-singularity --singularity-args "--bind /Data " \
+  --use-singularity --singularity-args "--bind ${test_dir}" \
   ${additional}
 
 # cluster_config T, profile F
