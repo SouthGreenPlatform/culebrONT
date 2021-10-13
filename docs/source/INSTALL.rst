@@ -14,6 +14,8 @@ CulebrONT has been mostly developed to work on an HPC but a local installation i
 Steps for LOCAL installation
 ============================
 
+If you want to install CulebrONT in a local machine, please install Docker https://docs.docker.com/get-docker/.
+
 CulebrONT and dependencies and also every tool used to create a pipeline are available through a ``Docker Virtual Machine``. To install CulebrONT on *local* mode please follow this steps:
 
 1. Pull the build docker virtual machine and obtain test dataset
@@ -66,8 +68,8 @@ Adapt *config.yaml* file. See :ref:`How to create a workflow` for further detail
     chmod 777 config.yaml
 
 
-4. Run CulebrONT
-----------------
+4. Use a dataset to test CulebrONT install
+------------------------------------------
 
 Using standard Snakemake command line
 ......................................
