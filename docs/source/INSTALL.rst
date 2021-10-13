@@ -21,7 +21,7 @@ CulebrONT and dependencies and also every tool used to create a pipeline are ava
 1. Pull the build docker virtual machine and obtain test dataset
 ----------------------------------------------------------------
 
-First get the necessary distant files for installation of the CulebrONT Docker container and the test dataset. Note that this may take quite a while (several minutes to hours) depending on your internet speed. Downloaded files takes 5Gb of disk space.
+First get the necessary distant files for installation of the CulebrONT Docker container and the test dataset. Note that this may take quite a while (several minutes to hours) depending on your internet speed. This docker container takes 7.79 GB of disk space.
 
 .. code-block:: bash
 
