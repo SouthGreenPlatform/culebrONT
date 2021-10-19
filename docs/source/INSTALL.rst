@@ -9,12 +9,14 @@ CulebrONT requires |PythonVersions|, |SnakemakeVersions| and |graphviz|.
 
 CulebrONT has been mostly developed to work on an HPC but a local installation is also possible.
 
+If you want to install CulebrONT in a local machine, please install Docker https://docs.docker.com/get-docker/.
+
+If you want to install CulebrONT in a HPC machine, please install  cookiecutter https://github.com/cookiecutter/cookiecutter
+
 ------------------------------------------------------------------------
 
 Steps for LOCAL installation
 ============================
-
-If you want to install CulebrONT in a local machine, please install Docker https://docs.docker.com/get-docker/.
 
 CulebrONT and dependencies and also every tool used to create a pipeline are available through a ``Docker Virtual Machine``. To install CulebrONT on *local* mode please follow this steps:
 
@@ -135,11 +137,14 @@ Steps for HPC installation
 
 CulebrONT has been mostly developed to work on an HPC. Let's see how to install it on HPC.
 
-As CulebrONT uses many tools, you must install them through two possibilities:
+Before start, let's me said that you can download CulebrONT where you want to install it, you don't need compilation.
+
+As CulebrONT uses many tools, you must install them through two possibilities. You need to chose one of them !
 
 1. Either through the |Singularity| containers,
 
 2. Or using the ``module load`` mode,
+
 
 Let's check steps for **HPC installation** :
 
@@ -172,7 +177,7 @@ See the section :ref:`6. Check install` for details.
 1. How to configure tools_path.yaml
 -----------------------------------
 
-In the ``tools_path.yaml`` file, you can find two sections: SINGULARITY and ENVMODULES. In order to fill it correctly, you have 2 options:
+In the ``tools_path.yaml`` file, you can find two sections: SINGULARITY and ENVMODULES. You have to chose and fill in one of them. Please don't comment the second one!.
 
 1. Use only SINGULARITY containers. In this case, fill only this section. Put the path to the builded singularity images.
 Absolute paths are strongly recommended but not mandatory. See the section :ref:`'How to build singularity images'<How to build singularity images>`  for further details.
@@ -277,7 +282,7 @@ We followed the documentation found here https://github.com/Snakemake-Profiles/s
     Choose from 1, 2 [1]: 1
     cluster_name []:
 
-Now, your basic profile is created. To finalize it, change the ``CulebrONT_pipeline/profiles/CulebrONT/config.yaml`` to :
+Now, your basic profile is created. To finalize it, change the ``CulebrONT_pipeline/profiles/CulebrONT/config.yaml`` of profile to :
 
 .. code-block:: ini
 
@@ -293,6 +298,9 @@ Now, your basic profile is created. To finalize it, change the ``CulebrONT_pipel
     use-envmodules: True        # Adapt True/False
     rerun-incomplete: True
     printshellcmds: True
+
+
+Please take care to put "True" to `use-singularity` and "False" to `module-env` if you have decided to use CulebrONT dependencies from the singularity image. Inversely, put "False" to `use-singularity` and "True" to  `use-envmodules` if you have decided to use CulebrONT dependencies from the module environment.
 
 .. warning::
 
@@ -333,7 +341,7 @@ For SLURM scheduler system, a `CulebrONT.sbatch` sbatch script is available into
 
 .. literalinclude:: ../../CulebrONT.sbatch
     :language: sh
-    :lines: 1-10
+    :lines: 1-17
 
 
 6. Check install
@@ -345,6 +353,7 @@ Feel free to download it using ``wget`` and put it on CulebrONT directory.
 .. code-block:: bash
 
     cd CulebrONT_pipeline
+    # or go to your /home or into your favorite project
     wget --no-check-certificat -rm -nH --cut-dirs=1 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/Data-Xoo-sub/
 
 
