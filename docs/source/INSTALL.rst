@@ -243,7 +243,7 @@ In the ``cluster_config.yaml`` file, you can add partition, memory and threads t
 .. warning::
     If more memory or threads are requested, please adapt the content of this file before running on your cluster.
 
-Here is a example of the configuration file we used on our `i-Trop HPC <../../cluster_config.yaml>`_ .
+Here is a example of the configuration file we used on our `i-Trop HPC <https://raw.githubusercontent.com/SouthGreenPlatform/CulebrONT_pipeline/master/cluster_config.yaml>`_.
 
 A list of rules names can be found in the section :ref:`Rules inside CulebrONT`
 
