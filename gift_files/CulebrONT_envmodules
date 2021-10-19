@@ -41,3 +41,4 @@ module-whatis   "loads the [module-info name] environment"
 
 prepend-path PATH $prefix
 prepend-path CULEBRONT $prefix
+#setenv profile $prefix/profiles/CulebrONT
