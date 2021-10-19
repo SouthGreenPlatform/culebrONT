@@ -73,8 +73,8 @@ Adapt *config.yaml* file. See :ref:`How to create a workflow` for further detail
 4. Use a dataset to test CulebrONT install
 ------------------------------------------
 
-Using standard Snakemake command line
-......................................
+Using a standard Snakemake command line (local)
+...............................................
 
 Run CulebrONT with a standard snakemake command like ...
 
@@ -113,8 +113,8 @@ A list of rules names can be found in the section :ref:`Rules inside CulebrONT`.
     Local install must to use Singularity. The use of Singularity is constraint with the use the *--use-singularity* parameter in the snakemake command line.  Bind mount disks to singularity environment by using ``--singularity-args '--bind $YOURMOUNTDISK'``. It allows to detect others disk inside of the singularity container. Mount could be $HOME or another disk path. In the CulebrONT Docker virtual machine you need to put same mount path of the Docker one witch is ``$test_dir``.
 
 
-Or using a submit_culebrONT.sh script
-.....................................
+Or using a submit_culebront.sh script (local)
+.............................................
 
 Optionally, you can run CulebrONT using the ``submit_culebront.sh`` script. A nutshell, this script is just assembling a snakemake command line depending on the situation of the user. It can be expense of flexibility.
 
@@ -137,18 +137,15 @@ Steps for HPC installation
 
 CulebrONT has been mostly developed to work on an HPC. Let's see how to install it on HPC.
 
-Before start, let's me said that you can download CulebrONT where you want to install it, you don't need compilation.
-
 As CulebrONT uses many tools, you must install them through two possibilities. You need to chose one of them !
 
 1. Either through the |Singularity| containers,
 
 2. Or using the ``module load`` mode,
 
-
 Let's check steps for **HPC installation** :
 
-First of all clone our repository or download last version from https://github.com/SouthGreenPlatform/CulebrONT_pipeline and go inside our repository.
+First of all clone our repository or download last version from https://github.com/SouthGreenPlatform/CulebrONT_pipeline and go inside our repository. You can download CulebrONT where you want to install it, compilation step is not needed.
 
 .. code-block:: bash
 
@@ -168,10 +165,8 @@ See the section :ref:`3. Snakemake profiles` for details.
 4. Create a CulebrONT module file.
 See the section :ref:`4. Export CulebrONT to PATH` for details.
 
-5. Adapt the `submit_culebront.sh` script through the `CulebrONT.sbatch` example. See the section :ref:`5. Adapt CulebrONT.sbatch` for details (example done here for SLURM).
-
-6. Test CulebrONT install (Optional but recommended) using an available dataset.
-See the section :ref:`6. Check install` for details.
+5. Test CulebrONT install (Optional but recommended) using an available dataset.
+See the section :ref:`5. Check install` for details.
 
 
 1. How to configure tools_path.yaml
@@ -319,7 +314,7 @@ Please take care to put "True" to `use-singularity` and "False" to `module-env` 
 4. Export CulebrONT to PATH
 ---------------------------
 
-Through the `submit_culebront.sh` script snakemake creates a pipeline from the configuration file you give him. You need to indicate to `submit_culebront.sh` where culebront is installed, so you need export path of CulebrONT installation.
+Snakemake creates a pipeline from the ``config.yaml`` configuration file you give him (using snakemake command line directly or through the `submit_culebront.sh` script). In any case, you need to indicate to Snakemake where CulebrONT was installed, so you can export CulebrONT to $PATH variable...
 
 .. code-block:: bash
 
@@ -329,22 +324,11 @@ Through the `submit_culebront.sh` script snakemake creates a pipeline from the c
     # to call submit_culebront.sh script anywhere
     export PATH=$CULEBRONT:$PATH
 
-or you can adapt the module load file download :download:`here<../../gift_files/CulebrONT_envmodules>` or see
+... OR you can adapt the available module load file :download:`here<../../gift_files/CulebrONT_envmodules>` or see
 `here <https://raw.githubusercontent.com/SouthGreenPlatform/CulebrONT_pipeline/master/gift_files/CulebrONT_envmodules>`_
 
 
-5. Adapt CulebrONT.sbatch
--------------------------
-
-For SLURM scheduler system, a `CulebrONT.sbatch` sbatch script is available into our github repository. `CulebrONT.sbatch` needs to be adapted if you are using other job scheduling systems than SLURM (SGE, Grid middleware, or cloud computing).  Optionally, in this one you can also included in step 4 :ref:`4. Export CulebrONT to PATH`.
-
-
-.. literalinclude:: ../../CulebrONT.sbatch
-    :language: sh
-    :lines: 1-17
-
-
-6. Check install
+5. Check install
 ----------------
 
 Optionally, in order to test your install of CulebrONT pipeline, a data test called ``Data-Xoo-sub/`` is available on https://itrop.ird.fr/culebront_utilities/.
@@ -356,10 +340,63 @@ Feel free to download it using ``wget`` and put it on CulebrONT directory.
     # or go to your /home or into your favorite project
     wget --no-check-certificat -rm -nH --cut-dirs=1 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/Data-Xoo-sub/
 
+Now, prepare the configuration file ``config.yaml`` file to indicate to CulebrONT which kind of pipeline you want to create and data location! :ref:`How to create a workflow`.
 
-Now, it is time to prepare the configuration file ``config.yaml`` file to indicate to CulebrONT which kind of pipeline you want to create and to run on your data ! :ref:`How to create a workflow`.
 
-Finally run CulebrONT!!
+Using a standard Snakemake command line (HPC)
+.............................................
+
+Run CulebrONT with a standard Snakemake command line using profiles like ...
+
+.. code-block:: bash
+
+    snakemake -p -s ${CULEBRONT}/Snakefile \
+      --configfile ${config} \\
+      --profile ${profile} \
+      --dryrun
+    # ... for a dryrun
+
+If you want to change the number of cores or memory used on a rule. Replace ``--cluster-config`` arguments by overwriting the  ``cluster_config.yaml`` file used by the profile :
+
+.. code-block:: bash
+
+    snakemake -p -s ${CULEBRONT}/Snakefile \
+      --configfile ${config} \
+      --cluster-config ${cluster_config} \
+      --profile ${profile} \
+      --dryrun
+
+For more options go to the snakemake documentation https://snakemake.readthedocs.io/en/stable/executing/cli.html
+
+A list of rules names can be found in the section :ref:`Rules inside CulebrONT`.
+
+
+Or using a submit_culebront.sh script (HPC)
+...........................................
+
+Optionally, you can run CulebrONT using the ``submit_culebront.sh`` script. A nutshell, this script is just assembling a snakemake command line depending on the situation of the user. It can be expense of flexibility.
+
+
+For example in *dryrun* mode using profile created by system administrator ...
+
+.. code-block:: bash
+
+    submit_culebront.sh -c config.yaml -p $profile -a "--dryrun"
+
+OR asking more computational resources, by overwriting ``cluster config.yaml`` set by profile ...
+
+.. code-block:: bash
+
+    submit_culebront.sh -c config.yaml -p $profile -c cluster_config.yaml -a "--dryrun"
+
+
+For SLURM scheduler system, a ``CulebrONT.sbatch`` sbatch script is available into our github repository. ``CulebrONT.sbatch`` needs to be adapted if you are using other job scheduling systems than SLURM (SGE, Grid middleware, or cloud computing).
+
+.. literalinclude:: ../../CulebrONT.sbatch
+    :language: sh
+    :lines: 1-17
+
+Finally run CulebrONT !!
 
 .. code-block:: bash
 

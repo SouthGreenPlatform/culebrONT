@@ -18,7 +18,7 @@ if {![file exists $prefix]} {
 }
 
 ## List conflicting modules here
-# conflict CulebrONT
+conflict CulebrONT
 
 ## List prerequisite modules here
 module load singularity
