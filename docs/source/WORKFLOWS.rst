@@ -138,6 +138,7 @@ In any case, before run CulebrONT please be sure you have already modified the `
 For local or HPC mode, CulebrONT can be run using a typical ``snakemake`` command line (check some examples given in :ref:`Using standard Snakemake command line` section  OR through the ``submit_culebront.sh`` script. A nutshell, ``submit_culebront.sh`` is just assembling a snakemake command line depending on the situation of the user but it can be expense of flexibility. For easy to use, ``submit_culebront.sh`` have four options:
 
 .. code-block:: bash
+
     -c option : config.yaml file
     -k option : cluster_config.yaml
     -p option : profile path
@@ -167,6 +168,7 @@ Running in a HPC
 If you are on HPC mode, give to ``submit_culebront.sh`` at least the -c option and -p options to the ``submit_culebront.sh`` script. You can use profiles to manage cluster resources. Go to :ref:`3. Snakemake profiles` for details OR ask to your admin system where CulebrONT profile was created.
 
 .. code-block:: bash
+
     # declare profile path directory
     profile=/directory/of/culebront/profile/
     # in HPC using cluster_config.yaml directly from profile
@@ -175,6 +177,7 @@ If you are on HPC mode, give to ``submit_culebront.sh`` at least the -c option a
 If cluster default resources are not sufficient, you can overwrite ``cluster_config.yaml`` file used by the profile. You can use -k option to overwrite cluster resources.
 
 .. code-block:: bash
+
     # in HPC mode, overwriting cluster_config.yaml given by user
     submit_culebront.sh -c config.yaml -k cluster_config.yaml --profiles $profile
     # in HPC mode, overwriting cluster_config.yaml given by user and launch a --dryrun
@@ -186,6 +189,7 @@ If cluster default resources are not sufficient, you can overwrite ``cluster_con
 In any case, ``submit_culebront.sh`` launcher can be submitted to SLURM queue using the ``CulebrONT.sbatch``. Don't forget adapt ``CulebrONT.sbatch`` to your scheduler parameter.
 
 .. code-block:: bash
+
     sbatch CulebrONT.sbatch
 
 Now, take a coffee or tea, and enjoy !!!!!!
