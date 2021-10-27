@@ -82,3 +82,10 @@ Please check if you don't have another instance of BUSCO. BUSCO checks the ``con
 
 If assemblers or jobs are being launched one after other and not in a parallel way, please check if the ``--core`` parameter is given to the snakemake command line. Please remove it. this parameter is 1 by default. Don't forget to give to CulebrONT the jobs numbers allowed when profiles are being created as is explained on the section profiles.
 
+
+**Error in Assemblitics log file :
+
+Error in revalue(bed$type, c(Repeat_expansion = "Repeat expansion", Repeat_contraction = "Repeat contraction",  : x is not a factor or a character vector.
+Execution halted
+
+After trying the delta files for the failling assemblytics rules on the Assemblytics webserver, it seems the problem comes from the fact that Assemblytics do not detect any structural variation between these assemblies and the reference and so fail to write some of the (graphical) files in connexion with struct. variation. Hence, CulebrONT throughts an error when the output files are not found. You can put False to ASSEMBLYTICS tool in CulebrONT pipeline.
