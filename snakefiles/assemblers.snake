@@ -15,6 +15,8 @@ rule run_flye:
         genome_size = config['DATA']['GENOME_SIZE'],
         circular = "--plasmids" if config['CIRCULAR'] else "",
         move = "mv " if config['CIRCULAR'] else "echo ",
+        options = f"{config['params']['FLYE']['OPTIONS']}",
+        mode = f"{config['params']['FLYE']['MODE']}",
     log:
         output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE.o",
         error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE.e",
@@ -33,6 +35,8 @@ rule run_flye:
             fasta_dir: {params.fasta_dir}
             genome_size:   {params.genome_size}
             circular:  {params.circular}
+            mode : {params.mode}
+            options:  {params.options}
         log:
             output: {log.output}
             error: {log.error}
@@ -45,7 +49,7 @@ rule run_flye:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; flye --version > {output.version}
         ln -s -f {output.version} {output_dir}versions/FLYE-version.txt
-        (flye --nano-raw {input.fastq} --genome-size {params.genome_size} {params.circular} --out-dir {params.fasta_dir} --threads {threads};
+        (flye {params.mode} {input.fastq} {params.options} --genome-size {params.genome_size} {params.circular} --out-dir {params.fasta_dir} --threads {threads};
         {params.move} {params.fasta_dir}/assembly.fasta {output.fasta}) 1>{log.output} 2>{log.error}
         """
 
@@ -67,6 +71,7 @@ rule run_canu:
         out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/"),
         genome_size = f"{config['DATA']['GENOME_SIZE']}",
         options = f"{config['params']['CANU']['OPTIONS']}",
+        mode = f"{config['params']['CANU']['MODE']}",
     log:
         output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.o",
         error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.e",
@@ -86,6 +91,7 @@ rule run_canu:
             out_dir: {params.out_dir}
             genome_size: {params.genome_size}
             options: {params.options}
+            mode : {params.mode}
         log:
             output : {log.output}
             error: {log.error}
@@ -98,7 +104,7 @@ rule run_canu:
         """
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; canu --version > {output.version}
         ln -s -f {output.version} {output_dir}versions/CANU-version.txt
-        (canu -p out_canu -d {params.out_dir} genomeSize={params.genome_size} -nanopore-raw {input.fastq} {params.options};
+        (canu -p out_canu -d {params.out_dir} genomeSize={params.genome_size} {params.mode} {input.fastq} {params.options};
         ln -s -f {params.fasta_canu} {output.fasta}) 1>{log.output} 2>{log.error}
         """
 
