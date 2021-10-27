@@ -169,12 +169,12 @@ properties:
                 type: object
                 additionalProperties: false
                 properties:
-                    MAX_MEMORY:
-                        type: string
-                        description: "flye options"
                     OPTIONS:
                         type: string
                         description: "supplementary option for flye"
+                    MODE:
+                        type: string
+                        description: "mode option for flye"
             MINIMAP2:
                 type: object
                 additionalProperties: false
@@ -186,12 +186,12 @@ properties:
                 type: object
                 additionalProperties: false
                 properties:
-                    MAX_MEMORY:
-                        type: string
-                        description: "canu mem options"
                     OPTIONS:
                         type: string
                         description: "supplementary options for canu"
+                    MODE:
+                        type: string
+                        description: "mode options for canu"
             SMARTDENOVO:
                 type: object
                 additionalProperties: false
