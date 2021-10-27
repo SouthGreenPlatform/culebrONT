@@ -8,11 +8,11 @@ DATA:
 
 ############ TOOLS ################
 ASSEMBLY:
-    CANU: False
-    FLYE: False
+    CANU: True
+    FLYE: True
     MINIASM: False
     RAVEN: False
-    SMARTDENOVO:  True
+    SMARTDENOVO:  False
     SHASTA: False
 
 POLISHING:
@@ -48,8 +48,10 @@ params:
     MINIMAP2:
         PRESET_OPTION: 'map-ont' # -x minimap2 preset option is map-pb by default (map-pb, map-ont etc)
     FLYE:
-        OPTIONS: ''
+        MODE : '--nano-raw'
+        OPTIONS: '' ## use --scaffold if flye>=2.9 # you can also use --resume option
     CANU:
+        MODE : '-nanopore'
         OPTIONS: 'gridOptions="-p long" useGrid=true'
     SMARTDENOVO:
         KMER_SIZE: 16
