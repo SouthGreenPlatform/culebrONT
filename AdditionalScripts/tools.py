@@ -17,7 +17,8 @@ AVAIL_POLISHING = ("RACON")
 AVAIL_QUALITY = ("BUSCO", "QUAST", "BLOBTOOLS", "ASSEMBLYTICS", "KAT", "FLAGSTATS")
 
 ALLOW_FASTQ_EXT = (".fastq", ".fq", ".fq.gz", ".fastq.gz")
-
+FLYE_MODE = ("--pacbio-raw", "--pacbio-corr", "--pacbio-hifi", "--nano-raw", "--nano-corr", "--nano-hq")
+CANU_MODE = ("-pacbio", "-pacbio-hifi", "-nanopore")
 
 def get_last_version(version_CulebrONT):
     """Function for know the last version of CulebrONT in website
@@ -484,10 +485,26 @@ class CulebrONT(object):
             self.fastq_gzip = True
 
         #check if fastq contains metacharacters
-        fastq_files_list_error=[elem for elem in self.fastq_files_list if '_' in elem]
+        fastq_files_list_error=[Path(elem).name for elem in self.fastq_files_list if '_' in Path(elem).name]
         if len(fastq_files_list_error) >= 1:
             raise ValueError(
                 f"CONFIG FILE CHECKING FAIL : Please don't use '_' character in FASTQ data names. Rename it : {fastq_files_list_error}")
+
+        #CHECK MODE FOR ASSEMBLIES
+        ## FLYE
+        if bool(self.config["ASSEMBLY"]["FLYE"]):
+            if not self.config['params']['FLYE']['MODE'] in FLYE_MODE:
+                raise ValueError(
+                    f"CONFIG FILE CHECKING FAIL : params FLYE MODE ({self.config['params']['FLYE']['MODE']}) is not good!. Available modes are : {FLYE_MODE}")
+
+
+        ## CANU
+        if bool(self.config["ASSEMBLY"]["CANU"]):
+            if not self.config['params']['CANU']['MODE'] in CANU_MODE:
+                raise ValueError(
+                    f"CONFIG FILE CHECKING FAIL : params CANU MODE ({self.config['params']['CANU']['MODE']}) is not good!. Available modes are : {CANU_MODE}")
+
+
 
         ##### CHECK KAT
         if bool(self.config["QUALITY"]["KAT"]) or bool(self.config["CORRECTION"]["PILON"]) or bool(
