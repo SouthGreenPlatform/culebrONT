@@ -483,6 +483,12 @@ class CulebrONT(object):
         if "gz" in self.fastq_files_ext:
             self.fastq_gzip = True
 
+        #check if fastq contains metacharacters
+        fastq_files_list_error=[elem for elem in self.fastq_files_list if '_' in elem]
+        if len(fastq_files_list_error) >= 1:
+            raise ValueError(
+                f"CONFIG FILE CHECKING FAIL : Please don't use '_' character in FASTQ data names. Rename it : {fastq_files_list_error}")
+
         ##### CHECK KAT
         if bool(self.config["QUALITY"]["KAT"]) or bool(self.config["CORRECTION"]["PILON"]) or bool(
                 self.config["QUALITY"]['FLAGSTATS']):
