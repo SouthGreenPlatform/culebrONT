@@ -72,22 +72,22 @@ conda config --add channels bioconda
 conda config --add channels conda-forge
 
 conda create -n flye
-conda install flye=2.8.1 -n flye
+conda install flye=2.9 -n flye
 
 conda create -n canu
-conda install canu=2.0 -n canu
+conda install canu=2.2 -n canu
 
 conda create -n miniasm
 conda install miniasm=0.3_r179 -n miniasm
 
 conda create -n minimap2
-conda install minimap2=2.17 -n minimap2
+conda install minimap2=2.22 -n minimap2
 
 conda create -n minipolish
 conda install minipolish=0.1.2 -n minipolish
 
 conda create -n raven
-conda install raven-assembler=1.2.2 -n raven
+conda install raven-assembler=1.6.1 -n raven
 
 conda create -n smartdenovo
 conda install smartdenovo=1.0.0 -n smartdenovo
@@ -96,19 +96,19 @@ conda create -n circlator
 conda install circlator=1.5.5 -n circlator
 
 conda create -n racon
-conda install racon=1.4.13 -n racon
+conda install racon=1.4.20 -n racon
 
 conda create -n nanopolish
 conda install nanopolish=0.13.2 -n nanopolish
 
 conda create -n medaka
-conda install medaka=1.4.1 -n medaka
+conda install medaka=1.4.4 -n medaka
 
 conda create -n seqtk
 conda install seqtk=1.3 -n seqtk
 
 conda create -n samtools
-conda install samtools=1.10 -n samtools
+conda install samtools=1.14 -n samtools
 
 conda create -n bwa
 conda install bwa=0.7.17 -n bwa
@@ -117,7 +117,7 @@ conda create -n quast
 conda install quast=5.0.2 -n quast
 
 conda create -n diamond
-conda install diamond=2.0.4 -n diamond
+conda install diamond=2.0.13 -n diamond
 
 conda create -n mauve
 conda install mauve=2.4.0.snapshot_2015_02_13 -n mauve
@@ -137,10 +137,10 @@ conda install pilon=1.24-0 -n pilon
 sed -i "s/-Xmx1g/-Xmx8g/g" /usr/local/miniconda/miniconda3/envs/pilon/bin/pilon
 cp /usr/local/miniconda/miniconda3/envs/pilon/share/pilon-1.24-0/pilon.jar /usr/local/miniconda/miniconda3/envs/pilon/bin/pilon.jar
 
-conda create -n shasta
+conda create shasta=0.6.0 -n shasta
 conda install shasta -n shasta
 
-conda create -n assemblytics
+conda create assemblytics=1.2.1 -n assemblytics
 conda install r-plyr -n assemblytics
 conda install assemblytics -n assemblytics
 
