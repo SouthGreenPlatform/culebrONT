@@ -135,7 +135,7 @@ CulebrONT can be install in a simple machine using a Docker Virual Machine :ref:
 
 In any case, before run CulebrONT please be sure you have already modified the ``config.yaml`` file as was explained on :ref:`How to create a workflow`. In fact, through snakemake, a pipeline is created using the configuration files you use.
 
-For local or HPC mode, CulebrONT can be run using a typical ``snakemake`` command line (check some examples given in :ref:`Using standard Snakemake command line` section  OR through the ``submit_culebront.sh`` script. A nutshell, ``submit_culebront.sh`` is just assembling a snakemake command line depending on the situation of the user but it can be expense of flexibility. For easy to use, ``submit_culebront.sh`` have four options:
+For local or HPC mode, CulebrONT can be run using a typical ``snakemake`` command line (check some examples given in :ref:`Using a standard Snakemake command line (HPC)` section  OR through the ``submit_culebront.sh`` script. A nutshell, ``submit_culebront.sh`` is just assembling a snakemake command line depending on the situation of the user but it can be expense of flexibility. For easy to use, ``submit_culebront.sh`` have four options:
 
 .. code-block:: bash
 
