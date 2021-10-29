@@ -94,6 +94,7 @@ conda install smartdenovo=1.0.0 -n smartdenovo
 
 conda create -n circlator
 conda install circlator=1.5.5 -n circlator
+sed -i 's/Canu/canu/g' /usr/local/miniconda/miniconda3/envs/circlator/lib/python3.9/site-packages/circlator/external_progs.py
 
 conda create -n racon
 conda install racon=1.4.20 -n racon
