@@ -387,7 +387,7 @@ OR asking more computational resources, by overwriting ``cluster config.yaml`` s
 
 .. code-block:: bash
 
-    submit_culebront.sh -c config.yaml -p $profile -c cluster_config.yaml -a "--dryrun"
+    submit_culebront.sh -c config.yaml -p $profile -k cluster_config.yaml -a "--dryrun"
 
 
 For SLURM scheduler system, a ``CulebrONT.sbatch`` sbatch script is available into our github repository. ``CulebrONT.sbatch`` needs to be adapted if you are using other job scheduling systems than SLURM (SGE, Grid middleware, or cloud computing).
