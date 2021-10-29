@@ -1,2 +1,3 @@
 sphinx_copybutton
 snakemake
+docutils<0.18
