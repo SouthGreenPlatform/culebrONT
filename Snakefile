@@ -103,6 +103,8 @@ def get_threads(rule, default):
         return int(cluster_config['__default__']['cpus-per-task'])
     elif '__default__' in cluster_config and 'threads' in cluster_config['__default__']:
         return int(cluster_config['__default__']['threads'])
+    if workflow.global_resources["_cores"]:
+        return workflow.global_resources["_cores"]
     return default
 
 def get_fastq(wildcards):
