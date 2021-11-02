@@ -1,6 +1,6 @@
 {
     "SBATCH_DEFAULTS": "--export=ALL",
     "CLUSTER_NAME": "",
-    "CLUSTER_CONFIG": "${CULEBRONT}/gift_files/CulebrONT_SLURM/cluster_config.yaml",
+    "CLUSTER_CONFIG": "${PROFILE}/cluster_config.yaml",
     "ADVANCED_ARGUMENT_CONVERSION": "no"
 }
