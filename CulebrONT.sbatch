@@ -6,7 +6,7 @@
 
 # CulebrONT needs 2 global variables : CULEBRONT and PROFILE
 # if a module load was created, these variables were declared before, so load this module
-module load CulebrONT/1.6.1
+module load CulebrONT/1.7.0
 
 # if you don't use module load please export these two variables like this:
 #export CULEBRONT="/path/to/CulebrONT_pipeline"

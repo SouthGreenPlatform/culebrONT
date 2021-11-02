@@ -1,5 +1,5 @@
 ---
-title: "CulebrONT 1.6.0 report"
+title: "CulebrONT 1.7.0 report"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   rmdformats::readthedown:
@@ -163,7 +163,7 @@ for (i in 1:length(samples_list)) {
   sample <- as.character(samples_list[i])
   out = c(out, knit_expand(text="\n\n## {{sample}} {.tabset .tabset-pill}\n\n{{dt}}\n\n", dt = DT::datatable(py_to_r(get(sample)),
               escape = FALSE,
-              rownames = FALSE, 
+              rownames = FALSE,
               option= list(paging=FALSE,searching = FALSE,ordering=TRUE, scrollX = FALSE, dom = 'tip'))))
 }
 detach(name_list)
@@ -206,12 +206,12 @@ for (i in 1:length(samples_list)) {
     p <- ggplot(data) + aes(x = Steps, y = as.numeric(sub("%", "", Complete)), fill = Assembler)
     p <- p + geom_bar(stat="identity", position=position_dodge())
     p <- p + labs(x="Steps", y = "% Complete BUSCO genes", fill = "Assembler tools")
-    
 
-  busco = c(busco, knit_expand(text="## {{samples_list[[i]]}}\n\n{{dt}}\n\n{{plotly::ggplotly(p)}}\n\n", 
+
+  busco = c(busco, knit_expand(text="## {{samples_list[[i]]}}\n\n{{dt}}\n\n{{plotly::ggplotly(p)}}\n\n",
                                 dt = DT::datatable(py_to_r(py$dico_busco[[samples_list[[i]]]]),
                                                   escape = FALSE,
-                                                  rownames = FALSE, 
+                                                  rownames = FALSE,
                                                   filter = list(position = 'top', clear = TRUE, plain = FALSE),
                                                   option= list(paging=FALSE,searching = FALSE,ordering=TRUE, scrollX = FALSE, dom = 'Blfrtip'))
                                 )
@@ -232,7 +232,7 @@ QUAST is a good starting point to help evaluate the quality of assemblies. It pr
 for quast_file in r.quast_files:
     sample = Path(f"{quast_file}").parent.name
     name = Path(f"{quast_file}").name
-    print(f"## {sample}\n\n")      
+    print(f"## {sample}\n\n")
     print(f'<a href="./QUAST/{sample}/{name}" target="_blank">Open Quast report on new window</a>\n\n')
     print('<div class="embed-responsive embed-responsive-4by3">\n')
     print(f'<iframe class="embed-responsive-item" src="./QUAST/{sample}/{name}" loading="lazy" allowfullscreen></iframe>\n')
@@ -257,7 +257,7 @@ for blob_file in r.blob_files:
     if assembler not in assembler_found:
         print(f"### {assembler} \n\n")
         assembler_found.append(assembler)
-        
+
     print(f"\n\n#### {quality_step}\n\n")
     print('![thumbnail]('+blob+') ![thumbnail]('+read_cov+')\n\n')
 ```
@@ -279,11 +279,11 @@ for assemblytics_file in r.assemblytics_files:
         assembler_found = []
         step_found = []
         sample_found.append(sample)
-    
+
     if assembler not in assembler_found:
         print(f"### {assembler} \n\n")
         assembler_found.append(assembler)
-        
+
     print(f"\n\n#### {quality_step}\n\n")
     print('![thumbnail]('+png_dotplot+') ![thumbnail]('+png_Nchart+') ![thumbnail]('+png_log_all_sizes+')\n\n')
 ```
@@ -296,12 +296,12 @@ for kat_file in r.kat_files:
     assembler = Path(f"{kat_file}").stem.split("_")[1]
     quality_step = '_'.join(Path(f"{kat_file}").stem.split("_")[2:])
     path = Path(f"{kat_file}").parent
-    
+
     png_gcp_mx = path.joinpath(f"{sample}_{assembler}_{quality_step}.gcp.mx.png").as_posix()
     png_hist = path.joinpath("kat.hist.png").as_posix()
     png_density = path.joinpath("kat-density.png").as_posix()
     png_spectra_cn = path.joinpath("kat-spectra-cn.png").as_posix()
-    
+
     png_spectra_hist = path.joinpath("kat-spectra-hist.png").as_posix()
     png_comp_main_mx_spectra_cn = path.joinpath("kat.comp-main.mx.spectra-cn.png").as_posix()
 
@@ -310,7 +310,7 @@ for kat_file in r.kat_files:
         assembler_found = []
         step_found = []
         sample_found.append(sample)
-    
+
     if assembler not in assembler_found:
         print(f"### {assembler} \n\n")
         assembler_found.append(assembler)
