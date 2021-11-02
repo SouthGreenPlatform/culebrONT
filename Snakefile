@@ -307,7 +307,7 @@ rule run_racon_version:
 
 rule run_busco_version:
     """
-    busco version 
+    busco version
     """
     threads: get_threads('run_busco_version', 1)
     input:
@@ -317,7 +317,7 @@ rule run_busco_version:
         augustus_version = f"{output_dir}{{fastq}}/REPORT/BUSCO_AUGUSTUS-version.txt",
     message:
         """
-        busco version 
+        busco version
         """
     singularity:
         tools_config['SINGULARITY']['TOOLS']
@@ -337,7 +337,7 @@ def get_inputs_benchmark(wildcards):
     }
     if culebront.polishing_tools_activated:
         dico_benchmark_inputs["polishers_list"] = expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/POLISHING/{{assemblers}}_{{polishers}}{{nb}}.txt",
-                    assemblers=[ass for ass in culebront.assembly_tools_activated if ass not in ["MINIASM"]], 
+                    assemblers=[ass for ass in culebront.assembly_tools_activated if ass not in ["MINIASM"]],
                     polishers=culebront.polishing_tools_activated,
                     nb = range(1, int(nb_racon_rounds)+1))
 
@@ -351,8 +351,8 @@ def get_inputs_benchmark(wildcards):
                         correction=['PILON'],
                         nb = range(1, int(nb_pilon_rounds)+1))
     # if culebront.quality_tools_activated:
-        # dico_benchmark_inputs["quality_list"] = expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/POLISHING/{{assemblers}}_{{polishers}}{{nb}}.txt", 
-                    # assemblers=culebront.assembly_tools_activated, 
+        # dico_benchmark_inputs["quality_list"] = expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/POLISHING/{{assemblers}}_{{polishers}}{{nb}}.txt",
+                    # assemblers=culebront.assembly_tools_activated,
                     # polishers=culebront.polishing_tools_activated,
                     # nb = range(1, int(nb_racon_rounds)+1))
     # pprint.pprint(dico_benchmark_inputs)
@@ -386,12 +386,12 @@ rule run_get_versions:
     threads: get_threads('run_get_versions', 1)
     input:
         assemblers = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/{{assemblers}}-version.txt", fastq = FASTQ, assemblers=culebront.assembly_tools_activated),
-        polishers = expand(rules.run_racon_version.output.version, fastq=FASTQ),
+        polishers = expand(rules.run_racon_version.output.version, fastq=FASTQ[0]),
         correction = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/{{correction}}/{{correction}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated, correction=culebront.correction_tools_activated),
         circular = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR-version.txt", fastq=FASTQ, assemblers=[ass for ass in culebront.assembly_tools_activated if ass in ["CANU","SMARTDENOVO"] and bool(culebront.config['CIRCULAR'])]),
         quality = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/{{quality}}/{{quality}}-version.txt", fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list, quality=[qual for qual in culebront.quality_tools_activated if qual not in ["QUAST", "MAUVE", "BUSCO"]]),
         quast = expand(rules.run_quast.output.version, fastq=FASTQ, quality=[qual for qual in culebront.quality_tools_activated if qual in ["QUAST"]]),
-        busco = expand(rules.run_busco_version.output.busco_version, fastq=FASTQ),
+        busco = expand(rules.run_busco_version.output.busco_version, fastq=FASTQ[0]),
         mauve = expand(f"{output_dir}/versions/{{quality}}-version.txt", quality=[qual for qual in culebront.quality_tools_activated if qual in ["MAUVE"]]),
     params:
         dir =f'{output_dir}versions/'
