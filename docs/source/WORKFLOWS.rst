@@ -139,6 +139,7 @@ For local or HPC mode, CulebrONT can be run using a typical ``snakemake`` comman
 
 .. code-block:: bash
 
+    -v        : enable verbose mode (default disable)
     -c option : config.yaml file
     -k option : cluster_config.yaml
     -p option : profile path
@@ -152,11 +153,11 @@ If you are on LOCAL mode, give at least the -c option to ``submit_culebront.sh``
 .. code-block:: bash
 
     # in LOCAL using maximum 8 threads
-    submit_culebront.sh -c config.yaml -a "--cores 8 "
+    submit_culebront.sh -v -c config.yaml -a "--cores 8 "
 
     # in LOCAL using 6 threads for Canu assembly from the total 8 threads
-    submit_culebront.sh -c config.yaml -a "--cores 8 --set-threads run_canu=6"
-    submit_culebront.sh -c config.yaml -a '--cores 8'
+    submit_culebront.sh -v -c config.yaml -a "--cores 8 --set-threads run_canu=6"
+    submit_culebront.sh -v -c config.yaml -a '--cores 8'
 
 .. note::
 
@@ -167,21 +168,31 @@ Running in a HPC
 
 If you are on HPC mode, give to ``submit_culebront.sh`` at least the -c option and -p options to the ``submit_culebront.sh`` script. You can use profiles to manage cluster resources. Go to :ref:`3. Snakemake profiles` for details OR ask to your admin system where CulebrONT profile was created.
 
+
+If you install on HPC with module envs  :ref:`4. Export CulebrONT to PATH`, you can directly use
+
+.. code-block:: bash
+
+    # in HPC using cluster_config.yaml directly from profile
+    submit_culebront.sh -c config.yaml --profiles $PROFILE
+
+where `$PROFILE` is declare on module file. If you doesn't use module envs please declare `$PROFILE`
+
 .. code-block:: bash
 
     # declare profile path directory
-    profile=/directory/of/culebront/profile/
-    # in HPC using cluster_config.yaml directly from profile
-    submit_culebront.sh -c config.yaml --profiles $profile
+    PROFILE=/directory/of/culebront/profile/
+    submit_culebront.sh -c config.yaml --profiles $PROFILE
+
 
 If cluster default resources are not sufficient, you can overwrite ``cluster_config.yaml`` file used by the profile. You can use -k option to overwrite cluster resources.
 
 .. code-block:: bash
 
     # in HPC mode, overwriting cluster_config.yaml given by user
-    submit_culebront.sh -c config.yaml -k cluster_config.yaml --profiles $profile
+    submit_culebront.sh -c config.yaml -k cluster_config.yaml --profiles $PROFILE
     # in HPC mode, overwriting cluster_config.yaml given by user and launch a --dryrun
-    submit_culebront.sh -c config.yaml -k cluster_config.yaml --profiles $profile -a '--dryrun'
+    submit_culebront.sh -c config.yaml -k cluster_config.yaml --profiles $PROFILE -a '--dryrun'
 
 .. note::
     Using ``submit_culebront.sh`` you can optionally pass to snakemake more options by using the -a parameter (check it https://snakemake.readthedocs.io/en/stable/executing/cli.html).
