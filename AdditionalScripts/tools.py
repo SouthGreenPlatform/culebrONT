@@ -142,7 +142,7 @@ class CulebrONT(object):
 
         # print(workflow.overwrite_clusterconfig)
         # culebront_path = Path(workflow.snakefile).parent
-        #workflow is availbale only in __init 
+        #workflow is availbale only in __init
         self.snakefile = workflow.snakefile
 
         if not workflow.overwrite_configfiles:
@@ -392,7 +392,7 @@ class CulebrONT(object):
     @property
     def string_to_dag(self):
         """ return command line for rule graph """
-        return f"""snakemake -s {self.snakefile} {'--use-singularity' if self.use_singularity else ''} {'--use-envmodules' if self.use_env_modules else ''}  --rulegraph"""        
+        return f"""snakemake -s {self.snakefile} {'--use-singularity' if self.use_singularity else ''} {'--use-envmodules' if self.use_env_modules else ''}  --rulegraph"""
 
     def __var_2_bool(self, key, tool, to_convert):
         """convert to boolean"""
@@ -544,6 +544,11 @@ class CulebrONT(object):
             if len(self.assembly_tools_activated) < 2 and len(self.quality_step) < 2:
                 raise ValueError(
                     "CONFIG FILE CHECKING ERROR : MAUVE is irrelevant if you have a single final assembly as your config file implies (need more than one assembler and/or a correction step). Mauve will not be run !! ")
+            # check size of genome
+            if int(convert_genome_size(self.get_config_value('DATA', 'GENOME_SIZE'))) >= 50000000:
+                logger.warning(
+                    f"WARNING: CONFIG FILE CHECKING WARNING : MAUVE if fixed to FALSE because genome size  >= 50 mb !! \n")
+                self.config['MSA']['MAUVE'] = False
 
         # check BUSCO database if activate
         if bool(self.config["QUALITY"]["BUSCO"]):
@@ -587,11 +592,6 @@ class CulebrONT(object):
             logger.warning(
                 f"\nWARNING: RACON is automatically launched (2 rounds by default) for minipolish if MINIASM is activated !! . \n")
 
-        # check size of genome
-        if int(convert_genome_size(self.get_config_value('DATA', 'GENOME_SIZE'))) >= 50000000:
-            logger.warning(
-                f"WARNING: CONFIG FILE CHECKING WARNING : MAUVE if fixed to FALSE because genome size  >= 50 mb !! \n")
-            self.config['MSA']['MAUVE'] = False
 
         # Make sure running fixstart makes sense
         if not bool(self.config['CIRCULAR']) and bool(self.config['FIXSTART']):
