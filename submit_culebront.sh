@@ -1,5 +1,7 @@
 #!/bin/bash
 
+verbose=false
+
 # module help
 function help
 {
@@ -33,12 +35,13 @@ function help
 
 ##################################################
 ## Parse command line options.
-while getopts c:k:h:p:a: OPT;
+while getopts c:k:h:p:a:v: OPT;
     do case $OPT in
         c)    config=$OPTARG;;
         k)    cluster_config=$OPTARG;;
         p)    profile=$OPTARG;;
         a)    additional=$OPTARG;;
+        v)    verbose=true;;
         h)    help;;
         \?)    help;;
     esac
@@ -55,7 +58,7 @@ fi
 # check config
 if [ -n "$config" ] && [ -e "$config" ]; then
   config=$(realpath "$config")
-  echo "CONFIG FILE IS $config"
+  $verbose && echo "CONFIG FILE IS $config"
 else
   printf "\033[31m \n\n ERROR : you need to provide a valid CONFIG FILE ! \n\n"
   echo "CONFIG FILE IS $config"
@@ -66,9 +69,9 @@ fi
 if [[ -d "${profile}" ]] && [[ -n "${cluster_config}" ]] && [[ -e "$cluster_config" ]]; then
   profile=$(realpath "$profile")
   cluster_config=$(realpath "$cluster_config")
-  echo "PROFILE DIR IS" "$profile"
-  echo "CLUSTER CONFIG IS" "$cluster_config"
-  echo "snakemake -p -s $CULEBRONT/Snakefile \
+  $verbose && echo "PROFILE DIR IS" "$profile"
+  $verbose && echo "CLUSTER CONFIG IS" "$cluster_config"
+  $verbose && echo "snakemake -p -s $CULEBRONT/Snakefile \
       --configfile $config \
       --cluster-config $cluster_config \
       --profile $profile \
@@ -82,9 +85,9 @@ if [[ -d "${profile}" ]] && [[ -n "${cluster_config}" ]] && [[ -e "$cluster_conf
 # cluster_config F et profile T
 elif [[ -d "${profile}" ]] && [[ -z ${cluster_config} ]] && [[ ! -e $cluster_config ]]; then
   profile=$(realpath "$profile")
-  echo "PROFILE DIR IS $profile"
-  echo "CLUSTER CONFIG IN PROFILE IS ${profile}/cluster_config.yaml"
-  echo "snakemake -p -s $CULEBRONT/Snakefile \
+  $verbose && echo "PROFILE DIR IS $profile"
+  $verbose && echo "CLUSTER CONFIG IN PROFILE IS ${profile}/cluster_config.yaml"
+  $verbose && echo "snakemake -p -s $CULEBRONT/Snakefile \
       --configfile $config \
       --profile $profile \
       $additional"
@@ -95,8 +98,8 @@ elif [[ -d "${profile}" ]] && [[ -z ${cluster_config} ]] && [[ ! -e $cluster_con
 
 # cluster_config F, profile F
 elif [[ ! $profile ]] && [[ ! $cluster_config ]]; then
-  echo "You are running on $(uname -a)"
-  echo "snakemake -p -s $CULEBRONT/Snakefile \
+  $verbose && echo "You are running on $(uname -a)"
+  $verbose && echo "snakemake -p -s $CULEBRONT/Snakefile \
   --configfile $config \
   --use-singularity --singularity-args --bind ${test_dir} \
   $additional"
