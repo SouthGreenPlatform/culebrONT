@@ -35,7 +35,7 @@ First get the necessary distant files for installation of the CulebrONT Docker c
     cd ${test_dir}
 
     # Pull the docker container for CulebrONT
-    docker pull julieaorjuela/culebront-docker:1.6.0
+    docker pull julieaorjuela/culebront-docker:latest
 
     # Get the test data set OR put inside your data
     wget --no-check-certificat -rm -nH --cut-dirs=1 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/Data-Xoo-sub/
@@ -50,7 +50,7 @@ Run the CulebrONT docker container. Docker *-v* option allows you mount a repert
 
 .. code-block:: bash
 
-    docker run -i -t --privileged -e "test_dir=$test_dir" -v $test_dir:$test_dir julieaorjuela/culebront-docker:1.6.0
+    docker run -i -t --privileged -e "test_dir=$test_dir" -v $test_dir:$test_dir julieaorjuela/culebront-docker:lastest
 
 You now have the container prompt in the terminal. You are inside the Docker container!
 
