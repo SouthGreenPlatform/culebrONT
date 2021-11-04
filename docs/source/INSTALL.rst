@@ -50,7 +50,7 @@ Run the CulebrONT docker container. Docker *-v* option allows you mount a repert
 
 .. code-block:: bash
 
-    docker run -i -t --privileged -e "test_dir=$test_dir" -v $test_dir:$test_dir julieaorjuela/culebront-docker:lastest
+    docker run -i -t --privileged -e "test_dir=$test_dir" -v $test_dir:$test_dir julieaorjuela/culebront-docker:latest
 
 You now have the container prompt in the terminal. You are inside the Docker container!
 
