@@ -35,7 +35,7 @@ function help
 
 ##################################################
 ## Parse command line options.
-while getopts c:k:h:p:a:v: OPT;
+while getopts c:k:h:p:a:v OPT;
     do case $OPT in
         c)    config=$OPTARG;;
         k)    cluster_config=$OPTARG;;
