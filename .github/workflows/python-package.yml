@@ -30,4 +30,4 @@ jobs:
         python -m pip install tox tox-gh-actions
     - name: Test culebrONT
       run: |
-        culebrONT install_local
+        tox
