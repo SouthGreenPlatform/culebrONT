@@ -40,6 +40,5 @@ changedir={envdir}
 # ... or run any other command line tool you need to run here
 commands=
     culebrONT --help
-    culebrONT install_cluster -s slurm -e modules
     culebrONT install_local
 """
