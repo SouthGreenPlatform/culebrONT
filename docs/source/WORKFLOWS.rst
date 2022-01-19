@@ -12,6 +12,15 @@ CulebrONT allow you to build a workflow using a simple configuration ``config.ya
 * Third, activate tools from quality checking of assemblies.
 * And last, manage parameters tools.
 
+To create file juste run
+
+.. code-block:: bash
+
+   culebrONT create_config --help
+   culebrONT create_config -configyaml P/ath/to/file
+
+Then edit section on file according to your workflow.
+
 1. Providing data
 ------------------
 
@@ -59,7 +68,7 @@ Feel free to activate only assembly, assembly+polishing or assembly+polishing+co
 
 Example:
 
-.. literalinclude:: ../../config.yaml
+.. literalinclude:: ../../culebrONT/install_files/config.yaml
     :language: YAML
     :lines: 10-27
 
@@ -74,7 +83,7 @@ With CulebrONT you can use several quality tools to check assemblies.
 
 * KAT quality tool can be activate but Illumina reads are mandatory in this case. These reads can be compressed or not.
 
-.. literalinclude:: ../../config.yaml
+.. literalinclude:: ../../culebrONT/install_files/config.yaml
     :language: YAML
     :lines: 29-38
 
@@ -83,7 +92,7 @@ Alignment of various assemblies **for small genomes (<10-20Mbp)** is also possib
 * If you want to improve alignment with MAUVE on circular molecules is recommended to activate *Fixstart* step.
 * Only activate MAUVE if you have more than one sample and more than one quality step.
 
-.. literalinclude:: ../../config.yaml
+.. literalinclude:: ../../culebrONT/install_files/config.yaml
     :language: YAML
     :lines: 41-43
 
@@ -119,7 +128,7 @@ Specifically to ``Blobtools``:
 
 Here you find standard parameters used on CulebrONT. Feel free to adapt it to your requires.
 
-.. literalinclude:: ../../config.yaml
+.. literalinclude:: ../../culebrONT/install_files/config.yaml
     :language: YAML
     :lines: 46-
 
@@ -131,79 +140,49 @@ Here you find standard parameters used on CulebrONT. Feel free to adapt it to yo
 How to run the workflow
 =======================
 
-CulebrONT can be install in a simple machine using a Docker Virual Machine :ref:`Steps for LOCAL installation` but if data are consequent it's recommended to install CulebrONT in a HPC :ref:`Steps for HPC installation`. Please ask to your system administrator for CulebrONT install.
+Before run CulebrONT please be sure you have already modified the ``config.yaml`` file as was explained on :ref:`1. Providing data`
 
-In any case, before run CulebrONT please be sure you have already modified the ``config.yaml`` file as was explained on :ref:`How to create a workflow`. In fact, through snakemake, a pipeline is created using the configuration files you use.
+.. code-block:: python
 
-For local or HPC mode, CulebrONT can be run using a typical ``snakemake`` command line (check some examples given in :ref:`Using a standard Snakemake command line (HPC)` section  OR through the ``submit_culebront.sh`` script. A nutshell, ``submit_culebront.sh`` is just assembling a snakemake command line depending on the situation of the user but it can be expense of flexibility. For easy to use, ``submit_culebront.sh`` have four options:
+    culebrONT run_cluster --help
+    culebrONT run_cluster -c config.yaml --dry-run
 
-.. code-block:: bash
 
-    -v        : enable verbose mode (default disable)
-    -c option : config.yaml file
-    -k option : cluster_config.yaml
-    -p option : profile path
-    -a option : additional snakemake options (--dryrun, --cores ...)
-
-Running in a local machine
---------------------------
-
-If you are on LOCAL mode, give at least the -c option to ``submit_culebront.sh``.
+You can optionally also pass to snakemake more options by using non option parameter (check it https://snakemake.readthedocs.io/en/stable/executing/cli.html).
 
 .. code-block:: bash
 
     # in LOCAL using maximum 8 threads
-    submit_culebront.sh -v -c config.yaml -a "--cores 8 "
+    culebrONT run_local -c config.yaml --cores 8 --dry-run
 
     # in LOCAL using 6 threads for Canu assembly from the total 8 threads
-    submit_culebront.sh -v -c config.yaml -a "--cores 8 --set-threads run_canu=6"
-    submit_culebront.sh -v -c config.yaml -a '--cores 8'
-
-.. note::
-
-    Using ``submit_culebront.sh`` you can optionally pass to snakemake more options by using the -a parameter (check it https://snakemake.readthedocs.io/en/stable/executing/cli.html).
-
-Running in a HPC
-----------------
-
-If you are on HPC mode, give to ``submit_culebront.sh`` at least the -c option and -p options to the ``submit_culebront.sh`` script. You can use profiles to manage cluster resources. Go to :ref:`3. Snakemake profiles` for details OR ask to your admin system where CulebrONT profile was created.
+    culebrONT run_local -c config.yaml ---cores 8 --set-threads run_canu=6
 
 
-If you install on HPC with module envs  :ref:`4. Export CulebrONT to PATH`, you can directly use
+Expert mode
+===========
+
+Provide more ressources
+-----------------------
+
+If cluster default resources are not sufficient, you can overwrite ``cluster_config.yaml`` file used by the profile doing:
 
 .. code-block:: bash
 
-    # in HPC using cluster_config.yaml directly from profile
-    submit_culebront.sh -c config.yaml --profiles $PROFILE
-
-where `$PROFILE` is declare on module file. If you doesn't use module envs please declare `$PROFILE`
-
-.. code-block:: bash
-
-    # declare profile path directory
-    PROFILE=/directory/of/culebront/profile/
-    submit_culebront.sh -c config.yaml --profiles $PROFILE
-
-
-If cluster default resources are not sufficient, you can overwrite ``cluster_config.yaml`` file used by the profile. You can use -k option to overwrite cluster resources.
-
-.. code-block:: bash
-
-    # in HPC mode, overwriting cluster_config.yaml given by user
-    submit_culebront.sh -c config.yaml -k cluster_config.yaml --profiles $PROFILE
-    # in HPC mode, overwriting cluster_config.yaml given by user and launch a --dryrun
-    submit_culebront.sh -c config.yaml -k cluster_config.yaml --profiles $PROFILE -a '--dryrun'
-
-.. note::
-    Using ``submit_culebront.sh`` you can optionally pass to snakemake more options by using the -a parameter (check it https://snakemake.readthedocs.io/en/stable/executing/cli.html).
-
-In any case, ``submit_culebront.sh`` launcher can be submitted to SLURM queue using the ``CulebrONT.sbatch``. Don't forget adapt ``CulebrONT.sbatch`` to your scheduler parameter.
-
-.. code-block:: bash
-
-    sbatch CulebrONT.sbatch
+    # in HPC overwriting cluster_config.yaml given by user
+    culebrONT create_cluster_config --clusterconfig own_cluster_params.yaml
+    culebrONT run_cluster --config config.yaml --clusterconfig own_cluster_params.yaml
 
 Now, take a coffee or tea, and enjoy !!!!!!
+
+Provide own tools_config.yaml
+-----------------------------
+
+To change the tools used on culebrONT workflow, you can run
+
+.. code-block:: bash
+
+    culebrONT edit_tools
 
 
 Output on CulebrONT
@@ -236,7 +215,7 @@ The architecture of CulebrONT output is designed as follows:
     │   │   │   ├── ...
     │   │   └── SMARTDENOVO
     │   │   │   ├── ...
-    │   ├── MISC
+    │   ├── DIVERS
     │   │   └── FASTQ2FASTA
     │   ├── LOGS
     │   └── REPORT
@@ -248,6 +227,10 @@ Report
 ======
 
 CulebrONT generates a useful report containing, foreach fastq, a summary of interesting statistics and versions of tools used. Please discover an |location_link| ... and enjoy !!
+
+.. note::
+    Because of constraints imposed by Snakemake we have not been able to recover the version of bwa and seqtk on report https://snakemake.readthedocs.io/en/stable/tutorial/advanced.html#step-5-loggin. If you want to know the versions of these tools, go check by yourself ^^.
+
 
 .. |location_link| raw:: html
 

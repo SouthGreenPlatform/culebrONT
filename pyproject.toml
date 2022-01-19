@@ -1,0 +1,45 @@
+[build-system]
+requires = [ "setuptools" , "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py{36,37,38,39}
+skip_missing_interpreters = true
+skipsdist=False
+
+[gh-actions]
+python =
+    3.6: py36
+    3.7: py37
+    3.8: py38
+    3.9: py39
+
+# install testing framework
+[testenv]
+deps= pytest
+      PyYAML
+      pandas
+      matplotlib
+      tabulate
+      rpy2
+      ipython
+      biopython
+      pysam
+      numpy
+      argparse
+      snakemake
+      tqdm
+      click>=8.0.3
+      cookiecutter
+      
+changedir={envdir}
+
+# run the tests
+# ... or run any other command line tool you need to run here
+commands=
+    culebrONT --help
+    culebrONT install_cluster -s slurm -e modules
+    culebrONT install_local
+"""

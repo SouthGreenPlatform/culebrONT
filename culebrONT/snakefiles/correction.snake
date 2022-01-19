@@ -1,0 +1,613 @@
+################################ MAKERANGE ###################################
+rule run_makerange :
+    """
+    launch makerange to split contigs on segments and launch nanopolish and medaka in parallele
+    """
+    threads: get_threads('run_makerange', 2)
+    input:
+        draft = draft_to_correction,
+    output:
+        segments_list = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MAKERANGE/segments.txt"
+    params:
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MAKERANGE/",
+        segment_len = config['params']['CORRECTION_MAKERANGE']['SEGMENT_LEN'],
+        overlap_len = config['params']['CORRECTION_MAKERANGE']['OVERLAP_LEN'],
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MAKERANGE/{{fastq}}_{{assemblers}}_MAKERANGE.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MAKERANGE/{{fastq}}_{{assemblers}}_MAKERANGE.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MAKERANGE/{{assemblers}}.txt",
+    message:
+        """
+        Launching {rule}
+        input:
+            draft : {input.draft}
+        output:
+            segments_list : {output.segments_list}
+        params:
+            segment_len : {params.segment_len}
+            overlap_len : {params.overlap_len}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["NANOPOLISH"],
+        tools_config["ENVMODULE"]["MINIMAP2"],
+        tools_config["ENVMODULE"]["SAMTOOLS"],
+        tools_config["ENVMODULE"]["SEQTK"]
+    shell:
+        """
+        (cd {params.dir}
+        python3 {culebrONT.CULEBRONT_SCRIPTS}/makerange.py --draft {input.draft} --segment-length {params.segment_len} --overlap-length {params.overlap_len} --output-file {output.segments_list}) 1> {log.output} 2> {log.error}
+        """
+
+
+################################ NANOPOLISH ###################################
+rule run_nanopolish_index :
+    """
+    launch nanopolish index
+    """
+    threads: get_threads('run_nanopolish_index', 2)
+    input:
+        fastq = get_fastq,
+        fast5 = f"{config['DATA']['FAST5']}{{fastq}}",
+    output:
+        reads_on_fasta = f"{output_dir}{{fastq}}/MISC/NANOPOLISH_INDEX/reads.fasta",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_NANOPOLISH_INDEX.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_NANOPOLISH_INDEX.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/NANOPOLISH/NANOPOLISH-INDEX.txt"
+    message:
+        """
+        Launching {rule}
+        input:
+            fastq : {input.fastq}
+            fast5 : {input.fast5}
+        output:
+            segments_list : {output.reads_on_fasta}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["NANOPOLISH"],
+        tools_config["ENVMODULE"]["MINIMAP2"],
+        tools_config["ENVMODULE"]["SAMTOOLS"],
+        tools_config["ENVMODULE"]["SEQTK"]
+    shell:
+        """
+        seqtk seq -A {input.fastq} 1>{output.reads_on_fasta} 2>{log.error}
+        nanopolish index -d {input.fast5} {output.reads_on_fasta} 1>>{log.output} 2>>{log.error}
+        """
+
+
+rule preparing_ref_to_nanopolish :
+    """
+    launch miniasm and samtools on draft to nanopolish
+    """
+    threads: get_threads('preparing_ref_to_nanopolish', 2)
+    input:
+        draft = draft_to_correction,
+        reads_on_fasta = rules.run_nanopolish_index.output.reads_on_fasta,
+    output:
+        bam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/reads.sorted.bam",
+        nanopolish_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/NANOPOLISH-version.txt",
+        nanopolish_samtools_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/NANOPOLISH_SAMTOOLS-version.txt",
+        nanopolish_minimap2_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/NANOPOLISH_MINIMAP2-version.txt",
+        nanopolish_seqtk_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/NANOPOLISH_SEQTK-version.txt",
+    params:
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/",
+        preset = f"{config['params']['MINIMAP2']['PRESET_OPTION']}" if {config['params']['MINIMAP2']['PRESET_OPTION']}!='' else 'map-ont',
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_PRE_NANOPOLISH.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_PRE_NANOPOLISH.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/NANOPOLISH/{{assemblers}}_PRE-NANOPOLISH.txt",
+    message:
+        """
+        Launching {rule}
+        input:
+            draft : {input.draft}
+        output:
+            bam : {output.bam}
+        params:
+            preset : {params.preset}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["NANOPOLISH"],
+        tools_config["ENVMODULE"]["MINIMAP2"],
+        tools_config["ENVMODULE"]["SAMTOOLS"],
+        tools_config["ENVMODULE"]["SEQTK"]
+    shell:
+        """
+        [ ! -f {output.nanopolish_version} ] &&  [ ! -d versions ] && mkdir -p versions; nanopolish --version |head -n1 > {output.nanopolish_version}
+        ln -s -f {output.nanopolish_version} {output_dir}versions/NANOPOLISH-version.txt
+        [ ! -f {output.nanopolish_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version |head -n1 > {output.nanopolish_samtools_version}
+        ln -s -f {output.nanopolish_samtools_version} {output_dir}versions/NANOPOLISH_SAMTOOLS-version.txt
+        [ ! -f {output.nanopolish_minimap2_version} ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version |head -n1 > {output.nanopolish_minimap2_version}
+        ln -s -f {output.nanopolish_minimap2_version} {output_dir}versions/NANOPOLISH_MINIMAP2-version.txt
+        [ ! -f {output.nanopolish_seqtk_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {culebrONT.CULEBRONT_SCRIPTS}/which_version.py seqtk | grep 'Version' > {output.nanopolish_seqtk_version}
+        ln -s -f {output.nanopolish_seqtk_version} {output_dir}versions/NANOPOLISH_SEQTK-version.txt
+
+        (cd {params.dir}
+        minimap2 -ax {params.preset} -t {threads} {input.draft} {input.reads_on_fasta} | samtools sort -o {output.bam} -T reads.tmp;
+        samtools index {output.bam}) 1> {log.output} 2> {log.error}
+        """
+
+checkpoint nanopolish_variants_by_segment:
+    """
+    split segments list to nanopolish
+    """
+    threads: get_threads('split_segments', 1)
+    input:
+        segments_list = rules.run_makerange.output.segments_list,
+        bam = rules.preparing_ref_to_nanopolish.output.bam
+    output:
+        directory = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/SEGMENTS/"),
+    shell:
+        """
+        mkdir -p {output.directory};
+        cd {output.directory}
+        split -l 1 {input.segments_list} --additional-suffix=".nanopolish-segment.txt"
+        """
+
+
+rule run_nanopolish_variants:
+    """
+    launch nanopolish_variants for each dynamic segment
+    """
+    threads: get_threads('run_nanopolish_variants', 8)
+    input:
+        bam = rules.preparing_ref_to_nanopolish.output.bam,
+        one_segment = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/SEGMENTS/{{segment}}.nanopolish-segment.txt",
+        reads_on_fasta = rules.run_nanopolish_index.output.reads_on_fasta,
+        draft = draft_to_correction,
+    output:
+        one_vcf = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/VCFS/{{segment}}.nanopolish-segment.vcf",
+    params:
+        options = config['params']['NANOPOLISH']['OPTIONS'],
+        dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/")
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_{{segment}}-NANOPOLISH.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_{{segment}}-NANOPOLISH.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/NANOPOLISH/{{assemblers}}_{{segment}}-VARIANTS.txt"
+    message:
+        """
+        Launching {rule}
+        input:
+            one_segment : {input.one_segment}
+            bam : {input.bam}
+            reads_on_fasta : {input.reads_on_fasta}
+            draft : {input.draft}
+        output:
+            one_vcf = {output.one_vcf}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["NANOPOLISH"],
+        tools_config["ENVMODULE"]["MINIMAP2"],
+        tools_config["ENVMODULE"]["SAMTOOLS"],
+        tools_config["ENVMODULE"]["SEQTK"]
+    shell:
+        """
+        (cd {params.dir};
+        while read LINE; do echo "$LINE"; nanopolish variants --consensus -t {threads} -o {output.one_vcf} -r {input.reads_on_fasta} -b {input.bam} -g {input.draft} {params.options} -w "$LINE"; done < {input.one_segment}) 1>>{log.output} 2>>{log.error}
+        """
+
+
+def aggregate_input_nanopolish(wildcards):
+    checkpoint_output = checkpoints.nanopolish_variants_by_segment.get(**wildcards).output[0]
+    segment=glob_wildcards(os.path.join(checkpoint_output,"{segment}.nanopolish-segment.txt")).segment
+    return expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/VCFS/{{segment}}.nanopolish-segment.vcf", fastq=wildcards.fastq, assemblers=wildcards.assemblers, segment=segment)
+
+
+rule run_nanopolish_merge :
+    """
+    launch nanopolish merge using vcf2fasta
+    """
+    threads: get_threads('run_nanopolish_merge', 4)
+    input:
+        vcfs = aggregate_input_nanopolish,
+        draft = draft_to_correction,
+    output:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/consensus.fasta",
+    params:
+        vcf_dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/VCFS/",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/NANOPOLISH/{{assemblers}}.txt"
+    message:
+        """
+        Launching {rule}
+        input:
+            vcf : {input.vcfs}
+            draft: {input.draft}
+        output:
+            fasta : {output.fasta}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["NANOPOLISH"],
+        tools_config["ENVMODULE"]["MINIMAP2"],
+        tools_config["ENVMODULE"]["SAMTOOLS"],
+        tools_config["ENVMODULE"]["SEQTK"]
+    shell:
+        """
+        echo "{input.vcfs}"
+        nanopolish vcf2fasta --skip-checks -g {input.draft} {params.vcf_dir}*.nanopolish-segment.vcf 1>{output.fasta} 2>>{log.error}
+        """
+
+
+################################ MEDAKA ###################################
+rule index_fasta_to_correction:
+    """
+    create a .fai and a .mmi for each assembly fasta
+    Use for medaka only
+    """
+    threads: get_threads('index_fasta_to_correction', 4)
+    input:
+        draft = draft_to_correction
+    output:
+        index_fai = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/FASTA/assembly.fasta.fai",
+        index_mmi = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/FASTA/assembly.fasta.mmi",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/FASTA/assembly.fasta"
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/INDEXING/{{fastq}}_{{assemblers}}-INDEX-MEDAKA.o",
+        error = f"{output_dir}{{fastq}}/LOGS/INDEXING/{{fastq}}_{{assemblers}}-INDEX-MEDAKA.e"
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MINIMAP2"],
+        tools_config["ENVMODULE"]["SAMTOOLS"]
+    shell:
+        """
+        (ln -s {input.draft} {output.fasta};
+        samtools faidx {output.fasta}
+        minimap2 -d {output.index_mmi} {output.fasta}) 1>{log.output} 2>{log.error}
+        """
+
+
+rule run_minialign_to_medaka:
+    """
+    launching minialign to medaka
+    """
+    threads: get_threads('run_medaka_train', 8)
+    input:
+        draft = rules.index_fasta_to_correction.output.fasta,
+        fastq = get_fastq,
+    output:
+        calls2draftbam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/calls2draft.bam",
+    params:
+        calls2draft = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/calls2draft",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MEDAKA/{{assemblers}}_MINIALIGN.txt",
+    message:
+        """
+        Launching {rule}
+        threads : {threads}
+        input:
+            draft : {input.draft}
+            fastq : {input.fastq}
+        params:
+            calls2draft : {params.calls2draft}
+        output:
+            calls2draftbam : {output.calls2draftbam}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MEDAKA"]
+    shell:
+        """
+        mini_align -t {threads} -m -r {input.draft} -i {input.fastq} -p {params.calls2draft} 1>{log.output} 2>{log.error}
+        """
+
+
+rule run_medaka_train:
+    """
+    launching Medaka Train with fasta reference_file
+    """
+    threads: get_threads('run_medaka_train', 8)
+    input:
+        fastq = get_fastq,
+        reference_file = reference_file,
+        draft = rules.index_fasta_to_correction.output.fasta,
+        index_fai = rules.index_fasta_to_correction.output.index_fai,
+        index_fmmi = rules.index_fasta_to_correction.output.index_mmi,
+        calls2draftbam = rules.run_minialign_to_medaka.output.calls2draftbam
+    output:
+        fasta_cat_acc = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/training/model.best.cat_acc.tar.gz",
+        fasta_val_cat_acc = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/training/model.best.val_cat_acc.tar.gz",
+    params:
+        out_name = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/"),
+        options_features = config['params']['MEDAKA']['MEDAKA_FEATURES_OPTIONS'],
+        options_training = config['params']['MEDAKA']['MEDAKA_TRAIN_OPTIONS'],
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MEDAKA/{{assemblers}}_TRAIN.txt"
+    message:
+        """
+        Launching {rule}
+        threads : {threads}
+        input:
+            draft : {input.draft}
+            fastq : {input.fastq}
+            reference_file: {input.reference_file}
+            index_fai : {input.index_fai}
+            index_fmmi : {input.index_fmmi}
+            calls2draftbam :{input.calls2draftbam}
+        output:
+            fasta_cat_acc: {output.fasta_cat_acc}
+            fasta_val_cat_acc: {output.fasta_val_cat_acc}
+        params:
+            out_name: {params.out_name}
+            options_features : {params.options_features}
+            options_training : {params.options_training}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MEDAKA"]
+    shell:
+        """
+        (mini_align -t {threads} -m -r {input.draft} -i {input.reference_file} -p {params.out_name}truth2draft;
+        medaka features {input.calls2draftbam} {params.out_name}train_features.hdf --truth {params.out_name}truth2draft.bam --threads {threads} {params.options_features};
+        medaka train {params.out_name}train_features.hdf --train_name {params.out_name}training {params.options_training})  1>{log.output} 2>{log.error}
+        """
+
+checkpoint medaka_consensus_by_segment:
+    """
+    split segments list to medaka
+    """
+    threads: get_threads('split_segments', 1)
+    input:
+        segments_list = rules.run_makerange.output.segments_list,
+    params:
+        model = f"{rules.run_medaka_train.output.fasta_val_cat_acc if config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF'] else config['params']['MEDAKA']['MEDAKA_MODEL_PATH']}",
+    output:
+        directory = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/SEGMENTS/"),
+    shell:
+        """
+        mkdir -p {output.directory};
+        cd {output.directory}
+        split -l 1 {input.segments_list} --additional-suffix=".medaka-segment.txt"
+        """
+
+rule run_medaka_consensus:
+    """
+    launching Medaka Consensus (medaka version >=1.2) for each dynamic segment
+    """
+    threads: get_threads('run_medaka_consensus', 4)
+    input:
+        one_segment = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/SEGMENTS/{{segment}}.medaka-segment.txt",
+        calls2draftbam = rules.run_minialign_to_medaka.output.calls2draftbam,
+    output:
+        one_hdf = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/HDFS/{{segment}}.medaka-segment.hdf",
+    params:
+        dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA"),
+        options = config['params']['MEDAKA']['MEDAKA_CONSENSUS_OPTIONS'],
+        model = f"{rules.run_medaka_train.output.fasta_val_cat_acc if config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF'] else config['params']['MEDAKA']['MEDAKA_MODEL_PATH']}",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_{{segment}}_MEDAKA_CONSENSUS.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_{{segment}}_MEDAKA_CONSENSUS.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MEDAKA/{{assemblers}}_{{segment}}-VARIANTS.txt"
+    message:
+        """
+        Launching {rule}.
+        threads : {threads}
+        input:
+            one_segment : {input.one_segment}
+            calls2draftbam : {input.calls2draftbam}
+        output:
+            one_hdf : {output.one_hdf}
+        params:
+            model : {params.model}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MEDAKA"]
+    shell:
+        """
+        (cd {params.dir};
+        while read LINE; do echo "$LINE"; medaka consensus {input.calls2draftbam} {output.one_hdf} --model {params.model} {params.options} --threads {threads} --regions "$LINE"; done < {input.one_segment}) 1>{log.output} 2>{log.error}
+        """
+
+
+def aggregate_input_medaka(wildcards):
+    checkpoint_output = checkpoints.medaka_consensus_by_segment.get(**wildcards).output[0]
+    segment=glob_wildcards(os.path.join(checkpoint_output,"{segment}.medaka-segment.txt")).segment
+    return expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/HDFS/{{segment}}.medaka-segment.hdf", fastq=wildcards.fastq, assemblers=wildcards.assemblers, segment=segment)
+
+
+rule run_medaka_merge:
+    """
+    launching Medaka stitch to merge hdf files
+    """
+    threads: get_threads('run_medaka_merge', 2)
+    input:
+        hdfs = aggregate_input_medaka,
+        draft = rules.index_fasta_to_correction.output.fasta,
+    output:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/consensus.fasta",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/MEDAKA-version.txt",
+    params:
+        hdf_dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/HDFS/",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_MERGE.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_MERGE.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MEDAKA/{{assemblers}}.txt",
+    message:
+        """
+        Launching {rule}.
+        threads : {threads}
+        input:
+            hdfs : {input.hdfs}
+            draft : {input.draft}
+        output:
+            fasta : {output.fasta}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MEDAKA"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; medaka --version > {output.version}
+        ln -s -f {output.version} {output_dir}versions/MEDAKA-version.txt
+        medaka stitch --threads {threads} {params.hdf_dir}/*.medaka-segment.hdf {input.draft} {output.fasta} 1>{log.output} 2>{log.error}
+        """
+
+################################ PILON ###################################
+
+rule run_pilon_first_round:
+    """
+    launching pilon
+    """
+    threads: get_threads('run_pilon', 2)
+    input:
+        draft = draft_to_correction
+    params:
+        #java_mem = "-Xmx8G", # 8 min
+        options = config["params"]["PILON"]["OPTIONS"],
+        illumina = get_illumina,
+        #illumina = culebront.get_illumina,
+        rep = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_1/assembly_pilon.pilon1",
+        bam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_1/assembly_pilon.pilon1.bam",
+    output:
+        pilon = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_1/assembly_pilon.pilon1.fasta",
+        corrected = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_1/assembly.pilon1.fasta",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/PILON-version.txt",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/PILON/{{fastq}}_{{assemblers}}_PILON1.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/PILON/{{fastq}}_{{assemblers}}_PILON1.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/PILON/{{assemblers}}_PILON1.txt",
+    message:
+        """
+        Launching {rule}.
+        threads : {threads}
+        input:
+            draft : {input.draft}
+        params:
+            illumina : {params.illumina}
+            bam : {params.bam}
+        output:
+            corrected : {output.corrected}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["PILON"],
+        tools_config["ENVMODULE"]["BWA"],
+        tools_config["ENVMODULE"]["SAMTOOLS"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; pilon | head -n1 > {output.version}
+        ln -s -f {output.version} {output_dir}versions/PILON-version.txt
+        (bwa index {input.draft}
+        bwa mem -t {threads} {input.draft} {params.illumina} | samtools view - -Sb | samtools sort - -@{threads} -o {params.bam}
+        samtools index {params.bam}
+        pilon --genome {input.draft} --fix all --changes --bam {params.bam} --threads {threads} {params.options} --output {params.rep} ) 1>{log.output} 2>{log.error}
+        sed 's/_pilon//g' {output.pilon} > {output.corrected}
+        """
+
+#java {params.java_mem} -jar /pilon-1.24.jar
+
+rule run_pilon:
+    """
+    launching pilon
+    """
+    threads: get_threads('run_pilon', 2)
+    input:
+        draft = draft_to_pilon
+    params:
+        java_mem = "-Xmx8G",
+        options = config["params"]["PILON"]["OPTIONS"],
+        illumina = get_illumina,
+        #illumina = culebront.get_illumina,
+        rep = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_{{nbp}}/assembly_pilon.pilon{{nbp}}",
+        bam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_{{nbp}}/assembly_pilon.pilon{{nbp}}.bam",
+    output:
+        pilon = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_{{nbp}}/assembly_pilon.pilon{{nbp}}.fasta",
+        corrected = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_{{nbp}}/assembly.pilon{{nbp}}.fasta"
+    wildcard_constraints:
+        nbp = "[2-9]",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/PILON/{{fastq}}_{{assemblers}}_PILON{{nbp}}.o",
+        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/PILON/{{fastq}}_{{assemblers}}_PILON{{nbp}}.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/PILON/{{assemblers}}_PILON{{nbp}}.txt",
+    message:
+        """
+        Launching {rule}.
+        threads : {threads}
+        input:
+            draft : {input.draft}
+        params:
+            illumina : {params.illumina}
+            bam : {params.bam}
+        output:
+            corrected : {output.corrected}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["PILON"],
+        tools_config["ENVMODULE"]["BWA"],
+        tools_config["ENVMODULE"]["SAMTOOLS"]
+    shell:
+        """
+        (bwa index {input.draft}
+        bwa mem -t {threads} {input.draft} {params.illumina} | samtools view -@ {threads}-Sb | samtools sort -@ {threads} -o {params.bam}
+        samtools index {params.bam}
+        pilon --genome {input.draft} --fix all --changes --bam {params.bam} --threads {threads} --output {params.rep} {params.options}) 1>{log.output} 2>{log.error}
+        sed 's/_pilon//g' {output.pilon} > {output.corrected}
+        """

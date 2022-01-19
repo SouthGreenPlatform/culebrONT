@@ -1,0 +1,676 @@
+
+def fasta_to_busco(wildcards):
+    #ASSEMBLY
+    if wildcards.quality_step == 'STEP_ASSEMBLY':
+        if 'MINIASM' == wildcards.assemblers:
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta"
+        else:
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly{add_circular_name}.fasta"
+    elif wildcards.quality_step == 'STEP_ASSEMBLY_STARTFIXED':
+        return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/assembly{add_circular_name}_STARTFIXED.fasta"
+    #POLISHING
+    elif wildcards.quality_step == 'STEP_POLISHING_RACON':
+        if 'MINIASM' == wildcards.assemblers:
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TCM}.fasta"
+        else:
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}.fasta"
+    elif wildcards.quality_step == 'STEP_POLISHING_RACON_STARTFIXED':
+        return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/STEP_POLISHING_RACON_{nb_racon_rounds}_STARTFIXED.fasta"
+    #CORRECTION
+    elif wildcards.quality_step == 'STEP_CORRECTION_NANOPOLISH':
+        if 'STEP_POLISHING_RACON' not in culebront.quality_step:
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly{add_circular_name}.fasta"
+        else:
+            return rules.run_nanopolish_merge.output.fasta
+    elif wildcards.quality_step == 'STEP_CORRECTION_NANOPOLISH_STARTFIXED':
+        #if 'STEP_POLISHING_RACON' not in culebront.quality_step:
+        #    return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/STEP_CORRECTION_NANOPOLISH_STARTFIXED.fasta"
+        #else:
+        return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/STEP_CORRECTION_NANOPOLISH_STARTFIXED.fasta"
+    elif wildcards.quality_step == 'STEP_CORRECTION_MEDAKA':
+        return rules.run_medaka_merge.output.fasta
+    elif wildcards.quality_step == 'STEP_CORRECTION_MEDAKA_STARTFIXED':
+        return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/STEP_CORRECTION_MEDAKA_STARTFIXED.fasta"
+    elif wildcards.quality_step == 'STEP_CORRECTION_PILON':
+        return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_{nb_pilon_rounds}/assembly.pilon{nb_pilon_rounds}.fasta"
+    elif wildcards.quality_step == 'STEP_CORRECTION_PILON_STARTFIXED':
+        return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/STEP_CORRECTION_PILON_{nb_pilon_rounds}_STARTFIXED.fasta"
+    else:
+        raise ValueError(f"""problem with fasta to busco rule.
+        assemblers {wildcards.assemblers}
+        quality_step {wildcards.quality_step}
+        fastq {wildcards.fastq}
+        wildcards {wildcards}
+        """)
+
+
+################################ PREPARING QUALITY ####################################
+
+rule preparing_fasta_to_quality:
+    """
+    preparing fasta to quality
+    """
+    threads: get_threads('preparing_fasta_to_quality', 2)
+    input:
+        fasta = fasta_to_busco
+    output:
+        renamed =  f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/{{assemblers}}-{{quality_step}}-{add_circular_name}.fasta"
+    params:
+        index_mmi = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/{{assemblers}}-{{quality_step}}-{add_circular_name}.fasta.mmi"
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/{{fastq}}-{{assemblers}}-{{quality_step}}-preparing_DATA.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/{{fastq}}-{{assemblers}}-{{quality_step}}-preparing_DATA.e",
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            fasta : {input.fasta},
+        output:
+            renamed : {output.renamed}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MINIMAP2"],
+        tools_config["ENVMODULE"]["SAMTOOLS"]
+    shell:
+        """
+        (ln -s {input.fasta} {output.renamed};
+        samtools faidx {output.renamed};
+        minimap2 -d {params.index_mmi} {output.renamed}) 1>{log.output} 2>{log.error}
+        """
+
+################################ QUALITY CHECK ####################################
+
+rule run_quast:
+    """
+    preparing fasta to quast and launch quast
+    """
+    threads: get_threads('run_quast', 4)
+    input:
+        liste = expand(rules.preparing_fasta_to_quality.output.renamed, fastq='{fastq}', assemblers=culebront.assembly_tools_activated, quality_step=culebront.quality_step),
+    output:
+        report_file = f"{output_dir}FINAL_REPORT/QUAST/{{fastq}}/icarus.html",
+        version = f"{output_dir}{{fastq}}/AGGREGATED_QC/QUAST_RESULTS/QUAST-version.txt",
+    params:
+        final_dir = f"{output_dir}FINAL_REPORT/QUAST/{{fastq}}/",
+        report = f"{output_dir}{{fastq}}/AGGREGATED_QC/QUAST_RESULTS/report.html",
+        icarus = f"{output_dir}{{fastq}}/AGGREGATED_QC/QUAST_RESULTS/icarus.html",
+        genome_size = f"{config['params']['QUAST']['GENOME_SIZE_PB']}",
+        directory = f"{output_dir}{{fastq}}/AGGREGATED_QC/QUAST_RESULTS/",
+        reference_file = f"{reference_file}" if f"{reference_file}" == '' else f" -r {reference_file}",
+        gff = f"{config['params']['QUAST']['GFF']}" if f"{config['params']['QUAST']['GFF']}"=='' else f" -g {config['params']['QUAST']['GFF']}",
+        options = f"{config['params']['QUAST']['OPTIONS']}",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/QUAST_{{fastq}}.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/QUAST_{{fastq}}.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/QUAST_{{fastq}}-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            liste = {input.liste},
+        output:
+            report_file: {output.report_file}
+        params:
+            icarus : {params.icarus}
+            genome_size  : {params.genome_size}
+            reference_file = {params.reference_file},
+            gff : {params.gff}
+            options : {params.options}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["QUAST"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; quast.py --version | grep 'QUAST' > {output.version}
+        ln -s -f {output.version} {output_dir}versions/QUAST-version.txt
+        (mkdir -p {params.final_dir}
+        quast.py -t {threads} -o {params.directory} {params.gff} {params.reference_file} {params.options} {input.liste}
+        cp {params.icarus} {output.report_file}
+        cp {params.report} {params.final_dir}report.html
+        cp -r {params.directory}icarus_viewers {params.final_dir}) 1>{log.output} 2>{log.error}
+        """
+
+rule run_busco:
+    """
+    BUSCO v4 assessing genome assembly and annotation completeness with Benchmarking Universal Single-Copy Orthologs v10
+    """
+    threads: get_threads('run_busco', 4)
+    input:
+        fasta = rules.preparing_fasta_to_quality.output.renamed
+    output:
+        summary = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BUSCO/{{assemblers}}-{{quality_step}}-BUSCO.txt",
+    params:
+        out_path = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/",
+        busco_name = f"BUSCO",
+        database = config['params']['BUSCO']['DATABASE'],
+        augustus_config = temp(f"{output_dir}augustus_config"),
+        busco_downloads = temp(f"{output_dir}busco_downloads"),
+        model = config['params']['BUSCO']['MODEL'],
+        sp = f" --augustus_species {config['params']['BUSCO']['SP']}" if f"{config['params']['BUSCO']['SP']}"!="" else f"{config['params']['BUSCO']['SP']}",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/BUSCO/{{fastq}}_{{assemblers}}_{{quality_step}}_BUSCO.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/BUSCO/{{fastq}}_{{assemblers}}_{{quality_step}}_BUSCO.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/BUSCO/{{fastq}}_{{assemblers}}_{{quality_step}}_BUSCO-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule}
+        threads : {threads}
+        input:
+            fasta : {input.fasta}
+        output:
+            summary : {output.summary}
+        params:
+            out_path : {params.out_path}
+            busco_name : {params.busco_name}
+            database : {params.database}
+            model : {params.model}
+            sp : {params.sp}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["BUSCO"]
+    shell:
+        """
+        (mkdir -p {params.augustus_config};
+        augustus_bin=`which augustus`;
+        config_path=${{augustus_bin%/*/*}}/config
+        cp -u -r $config_path {params.augustus_config};
+        export AUGUSTUS_CONFIG_PATH={params.augustus_config}/config;
+        busco -f -i {input.fasta} -o {params.busco_name} --out_path {params.out_path} -l {params.database} -m {params.model} {params.sp} -c {threads};
+        mv {params.out_path}BUSCO/short_summary*BUSCO.txt {output.summary} ;) 1>{log.output} 2>{log.error}
+        """
+
+rule run_diamond:
+    """
+    running diamond to blobtools
+    """
+    threads: get_threads('run_diamond', 4)
+    input:
+        fasta = rules.preparing_fasta_to_quality.output.renamed,
+    output:
+        csv = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/DIAMOND/diamond.csv",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/DIAMOND/DIAMOND-version.txt",
+    params:
+        db = f"{config['params']['DIAMOND']['DATABASE']}",
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/DIAMOND/",
+        mode = "blastx",
+        format = '6 qseqid staxids bitscore qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore',
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/DIAMOND/{{fastq}}_{{assemblers}}_{{quality_step}}_DIAMOND.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/DIAMOND/{{fastq}}_{{assemblers}}_{{quality_step}}_DIAMOND.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/DIAMOND/{{fastq}}_{{assemblers}}_{{quality_step}}_DIAMOND-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            fasta : {input.fasta}
+        output:
+            csv : {output.csv}
+        params:
+            database: {params.db}
+            mode: {params.mode}
+            format : {params.format}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["DIAMOND"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; diamond --version > {output.version}
+        ln -s -f {output.version} {output_dir}versions/DIAMOND-version.txt
+        (mkdir -p {params.dir};
+        diamond {params.mode} --query {input.fasta} --db {params.db} --outfmt {params.format} --threads {threads} --sensitive --max-target-seqs 1 --evalue 1e-25 --threads {threads} --out {output.csv}) 1>{log.output} 2>{log.error}
+        """
+
+rule run_minimap2:
+    """
+    running minimap2 in mode mapping ONT
+    """
+    threads: get_threads('run_minimap2', 8)
+    input:
+        fasta = rules.preparing_fasta_to_quality.output.renamed,
+        fastq = get_fastq,
+    output:
+        bam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MINIMAP2/minimap2mapping.bam",
+        blob_minimap2_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MINIMAP2/BLOBTOOLS_MINIMAP2-version.txt",
+        blob_samtools_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MINIMAP2/BLOBTOOLS_SAMTOOLS-version.txt",
+    params:
+        preset = f"{config['params']['MINIMAP2']['PRESET_OPTION']}" if {config['params']['MINIMAP2']['PRESET_OPTION']}!='' else 'map-pb',
+        out_dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MINIMAP2/"
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/MINIMAP2/{{fastq}}_{{assemblers}}_{{quality_step}}_MINIMAP2.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/MINIMAP2/{{fastq}}_{{assemblers}}_{{quality_step}}_MINIMAP2.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/MINIMAP2/{{fastq}}_{{assemblers}}_{{quality_step}}_MINIMAP2-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            fasta : {input.fasta}
+            fastq : {input.fastq}
+        output:
+            bam : {output.bam}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MINIMAP2"],
+        tools_config["ENVMODULE"]["SAMTOOLS"]
+    shell: #TODO: gerer la sortie standard de minimap2 dans les logs
+        """
+        [ ! -f {output.blob_minimap2_version} ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version > {output.blob_minimap2_version}
+        ln -s -f {output.blob_minimap2_version} {output_dir}versions/BLOBTOOLS_MINIMAP2-version.txt
+        [ ! -f {output.blob_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.blob_samtools_version}
+        ln -s -f {output.blob_samtools_version} {output_dir}versions/BLOBTOOLS_SAMTOOLS-version.txt
+        (minimap2 -x {params.preset} -t {threads} {input.fasta} {input.fastq} -a | samtools sort -o {output.bam};
+        samtools index {output.bam})  1>{log.output} 2>{log.error}
+        """
+
+rule run_blobtools:
+    """
+    blobtools v1
+    """
+    threads: get_threads('run_blobtools', 8)
+    input:
+        fasta = rules.preparing_fasta_to_quality.output.renamed,
+        sorted_bam = rules.run_minimap2.output.bam,
+        diamond = rules.run_diamond.output.csv,
+    output:
+        table = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{quality_step}}.txt",
+        read_cov = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/read_cov.png",
+        blob = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/blob.png",
+        blob_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/BLOBTOOLS-version.txt",
+    params:
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/",
+        tmp_table = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BLOBTOOLS/output.quality.blobDB.table.txt",
+        names = config['params']['BLOBTOOLS']['NAMES'],
+        nodes = config['params']['BLOBTOOLS']['NODES'],
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{quality_step}}_BLOBTOOLS.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{quality_step}}_BLOBTOOLS.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/BLOBTOOLS/{{fastq}}_{{assemblers}}_{{quality_step}}_BLOBTOOLS-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            fasta : {input.fasta}
+            sorted_bam : {input.sorted_bam}
+            diamond : {input.diamond}
+        output:
+            table: {output.table}
+        params:
+            names : {params.names}
+            nodes : {params.nodes}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["BLOBTOOLS"]
+    shell:
+        """
+        [ ! -f {output.blob_version} ] &&  [ ! -d versions ] && mkdir -p versions; blobtools --version > {output.blob_version}
+        ln -s -f {output.blob_version} {output_dir}versions/BLOBTOOLS-version.txt
+        (cd {params.dir} ;
+        blobtools create -i {input.fasta} -b {input.sorted_bam} -t {input.diamond} -o quality --names {params.names} --nodes {params.nodes} --db nodesDB.txt;
+        blobtools view -i quality.blobDB.json --cov -o output;
+        blobtools plot -i quality.blobDB.json;
+        mv quality.blobDB.*.blobplot.read_cov.bam0.png {output.read_cov};
+        mv quality.blobDB.*.blobplot.bam0.png {output.blob}) 1>{log.output} 2>{log.error}
+        mv {params.tmp_table} {output.table}
+        """
+
+rule run_mummer:
+    """
+    This rule run nucmer for assemblytics
+    """
+    threads: get_threads('run_mummer', 4)
+    input:
+        fasta = rules.preparing_fasta_to_quality.output.renamed,
+        reference_file = reference_file
+    output:
+        delta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MUMMER/mummer.delta.gz",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MUMMER/MUMMER-version.txt",
+    params:
+        minmatch = config['params']['MUMMER']['MINMATCH'], #option -l  20
+        mincluster = config['params']['MUMMER']['MINCLUSTER'], #option -c 65
+        prefix = "mummer",
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MUMMER/",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/MUMMER/{{fastq}}_{{assemblers}}_{{quality_step}}_MUMMER.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/MUMMER/{{fastq}}_{{assemblers}}_{{quality_step}}_MUMMER.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/MUMMER/{{fastq}}_{{assemblers}}_{{quality_step}}_MUMMER-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            fasta : {input.fasta}
+            reference_file : {input.reference_file}
+        output:
+            delta: {output.delta}
+        params:
+            minmatch = {params.minmatch}
+            mincluster = {params.mincluster}
+            prefix: {params.prefix}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MUMMER"]
+    shell:
+        """
+       (mkdir -p {params.dir} && cd {params.dir};
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; python {culebrONT.CULEBRONT_SCRIPTS}/which_version.py "nucmer --version" > {output.version};
+        ln -s -f {output.version} {output_dir}versions/MUMMER-version.txt
+        nucmer -p {params.prefix} --maxmatch  -l {params.minmatch} -c {params.mincluster} {input.reference_file} {input.fasta};
+        gzip mummer.delta) 1>{log.output} 2>{log.error}
+        """
+
+rule run_assemblytics:
+    """
+    Assemblytics analyze your assembly by comparing it to a reference genome https://github.com/MariaNattestad/assemblytics
+    """
+    threads: get_threads('run_assemblytics', 4)
+    input:
+        delta = rules.run_mummer.output.delta,
+    output:
+        summary = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/{{fastq}}__{{assemblers}}__{{quality_step}}.Assemblytics_structural_variants.summary",
+        png_dotplot = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/{{fastq}}__{{assemblers}}__{{quality_step}}.Assemblytics.Dotplot_filtered.png",
+        png_Nchart = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/{{fastq}}__{{assemblers}}__{{quality_step}}.Assemblytics.Nchart.png",
+        png_log_all_sizes = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/{{fastq}}__{{assemblers}}__{{quality_step}}.Assemblytics.size_distributions.all_variants.log_all_sizes.png",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/ASSEMBLYTICS-version.txt"
+    params:
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/ASSEMBLYTICS/",
+        unique_anchor_length = config['params']['ASSEMBLYTICS']['UNIQUE_ANCHOR_LEN'],
+        min_variant_size = config['params']['ASSEMBLYTICS']['MIN_VARIANT_SIZE'],
+        max_variant_size = config['params']['ASSEMBLYTICS']['MAX_VARIANT_SIZE'],
+        prefix = "{fastq}__{assemblers}__{quality_step}",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/ASSEMBLYTICS/{{fastq}}_{{assemblers}}_{{quality_step}}_ASSEMBLYTICS.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/ASSEMBLYTICS/{{fastq}}_{{assemblers}}_{{quality_step}}_ASSEMBLYTICS.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/ASSEMBLYTICS/{{fastq}}_{{assemblers}}_{{quality_step}}_ASSEMBLYTICS-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            delta : {input.delta}
+        output:
+            summary: {output.summary}
+        params:
+            unique_anchor_length = {params.unique_anchor_length}
+            min_variant_size = {params.min_variant_size}
+            max_variant_size = {params.max_variant_size}
+            prefix: {params.prefix}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["ASSEMBLYTICS"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; whereis Assemblytics > {output.version}
+        cp -f {output.version} {output_dir}versions/ASSEMBLYTICS-version.txt
+        (cd {params.dir};
+        Assemblytics {input.delta} {params.prefix} {params.unique_anchor_length} {params.min_variant_size} {params.max_variant_size}) 1>{log.output} 2>{log.error}
+        """
+
+rule combined_fastq:
+    """
+    zcat des fastq.gz. fastq sequences must to be decompressed to KAT.
+    """
+    threads: get_threads('combined_fastq', 2)
+    input:
+        illumina_rep = config["DATA"]["ILLUMINA"]
+    params:
+        command = "zcat " if culebront.illumina_gzip else  "cat "
+    output:
+        combined_data = f"{output_dir}{{fastq}}/MISC/combined_data.fastq",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/KAT/combinedfastq2KAT.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/KAT/combinedfastq2KAT.e",
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            illumina_rep :{input.illumina_rep}
+        output:
+            combined: {output.combined_data}
+        log:
+            error: {log.error}
+        command:
+            {params.command} {input.illumina_rep}/*{culebront.illumina_files_ext} > {output.combined_data}
+        """
+    shell:
+        """
+            {params.command} {input.illumina_rep}/*{culebront.illumina_files_ext} > {output.combined_data}
+        """
+
+rule run_KAT:
+    """
+    KAT is useful tool for high accuracy sequence data.
+    The spectra-cn (copy number spectra) graph shows a decomposition of k-mers in the assembly vs k-mers in the reads.
+    The black portion are k-mers not present in the assembly, the red portion is found once in the assembly, and so on.
+    This shows the completeness of an assembly, i.e. are all the reads assembled into contigs representative of the sequence data.
+    https://kat.readthedocs.io/en/latest/using.html
+    """
+    threads: get_threads('run_KAT', 4)
+    input:
+        fasta = rules.preparing_fasta_to_quality.output.renamed,
+        combined_data = rules.combined_fastq.output.combined_data,
+    output:
+        gcp = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/{{fastq}}_{{assemblers}}_{{quality_step}}.gcp", #matrix
+        png_hist = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat.hist.png",
+        png_spectra_hist = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat-spectra-hist.png",
+        png_spectra_cn = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat-spectra-cn.png",
+        png_density = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat-density.png",
+        png_gcp_mx = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/{{fastq}}_{{assemblers}}_{{quality_step}}.gcp.mx.png",
+        png_comp_main_mx_spectra_cn = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat.comp-main.mx.spectra-cn.png",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/KAT-version.txt"
+    params:
+        hist = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat.hist",
+        cmp = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat.comp", #matrix
+        sect = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat.sect",
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/",
+        gcp_tmp = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/{{fastq}}_{{assemblers}}_{{quality_step}}.gcp.mx", #matrix
+        cmp_tmp  = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/KAT/kat.comp-main.mx", #matrixkat.comp-main.mx
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/KAT/{{fastq}}_{{assemblers}}_{{quality_step}}_KAT.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/KAT/{{fastq}}_{{assemblers}}_{{quality_step}}_KAT.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/KAT/{{fastq}}_{{assemblers}}_{{quality_step}}_KAT-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            fasta  : {input.fasta}
+            combined_data : {input.combined_data}
+        params:
+            dir : {params.dir}
+            cmp : {params.cmp}
+            hist : {params.hist}
+            hist : {params.sect}
+        output:
+            cmp : {output.gcp}
+        log:
+            output : {log.output}
+            error : {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["KAT"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; kat --version > {output.version}
+        ln -s -f {output.version} {output_dir}versions/KAT-version.txt
+        (cd {params.dir};
+        kat hist -t {threads} -o {params.hist} {input.combined_data};
+        kat gcp -t {threads} -o {output.gcp} {input.combined_data};
+        kat comp -t {threads} -o {params.cmp} {input.combined_data} {input.fasta};
+        kat plot spectra-hist {params.hist};
+        kat plot density {params.gcp_tmp};
+        kat plot density {params.cmp_tmp};
+        kat plot spectra-cn {params.cmp_tmp};
+        mv {params.gcp_tmp} {output.gcp} ) 1>{log.output} 2>{log.error}
+        """
+
+
+rule run_mauve:
+    threads:
+        get_threads('run_mauve', 8)
+    input:
+        liste = lambda wc: expand(rules.preparing_fasta_to_quality.output.renamed, fastq=wc.fastq, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list),
+    params:
+        dir = f"{output_dir}",
+        out_dir = f"{output_dir}{{fastq}}/AGGREGATED_QC/MAUVE_ALIGN/",
+        dir_aggregated = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/"
+    output:
+        xmfa = f"{output_dir}{{fastq}}/AGGREGATED_QC/MAUVE_ALIGN/candidate_assemblies.xmfa",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/MAUVE/{{fastq}}-MAUVE.o",
+        error = f"{output_dir}{{fastq}}/LOGS/MAUVE/{{fastq}}-MAUVE.e",
+    message:
+        """
+        Launching {rule}
+        Generating Mauve multiple alignment of sequences in all final assembly fasta files
+        threads : {threads}
+        input:
+            liste: {input.liste}
+        output:
+            xmfa: {output.xmfa}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MAUVE"]
+    script:
+         f'{culebrONT.CULEBRONT_SCRIPTS}/run_mauve.py'
+
+
+rule run_bwa_mem2:
+    """
+    calculate stats from mapping: use to quality report
+    """
+    threads: get_threads('run_bwa_mem2', 4)
+    input:
+        draft = rules.preparing_fasta_to_quality.output.renamed,
+    params:
+        illumina = get_illumina,
+    output:
+        bam = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BWA_MEM/illuminamapping.bam",
+        #bai = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/BWA_MEM/illuminamapping.bai",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/BWA_MEM/{{fastq}}_{{assemblers}}_{{quality_step}}BWA_MEM.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/BWA_MEM/{{fastq}}_{{assemblers}}_{{quality_step}}BWA_MEM.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/BWA_MEM/{{fastq}}_{{assemblers}}_{{quality_step}}BWA_MEM-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            fasta : {input.draft}
+        params:
+            illumina: {params.illumina}
+        output:
+            bam : {output.bam}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["BWA"],
+        tools_config["ENVMODULE"]["SAMTOOLS"]
+    shell:
+        """
+        (bwa index {input.draft}
+        bwa mem -t {threads} {input.draft} {params.illumina} | samtools view -@ {threads} -Shb | samtools sort -@ {threads} -o {output.bam}
+        samtools index {output.bam}) 1>{log.output} 2>{log.error}
+        """
+
+rule run_flagstat:
+    """
+    calculate stats from mapping: use to quality report
+    """
+    threads: get_threads('run_flagstat', 4)
+    input:
+        bam = rules.run_bwa_mem2.output.bam,
+    output:
+        txt = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/FLAGSTATS/{{assemblers}}-{{quality_step}}-flagstat.txt",
+        flagstats_samtools_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/FLAGSTATS/FLAGSTATS-version.txt",
+        flagstats_bwa_version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/FLAGSTATS/FLAGSTATS_BWA-version.txt",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/FLAGSTATS/{{fastq}}_{{assemblers}}_{{quality_step}}_FLAGSTATS.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/FLAGSTATS/{{fastq}}_{{assemblers}}_{{quality_step}}_FLAGSTATS.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/FLAGSTATS/{{fastq}}_{{assemblers}}_{{quality_step}}FLAGSTATS-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            bam : {input.bam}
+        output:
+            txt: {output.txt}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["SAMTOOLS"]
+    shell:
+        """
+        [ ! -f {output.flagstats_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.flagstats_samtools_version}
+        ln -s -f {output.flagstats_samtools_version} {output_dir}versions/FLAGSTATS_SAMTOOLS-version.txt
+        [ ! -f {output.flagstats_bwa_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {culebrONT.CULEBRONT_SCRIPTS}/which_version.py bwa | grep 'Version' > {output.flagstats_bwa_version};
+        ln -s -f {output.flagstats_bwa_version} {output_dir}versions/FLAGSTATS_BWA-version.txt
+        (samtools flagstat {input.bam} --threads {threads}) > {output.txt} 2>{log.error}
+        """

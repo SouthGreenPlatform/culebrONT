@@ -1,0 +1,407 @@
+################################ FLYE ####################################
+rule run_flye:
+    """
+    launch flye
+    """
+    threads: get_threads('run_flye', 8)
+    input:
+        fastq = get_fastq,
+    output:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/FLYE/ASSEMBLER/assembly{add_circular_name}{TAG}.fasta",
+        info = f"{output_dir}{{fastq}}/ASSEMBLERS/FLYE/ASSEMBLER/assembly_info.txt",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/FLYE/ASSEMBLER/FLYE-version.txt"
+    params:
+        fasta_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/FLYE/ASSEMBLER/"),
+        genome_size = config['DATA']['GENOME_SIZE'],
+        circular = "--plasmids" if config['CIRCULAR'] else "",
+        move = "mv " if config['CIRCULAR'] else "echo ",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/FLYE.txt"
+    message:
+        """
+        Launching {rule}
+        threads: {threads}
+        input:
+            fastq: {input.fastq}
+        output:
+            fasta: {output.fasta}
+            info: {output.info}
+        params:
+            fasta_dir: {params.fasta_dir}
+            genome_size:   {params.genome_size}
+            circular:  {params.circular}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["FLYE"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; flye --version > {output.version}
+        ln -s -f {output.version} {output_dir}versions/FLYE-version.txt
+        (flye --nano-raw {input.fastq} --genome-size {params.genome_size} {params.circular} --out-dir {params.fasta_dir} --threads {threads};
+        {params.move} {params.fasta_dir}/assembly.fasta {output.fasta}) 1>{log.output} 2>{log.error}
+        """
+
+
+################################ CANU ####################################
+rule run_canu:
+    """
+    launch canu
+    """
+    threads: get_threads('run_canu', 8)
+    input:
+        fastq = get_fastq,
+    output:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/assembly2Circ.fasta" if bool(config['CIRCULAR']) else f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/assembly.fasta",
+        trim_corr_fq = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/out_canu.trimmedReads.fasta.gz",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/CANU-version.txt"
+    params:
+        fasta_canu = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/out_canu.contigs.fasta",
+        out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/"),
+        genome_size = f"{config['DATA']['GENOME_SIZE']}",
+        options = f"{config['params']['CANU']['OPTIONS']}",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/CANU.txt"
+    message:
+        """
+        Launching {rule}
+        threads: {threads}
+        input:
+            fastq: {input.fastq}
+        output:
+            fasta: {output.fasta}
+            trim_forr_fq: {output.trim_corr_fq}
+        params:
+            fasta_canu: {params.fasta_canu}
+            out_dir: {params.out_dir}
+            genome_size: {params.genome_size}
+            options: {params.options}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["CANU"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; canu --version > {output.version}
+        ln -s -f {output.version} {output_dir}versions/CANU-version.txt
+        (canu -p out_canu -d {params.out_dir} genomeSize={params.genome_size} -nanopore-raw {input.fastq} {params.options};
+        ln -s -f {params.fasta_canu} {output.fasta}) 1>{log.output} 2>{log.error}
+        """
+
+
+rule run_minimap_for_miniasm:
+    """
+    launch minimap2 for miniasm
+    """
+    threads: get_threads('run_minimap_for_miniasm', 4)
+    input:
+        fastq = get_fastq,
+    output:
+        paf = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minimap2.paf",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/MINIMAP2-version.txt"
+    log:
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIASM.txt"
+    message:
+           """
+           Launching {rule}
+           threads : {threads}
+           input:
+               fastq : {input.fastq}
+           output:
+               paf : {output.paf}
+           log:
+               error: {log.error}
+           """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MINIASM"],
+        tools_config["ENVMODULE"]["MINIMAP2"]
+    shell:
+         """
+         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version > {output.version}
+         ln -s -f {output.version} {output_dir}versions/MINIMAP2-version.txt
+         (minimap2 -x ava-ont -t {threads} {input.fastq} {input.fastq} 1> {output.paf};) 2>{log.error}
+         """
+
+rule run_miniasm:
+    """
+    launch minimap for miniasm
+    """
+    threads: get_threads('run_miniasm', 4)
+    input:
+        fastq = get_fastq,
+        paf = rules.run_minimap_for_miniasm.output.paf
+    output:
+        gfa_miniasm = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_miniasm.gfa", # voir si à utiliser par gfapy
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/MINIASM-version.txt"
+    log:
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIMAP4MINIASM.txt"
+    message:
+           """
+           Launching {rule}
+           threads : {threads}
+           input:
+               fastq : {input.fastq}
+               paf : {input.paf}
+           output:
+               gfa : {output.gfa_miniasm}
+           log:
+               error: {log.error}
+           """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MINIASM"],
+        tools_config["ENVMODULE"]["MINIMAP2"]
+    shell:
+         """
+         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; miniasm -V > {output.version}
+         ln -s -f {output.version} {output_dir}versions/MINIASM-version.txt
+         (miniasm -f {input.fastq} {input.paf} 1> {output.gfa_miniasm}) 2>{log.error}
+         """
+
+
+
+################################ MINIPOLISH ####################################
+rule run_minipolish:
+    """
+    launch minipolish
+    """
+    threads: get_threads('run_minipolish', 4)
+    input:
+        fastq = get_fastq,
+        gfa_miniasm = rules.run_miniasm.output.gfa_miniasm
+    output:
+        gfa_minipolish = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minipolish.gfa",
+        #fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assembly{add_circular_name}.fasta",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta",
+        info = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assembly_info{TMP}.txt",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/MINIPOLISH-version.txt"
+    params:
+        racon_rounds = config['params']['RACON']['RACON_ROUNDS'] if config['POLISHING']['RACON'] else 2,
+    log:
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM_MINIPOLISH.e"
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIASM_MINIPOLISH.txt"
+    message:
+        """
+        Launching {rule}
+        threads : {threads}
+        input:
+            fastq : {input.fastq}
+            gfa : {input.gfa_miniasm}
+        output:
+            gfa : {output.gfa_minipolish}
+            fasta : {output.fasta}
+            info : {output.info}
+        params:
+            racon_rounds: {params.racon_rounds}
+        log:
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MINIPOLISH"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; minipolish --version > {output.version}
+        ln -s -f {output.version} {output_dir}versions/MINIPOLISH-version.txt
+        minipolish -t {threads} --rounds {params.racon_rounds} {input.fastq} {input.gfa_miniasm} 1> {output.gfa_minipolish} 2>{log.error}
+        awk '/^S/{{print \">\"$2\"\\n\"$3}}' {output.gfa_minipolish} | fold > {output.fasta}
+        ln -s {output.gfa_minipolish} {output.info} 2>>{log.error}
+        """
+
+
+################################ RAVEN ####################################
+rule run_raven:
+    """
+    launch raven
+    """
+    threads: get_threads('run_raven', 8)
+    input:
+        fastq = get_fastq,
+    output:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/RAVEN/ASSEMBLER/assembly{add_circular_name}{TAG}.fasta",
+        gfa = f"{output_dir}{{fastq}}/ASSEMBLERS/RAVEN/ASSEMBLER/assembly_info.txt",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/RAVEN/ASSEMBLER/RAVEN-version.txt"
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/RAVEN.txt"
+    message:
+        """
+        Launching {rule}
+        threads: {threads}
+        input:
+            fastq: {input.fastq}
+        output:
+            fasta: {output.fasta}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["RAVEN"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; raven --version > {output.version}
+        ln -s -f {output.version} {output_dir}versions/RAVEN-version.txt
+        raven -p 0 --graphical-fragment-assembly {output.gfa} -t {threads} {input.fastq} >{output.fasta} 2>{log.error}
+        rm $PWD/raven.cereal
+        """
+
+
+################################ FASTQ TO FASTA ####################################
+rule convert_fastq_to_fasta:
+    """
+    convert fastq or fastq.gz on fasta. use by shasta and smartdenovo
+    """
+    threads: 4
+    input:
+        fastq = get_fastq,
+    params:
+        command = "zcat " if culebront.fastq_gzip else  "cat ",
+    output:
+        reads_on_fasta = f"{output_dir}{{fastq}}/MISC/FASTQ2FASTA/{{fastq}}.fasta",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/MISC/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.o",
+        error = f"{output_dir}{{fastq}}/LOGS/MISC/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/FASTQ2FASTA.txt"
+    shell:
+        """
+        {params.command} {input.fastq} | awk 'NR%4==1||NR%4==2' - | sed 's/^@/>/g' 1> {output.reads_on_fasta} 2>{log.error}
+        """
+
+
+################################ SMARTDENOVO ####################################
+rule run_smartdenovo:
+    """
+    launch smartdenovo
+    """
+    threads: get_threads('run_smartdenovo', 8)
+    input:
+        reads_on_fasta = rules.convert_fastq_to_fasta.output.reads_on_fasta,
+        fastq = get_fastq,
+    params:
+        prefix = "SMART",
+        mak = "SMART.mak",
+        dir = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER",
+        kmersize = f"16 " if f"{config['params']['SMARTDENOVO']['KMER_SIZE']}" == '' else f"{config['params']['SMARTDENOVO']['KMER_SIZE']}",
+        options = f"{config['params']['SMARTDENOVO']['OPTIONS']}",
+        out_tmp= f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/SMART.dmo.cns"
+    output:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/assembly2Circ.fasta" if config['CIRCULAR'] else f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/assembly.fasta",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/SMARTDENOVO-version.txt",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/SMARTDENOVO.txt"
+    message:
+        """
+        Launching {rule}
+        threads: {threads}
+        input:
+            fastq: {input.fastq}
+        params:
+            prefix = {params.prefix},
+            mak = {params.mak}
+        output:
+            fasta: {output.fasta}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["SMARTDENOVO"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; echo "smartdenovo [unknown]" > {output.version}
+        ln -s -f {output.version} {output_dir}versions/SMARTDENOVO-version.txt
+        cd {params.dir} 1>{log.output} 2>{log.error}
+        smartdenovo.pl {params.options} -t {threads} -k {params.kmersize} -p  {params.prefix} -c 1 {input.reads_on_fasta} 1>{params.mak} 2>>{log.error}
+        make -f {params.mak} 1>>{log.output} 2>>{log.error}
+        ln -s {params.out_tmp} {output.fasta} 1>>{log.output} 2>>{log.error}
+        """
+
+################################ SHASTA ####################################
+rule run_shasta:
+    """
+    launch shasta
+    """
+    threads: get_threads('run_shasta', 8)
+    input:
+        reads_on_fasta = rules.convert_fastq_to_fasta.output.reads_on_fasta,
+        fastq = get_fastq,
+    params:
+        out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/"),
+        cmd_mv_fasta = f"ln -s {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/ShastaRun/Assembly.fasta {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly{add_circular_name}.fasta ",
+        cmd_mv_gfa = f"ln -s {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/ShastaRun/Assembly.gfa {output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly_info.txt",
+        memory_mode = f"--memoryMode {config['params']['SHASTA']['MEM_MODE']}",
+        memory_backing = f"--memoryBacking {config['params']['SHASTA']['MEM_BACKING']}",
+        options = f"{config['params']['SHASTA']['OPTIONS']}",
+    output:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly{add_circular_name}{TAG}.fasta",
+        gfa = f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly_info.txt",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/SHASTA-version.txt",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/SHASTA.txt"
+    message:
+        """
+        Launching {rule}
+        threads: {threads}
+        input:
+            fastq: {input.reads_on_fasta}
+        output:
+            fasta: {output.fasta}
+        params:
+            {params.cmd_mv_fasta}
+            {params.cmd_mv_gfa}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["SHASTA"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; shasta --version | head -n1 > {output.version}
+        ln -s -f {output.version} {output_dir}versions/SHASTA-version.txt
+        (cd {params.out_dir};
+        rm -rf ShastaRun/;
+        shasta --command assemble --input {input.reads_on_fasta} {params.memory_mode} {params.memory_backing} --threads {threads} {params.options};
+        {params.cmd_mv_fasta};
+        {params.cmd_mv_gfa} ) 1>{log.output} 2>{log.error}
+        """
+

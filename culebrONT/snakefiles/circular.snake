@@ -1,0 +1,250 @@
+############################### CIRCULARISATION POST CANU ##############################
+import culebrONT
+
+rule run_circlator:
+    """
+    launch Circlator
+    """
+    threads: get_threads('run_circlator', 4)
+    input:
+        draft = draft_to_circlator,
+        fastq = rules.run_canu.output.trim_corr_fq if 'CANU' in f'{{assemblers}}' else get_fastq,
+    output:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED{TAG}.fasta",
+        info = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly_info.txt",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR-version.txt",
+    params:
+        log_mv = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/circlator.log",
+        out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR/"),
+        options = f"{config['params']['CIRCLATOR']['OPTIONS']}",
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CIRCULAR/{{assemblers}}_CIRCLATOR.txt"
+    message:
+        """
+        Launching {rule}
+        threads : {threads}
+        input:
+             fastq : {input.fastq}
+             draft : {input.draft}
+        output:
+             fasta : {output.fasta}
+             info : {output.info}
+        params:
+             out_dir: {params.out_dir}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["CIRCLATOR"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; circlator version > {output.version}
+        (rm -rf {params.out_dir};
+        ln -s -f {output.version} {output_dir}versions/CIRCLATOR-version.txt
+        circlator all --thread {threads} {params.options} --verbose --bwa_opts "-x ont2d" {input.draft} {input.fastq} {params.out_dir};
+        mv {params.out_dir}06.fixstart.fasta {output.fasta};
+        mv {params.out_dir}06.fixstart.log {params.log_mv};
+        ln -s "{params.out_dir}04.merge.circularise.log" "{output.info}") 1>{log.output} 2>{log.error}
+        """
+
+
+############################### TAGGING OF CIRCULAR MOLECULES ##########################
+rule tag_circular:
+    """
+    Tagging title of circular molecules in assembly fasta files
+    """
+    threads: get_threads('tag_circular', 1)
+    input:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED{TAG}.fasta",
+        info = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly_info.txt",
+    params:
+        assembler = f"{{assemblers}}"
+    output:
+        tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED_circTag.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED.fasta"
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.o",
+        error = f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CIRCULAR/{{assemblers}}_TAG-CIRCULAR.txt"
+    message:
+        """
+        Launching {rule}
+        threads : {threads}
+        input:
+            fasta : {input.fasta}
+            info : {input.info}
+        output:
+            tagged_fasta : {output.tagged_fasta}
+        log:
+            output : {log.output}
+            error :  {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['REPORT']
+    envmodules:
+        tools_config["ENVMODULE"]["R"]
+    shell:
+        f"""
+        Rscript {culebrONT.CULEBRONT_SCRIPTS}/tagCircSeq.R --seqFile="{{input.fasta}}" --logFile="{{input.info}}" --assembler="{{params.assembler}}" --outFilePath="{{output.tagged_fasta}}"  1>{{log.output}} 2>{{log.error}}
+        """
+
+
+rule tag_circular_to_minipolish:
+    """
+    Tagging title of circular molecules in assembly fasta only to MINIASM-MINIPOLISH
+    """
+    threads: get_threads('tag_circular', 1)
+    input:
+        #fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assemblyCIRCULARISED_TMP.fasta",
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta",
+        #fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assemblyCIRCULARISED{TMP}.fasta",
+        info = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assembly_info{TMP}.txt",
+    params:
+        assembler = "MINIASM"
+    output:
+        tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TCM}.fasta"
+        #tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TCM}.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assemblyCIRCULARISED.fasta",
+        #tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assemblyCIRCULARISED.fasta"
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_MINIASM-TAG-CIRCULAR.o",
+        error = f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_MINIASM-TAG-CIRCULAR.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CIRCULAR/MINIASM_TAG-CIRCULAR.txt"
+    message:
+        """
+        Launching {rule}
+        threads : {threads}
+        input:
+            fasta : {input.fasta}
+            info : {input.info}
+        output:
+            tagged_fasta : {output.tagged_fasta}
+        log:
+            output : {log.output}
+            error :  {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['REPORT']
+    envmodules:
+        tools_config["ENVMODULE"]["R"]
+    shell:
+        f"""
+        Rscript {culebrONT.CULEBRONT_SCRIPTS}/tagCircSeq.R --seqFile="{{input.fasta}}" --logFile="{{input.info}}" --assembler="{{params.assembler}}" --outFilePath="{{output.tagged_fasta}}" 1>{{log.output}} 2>{{log.error}}
+        """
+
+
+rule rotate_circular:
+    """
+    Rotate circular
+    """
+    threads: get_threads('rotate_circular', 4)
+    input:
+        draft = draft_to_rotate,
+    output:
+        rotated = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/ROTATE/rotate_{{nb}}/assembly.racon{{nb}}.fasta"
+    log:
+        output=f"{output_dir}{{fastq}}/LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}.o",
+        error = f"{output_dir}{{fastq}}/LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}.e"
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CIRCULAR/{{assemblers}}_RACON{{nb}}.txt"
+    message:
+        """
+        Launching {rule}
+        threads : {threads}
+        input:
+            draft : {input.draft}
+        output:
+            rotated : {output.rotated}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['REPORT']
+    envmodules:
+        tools_config["ENVMODULE"]["R"]
+    shell:
+        f"""
+        Rscript {culebrONT.CULEBRONT_SCRIPTS}/rotateCircSeqs.R --seqFile "{{input.draft}}" --outFilePath "{{output.rotated}}" 1>{{log.output}} 2>{{log.error}}
+        """
+
+
+def fasta_to_fixstart(wildcards):
+    #CORRECTION
+    if len(culebront.correction_tools_activated)>=1:
+        if wildcards.quality_step == 'STEP_CORRECTION_NANOPOLISH' :
+            return rules.run_nanopolish_merge.output.fasta
+        elif wildcards.quality_step == 'STEP_CORRECTION_MEDAKA':
+            return rules.run_medaka_merge.output.fasta
+        elif wildcards.quality_step == f'STEP_CORRECTION_PILON_{culebront.nb_pilon_rounds}':
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_{culebront.nb_pilon_rounds}/assembly.pilon{culebront.nb_pilon_rounds}.fasta"
+    #POLISHING
+    elif len(culebront.polishing_tools_activated)>=1:
+        if wildcards.assemblers == 'MINIASM':
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TCM}.fasta" #JO
+        else:
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}.fasta"
+    #ASSEMBLY
+    elif len(culebront.assembly_tools_activated)>=1:
+        if 'MINIASM' == wildcards.assemblers:
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TCM}.fasta"
+        else:
+            return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assembly{add_circular_name}.fasta"
+
+
+######### Standardizing starting coordinate of bacterial genomes ############
+rule run_fixstart:
+    """
+    Standardizing starting coordinate of bacterial genome assemblies with fixstart module of Circlator.
+    """
+    threads: get_threads('run_fixstart', 1)
+    input:
+        assembly_file = fasta_to_fixstart
+    output:
+        fix_start_fasta =  f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/{{quality_step}}_STARTFIXED.fasta",
+    params:
+        out_dir = lambda wc, output: os.path.dirname(output.fix_start_fasta),
+        prefix = lambda wc, output: os.path.splitext(output.fix_start_fasta)[0]
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/FIXSTART/{{fastq}}_{{assemblers}}_{{quality_step}}_STARTFIXED.o",
+        error =  f"{output_dir}{{fastq}}/LOGS/FIXSTART/{{fastq}}_{{assemblers}}_{{quality_step}}_STARTFIXED.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CIRCULAR/{{assemblers}}_{{quality_step}}.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads : {threads}
+        input:
+            assembly_file  : {input.assembly_file}
+        params:
+            prefix : {params.prefix}
+        output:
+            fix_start_fasta : {output.fix_start_fasta}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["CIRCLATOR"]
+    shell:
+        """
+        # def to inspect fasta titles for circular molecules and write their names in a file
+        list_lin_seqs()
+        {{
+          grep -o -E "^>.*$" $1 | grep -v -E "circular" | tr -d ">" > "$2"
+        }}
+        linSeqNamesFile="{params.prefix}_linSeqNames.txt"
+        set +e
+        list_lin_seqs "{input.assembly_file}" "$linSeqNamesFile"
+        set -e
+        echo "##  $(date): processing {input.assembly_file}" 1>{log.output} 2>{log.error}
+        echo "##  Using circlator fixstart to rotate circular sequences so that they start at a dnaA gene (if found)" 1>>{log.output} 2>>{log.error}
+        echo "##  Ignoring the following linear sequences: $(cat $linSeqNamesFile)." 1>>{log.output} 2>>{log.error}
+        circlator fixstart --ignore="$linSeqNamesFile" "{input.assembly_file}" "{params.prefix}" 1>>{log.output} 2>>{log.error}
+        """
+# TODO: change code to python

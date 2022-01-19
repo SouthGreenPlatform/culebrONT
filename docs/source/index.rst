@@ -40,7 +40,7 @@ many species are having their genomes assembled and that’s is great ...
 .. toctree::
    :caption: Project Info
    :name: project_info
-   :maxdepth: 2
+   :maxdepth: 1
 
    PROJECT.rst
 
@@ -50,6 +50,13 @@ many species are having their genomes assembled and that’s is great ...
    :maxdepth: 2
 
    FAQ.rst
+
+.. toctree::
+   :caption: API
+   :name: api_culebront
+   :maxdepth: 2
+
+   click.rst
 
 Indices and tables
 ==================

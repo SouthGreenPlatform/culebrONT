@@ -1,0 +1,121 @@
+DATA:
+    FASTQ: './Data-Xoo-sub/fastq/'
+    FAST5: './Data-Xoo-sub/fast5/'
+    ILLUMINA: './Data-Xoo-sub/illumina/'
+    GENOME_SIZE: '4.8m'
+    REF: './Data-Xoo-sub/ref/BAI3.fasta'
+    OUTPUT: './CulebrONT_OUTPUT/'
+
+############ TOOLS ################
+ASSEMBLY:
+    CANU: true
+    FLYE: true
+    MINIASM: false
+    RAVEN: false
+    SMARTDENOVO:  false
+    SHASTA: false
+
+POLISHING:
+    RACON: true
+
+CIRCULAR: false
+
+CORRECTION:
+    NANOPOLISH: false
+    MEDAKA: false
+    PILON: true
+
+FIXSTART: false
+
+# BUSCO and QUAST will be launched on all activated steps (ASSEMBLY, POLISHING, CORRECTION)
+QUALITY:
+    BUSCO: true
+    QUAST: true
+#### Others quality tools are lauched only in last assemblies
+    BLOBTOOLS: true
+    ASSEMBLYTICS: true
+#### Others quality softs but illumina reads are required
+    FLAGSTATS: true
+    KAT: false
+
+#### Alignment of the various assemblies derived from a fastq file for small genomes (<10-20Mbp);
+MSA:
+    MAUVE: false
+
+############ PARAMS ################
+params:
+    #### ASSEMBLY
+    MINIMAP2:
+        PRESET_OPTION: 'map-ont' # -x minimap2 preset option is map-pb by default (map-pb, map-ont etc)
+    FLYE:
+        MODE : '--nano-raw'
+        OPTIONS: '' ## use --scaffold if flye>=2.9 # you can also use --resume option
+    CANU:
+        MODE : '-nanopore'
+        OPTIONS: 'gridOptions="-p long" useGrid=true'
+    SMARTDENOVO:
+        KMER_SIZE: 16
+        OPTIONS: '-J 5000'
+    SHASTA:
+        MEM_MODE: 'filesystem'
+        MEM_BACKING: 'disk'
+        OPTIONS: '--Reads.minReadLength 0'
+
+
+    #### CIRCULAR
+    CIRCLATOR:
+        OPTIONS: ''
+
+
+    #### POLISHING
+    RACON:
+        RACON_ROUNDS: 2                 #1 to 9
+
+
+    #### CORRECTION
+    CORRECTION_MAKERANGE:
+        SEGMENT_LEN: 50000              # segment length to split assembly and correct it  default=50000
+        OVERLAP_LEN: 200                # overlap length between segments  default=200
+
+    NANOPOLISH:
+        OPTIONS: ''
+
+    MEDAKA:
+        MEDAKA_TRAIN_WITH_REF: false    # if 'MEDAKA_TRAIN_WITH_REF' is True, training uses reference found in DATA REF param.
+
+        # Medaka does not take in count other parameters below if MEDAKA_TRAIN_WITH_REF is TRUE.
+        MEDAKA_MODEL_PATH: 'r941_min_high_g303' # use a path if you have downloaded a model (or you want to use your own trained model) OR a simple string like 'r941_min_high_g303'
+        MEDAKA_FEATURES_OPTIONS: '--batch_size 10 --chunk_len 100 --chunk_ovlp 10'
+        MEDAKA_TRAIN_OPTIONS: '--batch_size 10 --epochs 500 '
+        MEDAKA_CONSENSUS_OPTIONS: '--batch 200 '
+
+    PILON:
+        PILON_ROUNDS: 2                 #1 to 9
+        OPTIONS: ''
+
+    #### QUALITY
+    BUSCO:
+        #DATABASE: "./Data-Xoo-sub/bacteria_odb10"
+        DATABASE: 'bacteria_odb10 --update-data ' # use a path if you have downloaded a taxonomic database from busco OR a simple string like 'bacteria_odb10'
+        MODEL: 'genome'
+        SP: ''                         #--augustus-specie parametter on busco
+
+    QUAST:
+        GFF: ''
+        OPTIONS: '--large'
+
+    DIAMOND:
+        DATABASE: './Data-Xoo-sub/testBacteria.dmnd'
+
+    MUMMER:
+        MINMATCH: 100                  # is -l option with default 20 on MUMMER
+        MINCLUSTER: 500                 # is -c option with default 65 on MUMMER
+
+    ASSEMBLYTICS:
+        UNIQUE_ANCHOR_LEN: 10000
+        MIN_VARIANT_SIZE: 50
+        MAX_VARIANT_SIZE: 10000
+
+    BLOBTOOLS:
+        NAMES: './Data-Xoo-sub/blobtools/names.dmp'
+        NODES: './Data-Xoo-sub/blobtools/nodes.dmp'

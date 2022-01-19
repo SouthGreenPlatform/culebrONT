@@ -1,0 +1,350 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+description: an entry in the sample sheet
+type: object
+title: The Root Schema
+required:
+    - DATA
+    - ASSEMBLY
+    - CIRCULAR
+    - CORRECTION
+    - FIXSTART
+    - QUALITY
+    - MSA
+    - params
+additionalProperties: false
+properties:
+    DATA:
+        type: object
+        required:
+            - FASTQ
+            - FAST5
+            - ILLUMINA
+            - GENOME_SIZE
+            - REF
+            - OUTPUT
+
+        additionalProperties: false
+        properties:
+            FASTQ:
+                type: string
+                description: sample directory path
+            FAST5:
+                type: string
+                description: fast5 directory path
+            ILLUMINA:
+                type: string
+                description: illumina directory path
+            GENOME_SIZE:
+                type: string
+                description: fast5 directory path
+            REF:
+                type: string
+                description: reference file path / name
+            OUTPUT:
+                type: string
+                description: output directory path
+
+    ASSEMBLY:
+        type: object
+        required:
+            - CANU
+            - RAVEN
+            - SMARTDENOVO
+            - SHASTA
+            - FLYE
+            - MINIASM
+        additionalProperties: false
+        properties:
+            CANU :
+                type: boolean
+                description: true if you want to assemble the genome with canu
+            RAVEN :
+                type: boolean
+                description: true if you want to assemble the genome with raven
+            SMARTDENOVO:
+                type: boolean
+                description: true if you want to assemble the genome with smartdenovo
+            SHASTA:
+                type: boolean
+                description: true if you want to assemble the genome with shasta
+            FLYE :
+                type: boolean
+                description: true if you want to assemble the genome with flye
+            MINIASM :
+                type: boolean
+                description: true if you want to assemble the genome with miniasm
+    CIRCULAR:
+        type: boolean
+        description: true if the genome is circular
+    POLISHING:
+        type: object
+        required:
+            - RACON
+        additionalProperties: false
+        properties:
+            RACON:
+                type: boolean
+                description: true if you want to lauch racon
+    CORRECTION:
+        type: object
+        required:
+            - NANOPOLISH
+            - MEDAKA
+            - PILON
+        additionalProperties: false
+        properties:
+            NANOPOLISH :
+                type: boolean
+                description: true if you want to correct the genome with nanopolish
+            MEDAKA :
+                type: boolean
+                description: true if you want to correct the genome with medaka
+            PILON:
+                type: boolean
+                description: true if you want to correct the genome with pilon using illumina
+    FIXSTART:
+        type: boolean
+        description: true if you want to use fixstart for quality
+
+    QUALITY:
+        type: object
+        required:
+            - BUSCO
+            - QUAST
+            - BLOBTOOLS
+            - ASSEMBLYTICS
+            - KAT
+            - FLAGSTATS
+        additionalProperties: false
+        properties:
+            BUSCO:
+                type: boolean
+                description: true if you want to use busco for quality
+            QUAST:
+                type: boolean
+                description: true if you want to use quast for quality
+            BLOBTOOLS:
+                type: boolean
+                description: true if you want to use blobtools for quality
+            ASSEMBLYTICS:
+                type: boolean
+                description: true if you want to use assemblytics for quality
+            KAT:
+                type: boolean
+                description: true if you want to use kat for quality
+            FLAGSTATS:
+                type: boolean
+                description: true if you want to use flagstats for quality
+
+    MSA:
+        type: object
+        required:
+            - MAUVE
+        additionalProperties: false
+        properties:
+            MAUVE:
+                type: boolean
+                description: true if you want to use mauve for quality
+    params:
+        type: object
+        required:
+            - MINIMAP2
+            - CANU
+            - SMARTDENOVO
+            - SHASTA
+            - CIRCLATOR
+            - RACON
+            - NANOPOLISH
+            - MEDAKA
+            - PILON
+            - BUSCO
+            - QUAST
+            - DIAMOND
+            - MUMMER
+            - ASSEMBLYTICS
+            - BLOBTOOLS
+        additionalProperties: false
+        properties:
+            FLYE:
+                type: object
+                additionalProperties: false
+                properties:
+                    OPTIONS:
+                        type: string
+                        description: "supplementary option for flye"
+                    MODE:
+                        type: string
+                        description: "mode option for flye"
+            MINIMAP2:
+                type: object
+                additionalProperties: false
+                properties:
+                    PRESET_OPTION:
+                        type: string
+                        description: "minimap2 options"
+            CANU:
+                type: object
+                additionalProperties: false
+                properties:
+                    OPTIONS:
+                        type: string
+                        description: "supplementary options for canu"
+                    MODE:
+                        type: string
+                        description: "mode options for canu"
+            SMARTDENOVO:
+                type: object
+                additionalProperties: false
+                properties:
+                    KMER_SIZE:
+                        type: integer
+                        description: "kmer size to smartdenovo by default 16, use 17 if human"
+                    OPTIONS:
+                        type: string
+                        description: '-J 5000 for example to read size filter. it is possible to include others options from smartdenovo'
+            SHASTA:
+                type: object
+                additionalProperties: false
+                properties:
+                    MEM_MODE:
+                        type: string
+                        description: "--memoryMode controls whether mmap allocates anonymous memory or memory mapped to a filesystem "
+                    MEM_BACKING:
+                        type: string
+                        description: '--memoryBacking specifies the physical backing of pages allocated via mmap and can take one of the following values: disk, 4K or 2M'
+                    OPTIONS:
+                        type: string
+                        description: "supplementary option for shasta"
+            CIRCLATOR:
+                type: object
+                additionalProperties: false
+                properties:
+                    OPTIONS:
+                        type: string
+                        description: "supplementary option for circlator"
+            RACON:
+                type: object
+                additionalProperties: false
+                required:
+                    - RACON_ROUNDS
+                properties:
+                    RACON_ROUNDS:
+                        type: integer
+                        description: "number of rounds of racon for polishing"
+            CORRECTION_MAKERANGE:
+                type: object
+                additionalProperties: false
+                properties:
+                    SEGMENT_LEN:
+                        type: integer
+                        description: "correction segment lenght"
+                    OVERLAP_LEN:
+                        type: integer
+                        description: "correction overlap lenght"
+            NANOPOLISH:
+                type: object
+                additionalProperties: false
+                properties:
+                    OPTIONS:
+                        type: string
+                        description: "supplementary options for nanopolish"
+            MEDAKA:
+                type: object
+                additionalProperties: false
+                properties:
+                    MEDAKA_TRAIN_WITH_REF:
+                        type: boolean
+                        description: "true if medaka should train"
+                    MEDAKA_MODEL_PATH:
+                        type: string
+                        description: "medaka model path if no train"
+                    MEDAKA_FEATURES_OPTIONS:
+                        type: string
+                        description: "medaka features options"
+                    MEDAKA_TRAIN_OPTIONS:
+                        type: string
+                        description: "medaka train options"
+                    MEDAKA_CONSENSUS_OPTIONS:
+                        type: string
+                        description: "medaka consensus options"
+            PILON:
+                type: object
+                additionalProperties: false
+                properties:
+                    PILON_ROUNDS:
+                        type: integer
+                        description: "number of rounds for pilon"
+                    OPTIONS:
+                        type: string
+                        description: "more options for pilon"
+
+            BUSCO:
+                type: object
+                additionalProperties: false
+                required:
+                    - DATABASE
+                properties:
+                    DATABASE :
+                        type: string
+                        description: "database path for busco"
+                    MODEL :
+                        type: string
+                        description: "model type for busco"
+                    SP :
+                        type: string
+                        description: "species specification for busco"
+            QUAST:
+                type: object
+                additionalProperties: false
+                properties:
+                    GFF:
+                        type: string
+                        description: "gff path for quast"
+                    GENOME_SIZE_PB:
+                        type: integer
+                        description: "genome size for quast"
+                    OPTIONS :
+                        type: string
+                        description: "suplementary options for quast"
+            DIAMOND:
+                type: object
+                additionalProperties: false
+                required:
+                    - DATABASE
+                properties:
+                    DATABASE:
+                      type: string
+                      description: "database path for diamond"
+            MUMMER:
+                type: object
+                additionalProperties: false
+                properties:
+                    MINMATCH :
+                        type: integer
+                        description: "number of missmatches for mummer"
+                    MINCLUSTER:
+                        type: integer
+                        description: "min cluster for mummer"
+            ASSEMBLYTICS:
+                type: object
+                additionalProperties: false
+                properties:
+                    UNIQUE_ANCHOR_LEN:
+                        type: integer
+                        description: "UNIQUE_ANCHOR_LEN for assemblytics"
+                    MIN_VARIANT_SIZE:
+                        type: integer
+                        description: "MIN_VARIANT_SIZE for assemblytics"
+                    MAX_VARIANT_SIZE:
+                        type: integer
+                        description: "MAX_VARIANT_SIZE for assemblytics"
+            BLOBTOOLS:
+                type: object
+                additionalProperties: false
+                properties:
+                    NAMES:
+                        type: string
+                        description: "blobtools path to NAMES.dmp file"
+                    NODES:
+                        type: string
+                        description: "blobtools path to NODES.dmp file"

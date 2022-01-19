@@ -1,0 +1,36 @@
+# This file is a template, and might need editing before it works on your project.
+# Official language image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/python/tags/
+image: python:3.6
+
+python3.6:
+    image: python:3.6
+    stage: test
+    script:
+    - pip install tox
+    - tox -e py36
+    - tox -e pep8
+
+python3.7:
+    image: python:3.7
+    stage: test
+    script:
+    - pip install tox
+    - tox -e py37
+    - tox -e pep8
+
+python3.8:
+    image: python:3.8
+    stage: test
+    script:
+    - pip install tox
+    - tox -e py38
+    - tox -e pep8
+
+python3.9:
+    image: python:3.9
+    stage: test
+    script:
+    - pip install tox
+    - tox -e py39
+    - tox -e pep8

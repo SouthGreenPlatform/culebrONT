@@ -15,16 +15,17 @@
 import sys
 import os
 import sphinx_rtd_theme
-
-sys.path.insert(0, os.path.abspath('../../'))
-# load own functions
-from AdditionalScripts.tools import CulebrONT, get_last_version, get_version
-version_CulebrONT = get_version("../../")
+import culebrONT
+from culebrONT.global_variable import *
 
 # The short X.Y version.
-version = version_CulebrONT
+version = culebrONT.__version__
 # The full version, including alpha/beta/rc tags
-release = version_CulebrONT
+release = culebrONT.__version__
+
+rst_prolog = f"""
+.. |tools_path| replace:: {CULEBRONT_TOOLS_PATH}
+"""
 
 # -- Project information -----------------------------------------------------
 # General information about the project.
@@ -53,7 +54,8 @@ extensions = [
               'sphinx.ext.viewcode',
               'sphinx.ext.autosectionlabel',
               'sphinx_copybutton',
-              "sphinx_rtd_theme",
+              'sphinx_rtd_theme',
+              'sphinx_click'
               ]
 
 # Add any paths that contain templates here, relative to this directory.

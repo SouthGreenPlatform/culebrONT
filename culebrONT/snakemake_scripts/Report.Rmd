@@ -1,0 +1,421 @@
+---
+title: "CulebrONT 2.0.0 report"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  rmdformats::readthedown:
+    code_folding: hide
+    fig_caption: TRUE
+    lightbox: TRUE
+    thumbnails: TRUE
+    gallery: TRUE
+    mathjax: "rmdformats"
+    highlight: pygments
+    self_contained: false
+---
+<style>
+#sidebar h2 {
+        background-color: #2980B9;
+}
+h1,h2,h3,h4,h5,h6,legend{
+color: #2980B9;
+}
+#main a {
+	background-image: linear-gradient(180deg,#0057FD,#0097FB);
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
+	background-position: 0 2em;
+	color: #015EC1;
+	font-weight: 300;
+	padding: .125em 1px 0 1px;
+	transition: background-position .15s, color .15s;
+}
+#content {
+    max-width: 1100px;
+}
+.stockIframe {  width:100%; height:100%; }
+.stockIframe iframe {  width:100%; height:1500px; border:0;overflow:hidden }
+body {
+  height: auto;
+  overflow: auto
+}
+img.image-thumb {
+	width: 500px;
+	border: 0px solid #CCC;
+	padding: 2px;
+}
+big.img.image-thumb {
+	width: 100%;
+	border: 0px solid #CCC;
+	padding: 20px;
+}
+</style>
+
+```{r setup, include=FALSE, echo= FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
+```
+
+```{r load package, include=FALSE, echo= FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
+suppressMessages(library('knitr', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('plotly', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('rmdformats', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('DT', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('ggplot2', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('rmarkdown', warn.conflict = FALSE, quietly = TRUE))
+suppressMessages(library('reticulate', warn.conflict = FALSE, quietly = TRUE))
+```
+
+```{r, echo= FALSE, message = FALSE, warning = FALSE}
+opts_knit$set(root.dir = snakemake@params$out_dir_report)
+# input snakemake
+fasta_list <- r_to_py(as.list(snakemake@input$fasta))
+dag <- r_to_py(snakemake@input$dag)
+bench_list <- r_to_py(as.list(snakemake@input$bench))
+stats_assembly <- r_to_py(as.list(snakemake@input$stats_assembly))
+busco_stats <- r_to_py(as.list(snakemake@input$busco_stats))
+flagstats_stats <- r_to_py(as.list(snakemake@input$flagstats_stats))
+quast_files <- r_to_py(as.list(snakemake@input$quast_files))
+frc_files <- r_to_py(as.list(snakemake@input$frc_files))
+blob_files <- r_to_py(as.list(snakemake@input$blob_files))
+assemblytics_files <- r_to_py(as.list(snakemake@input$assemblytics_files))
+kat_files <- r_to_py(as.list(snakemake@input$kat_files))
+report_snakemake <- r_to_py(snakemake@input$report_snakemake)
+versions <- r_to_py(snakemake@input$versions)
+
+# params snakemake
+samples_list <- snakemake@params$samples_list
+txt_config <- r_to_py(snakemake@params$txt_config)
+out_dir_report <- r_to_py(snakemake@params$out_dir_report)
+quality_tools_list <- r_to_py(as.list(snakemake@params$quality_tools_list))
+quality_tools_vector <- as.list(snakemake@params$quality_tools_list)
+
+```
+<div align="center" style="font-size:20px">
+```{r, echo= FALSE, message = FALSE, warning=FALSE, class.output="big",}
+knitr::include_graphics(snakemake@params$logo)
+```
+
+<br/>
+<br/>
+**CulebrONT is a Snakemake workflow available on [github](https://github.com/SouthGreenPlatform/CulebrONT_pipeline) created by:**
+
+J.Orjuela (IRD), A.Comte (IRD), T.V Bao (IRD), S.Ravel (CIRAD), F.Charriat (CIRAD), F.Sabot (IRD) and S.Cunnac (IRD)
+
+Licencied under CeCill-C (http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html) and GPLv3.
+
+Intellectual property belongs to IRD and authors
+
+</div>
+
+
+```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=(!is.null(quality_tools_list))}
+dico_tools = {
+    "BUSCO" : "* BUSCO : https://busco.ezlab.org/",
+    "QUAST" : "* QUAST : http://quast.sourceforge.net/quast",
+    "BLOBTOOLS" : "* BLOBTOOLS: https://blobtools.readme.io/docs",
+    "ASSEMBLYTICS" : "* ASSEMBLYTICS: http://assemblytics.com/",
+    "KAT" : "* KAT : https://github.com/TGAC/KAT",
+    "FLAGSTATS" : "* SAMTOOLS FLAGSTATS : http://www.htslib.org/doc/samtools-flagstat.html",
+}
+tools = []
+for tool in r.quality_tools_list:
+    tools.append(dico_tools[tool])
+print("For more quality outputs you can check in the quality output directory.\n\n")
+print("**Tools used in this report:**\n\n")
+print("\n".join(tools))
+```
+
+# Rulegraph
+
+```{r, echo= FALSE, message = FALSE, warning = FALSE, class.output="big",}
+  knitr::include_graphics(snakemake@input$dag, dpi="500")
+```
+
+# Config file Parameters
+
+<details><summary><h4>Click to open and see Config file</h4></summary>
+```{python, class.output="sourceCode yml", echo= FALSE, message = FALSE, warning = FALSE, comment=''}
+print(r.txt_config)
+```
+</details>
+
+# Benchmark{.tabset .tabset-fade}
+
+The average run time of each tool in second.
+
+```{python, echo=FALSE, message = FALSE, warning = FALSE}
+import pandas as pd
+from pathlib import Path
+dico_table = {}
+list_bench = r.bench_list
+for bench_file in list_bench:
+    sample = Path(f"{bench_file}").stem.split("_")[0]
+    df = pd.read_csv(Path(f"{bench_file}"), sep=",", engine='python', header=0, index_col=None)
+    df.rename(columns={"Unnamed: 0":'STEP',"Unnamed: 1":'TOOL' }, inplace=True)
+    dico_table[sample] = df
+
+```
+
+```{r, run-numeric-md, echo=FALSE, include=FALSE}
+out = NULL
+name_list <- py$dico_table
+attach(name_list)
+for (i in 1:length(samples_list)) {
+  sample <- as.character(samples_list[i])
+  out = c(out, knit_expand(text="\n\n## {{sample}}{.tabset .tabset-fade}\n\n{{dt}}\n\n", dt = DT::datatable(py_to_r(get(sample)),
+              escape = FALSE,
+              rownames = FALSE,
+              option= list(paging=FALSE,searching = FALSE,ordering=TRUE, scrollX = FALSE, dom = 'tip'))))
+}
+detach(name_list)
+```
+
+`r paste(knit(text = out), collapse = '\n')`
+
+```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=(!is.null(snakemake@input$report_snakemake))}
+print("# Snakemake report\n\n")
+print(f"[Click to open Snakemake report]({r.report_snakemake})")
+```
+
+```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE}
+print("""# ASSEMBLY{.tabset .tabset-fade}
+
+Assembly statistic:
+""")
+dico_assembly = {}
+dico_assembly_file = {}
+for assembly_file in r.stats_assembly:
+    sample = Path(f"{assembly_file}").stem.split("_")[-1]
+    df = pd.read_csv(Path(f"{assembly_file}"), sep=",", engine='python', header=0, index_col=None)
+    df.rename(columns={"Unnamed: 0":'Assembler',"Unnamed: 1":'Steps' }, inplace=True)
+    dico_assembly[sample] = df
+    dico_assembly_file[sample] = assembly_file
+```
+
+
+```{r, assembly, echo=FALSE, include=FALSE, message = FALSE, warning = FALSE}
+assembly = NULL
+for (i in 1:length(samples_list)) {
+    file = py$dico_assembly_file[[samples_list[[i]]]]
+    data = read.csv(file,
+                 header = TRUE,
+                 sep=",",
+                 dec = ".")
+    colnames(data)[1]  <- "Assembler"
+    colnames(data)[2]  <- "Steps"
+    print(data)
+    p <- ggplot(data) + aes(x = Steps, y = as.numeric(sequence_count), fill = Assembler)
+    p <- p + geom_bar(stat="identity", position=position_dodge())
+    p <- p + labs(x="Steps", y = "Number of scaffold/contig", fill = "Assembler tools")
+
+
+  assembly = c(assembly, knit_expand(text="## {{samples_list[[i]]}}\n\n{{dt}}\n\n{{plotly::ggplotly(p)}}\n\n",
+                                dt = DT::datatable(py_to_r(py$dico_assembly[[samples_list[[i]]]]),
+                                                  escape = FALSE,
+                                                  rownames = FALSE,
+                                                  filter = list(position = 'top', clear = TRUE, plain = FALSE),
+                                                  option= list(paging=FALSE,searching = FALSE,ordering=TRUE, scrollX = FALSE, dom = 'Blfrtip'))
+                                )
+            )
+}
+```
+
+```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE}
+cat(paste(knit(text = assembly), collapse = '\n'))
+```
+```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('BUSCO' %in% quality_tools_vector)}
+print("""
+# BUSCO{.tabset .tabset-fade}
+
+BUSCO sets are collections of orthologous groups with near-universally-distributed single-copy genes in each species
+""")
+dico_busco = {}
+dico_busco_file = {}
+for busco_file in r.busco_stats:
+    sample = Path(f"{busco_file}").stem.split("_")[0]
+    df = pd.read_csv(Path(f"{busco_file}"), sep=",", engine='python', header=0, index_col=None)
+    df.rename(columns={"Unnamed: 0":'Assembler',"Unnamed: 1":'Steps' }, inplace=True)
+    dico_busco[sample] = df
+    dico_busco_file[sample] = busco_file
+```
+
+
+```{r, busco, echo=FALSE, include=FALSE, message = FALSE, warning = FALSE, eval=('BUSCO' %in% quality_tools_vector)}
+busco = NULL
+for (i in 1:length(samples_list)) {
+    file = py$dico_busco_file[[samples_list[[i]]]]
+    data = read.csv(file,
+                 header = TRUE,
+                 sep=",",
+                 dec = ".")
+    colnames(data)[1]  <- "Assembler"
+    colnames(data)[2]  <- "Steps"
+    print(data)
+    p <- ggplot(data) + aes(x = Steps, y = as.numeric(sub("%", "", Complete)), fill = Assembler)
+    p <- p + geom_bar(stat="identity", position=position_dodge())
+    p <- p + labs(x="Steps", y = "% Complete BUSCO genes", fill = "Assembler tools")
+
+  busco = c(busco, knit_expand(text="## {{samples_list[[i]]}}\n\n{{dt}}\n\n{{plotly::ggplotly(p)}}\n\n", 
+                                dt = DT::datatable(py_to_r(py$dico_busco[[samples_list[[i]]]]),
+                                                  escape = FALSE,
+                                                  rownames = FALSE,
+                                                  filter = list(position = 'top', clear = TRUE, plain = FALSE),
+                                                  option= list(paging=FALSE,searching = FALSE,ordering=TRUE, scrollX = FALSE, dom = 'Blfrtip'))
+                                )
+            )
+}
+```
+
+```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('BUSCO' %in% quality_tools_vector)}
+cat(paste(knit(text = busco), collapse = '\n'))
+```
+
+```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('QUAST' %in% quality_tools_vector)}
+print("""# QUAST{.tabset .tabset-fade}
+
+QUAST is a good starting point to help evaluate the quality of assemblies. It provides many helpful contiguity statistics.
+""")
+
+for quast_file in r.quast_files:
+    sample = Path(f"{quast_file}").parent.name
+    name = Path(f"{quast_file}").name
+    print(f"## {sample}\n\n")
+    print(f'<a href="./QUAST/{sample}/{name}" target="_blank">Open Quast report on new window</a>\n\n')
+    print('<div class="embed-responsive embed-responsive-4by3">\n')
+    print(f'<iframe class="embed-responsive-item" src="./QUAST/{sample}/{name}" loading="lazy" allowfullscreen></iframe>\n')
+    print('</div>\n\n')
+```
+
+```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('BLOBTOOLS' %in% quality_tools_vector)}
+print("""# BLOBTOOLS {.tabset .tabset-fade}\n\n""")
+sample_found = []
+for blob_file in r.blob_files:
+    sample = Path(f"{blob_file}").stem.split("_")[0]
+    assembler = Path(f"{blob_file}").stem.split("_")[1]
+    quality_step = '_'.join(Path(f"{blob_file}").stem.split("_")[2:])
+    path = Path(f"{blob_file}").parent
+    read_cov = path.joinpath("read_cov.png").as_posix()
+    blob = path.joinpath("blob.png").as_posix()
+    if sample not in sample_found:
+        print("## "+sample+" {.tabset .tabset-pill}\n\n")
+        assembler_found = []
+        step_found = []
+        sample_found.append(sample)
+    if assembler not in assembler_found:
+        print(f"### {assembler} \n\n")
+        assembler_found.append(assembler)
+
+    print(f"\n\n#### {quality_step}\n\n")
+    print('![thumbnail]('+blob+') ![thumbnail]('+read_cov+')\n\n')
+```
+
+```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('ASSEMBLYTICS' %in% quality_tools_vector)}
+print("""# ASSEMBLYTICS{.tabset .tabset-fade}\n\n""")
+sample_found = []
+for assemblytics_file in r.assemblytics_files:
+    sample = Path(f"{assemblytics_file}").stem.split("__")[0]
+    assembler = Path(f"{assemblytics_file}").stem.split("__")[1]
+    quality_step = Path(f"{assemblytics_file}").stem.split("__")[2].replace('.Assemblytics_structural_variants','')
+    path = Path(f"{assemblytics_file}").parent
+    png_dotplot = path.joinpath(f"{sample}__{assembler}__{quality_step}.Assemblytics.Dotplot_filtered.png").as_posix()
+    png_Nchart = path.joinpath(f"{sample}__{assembler}__{quality_step}.Assemblytics.Nchart.png").as_posix()
+    png_log_all_sizes = path.joinpath(f"{sample}__{assembler}__{quality_step}.Assemblytics.size_distributions.all_variants.log_all_sizes.png").as_posix()
+
+    if sample not in sample_found:
+        print("## "+sample+" {.tabset .tabset-pill}\n\n")
+        assembler_found = []
+        step_found = []
+        sample_found.append(sample)
+
+    if assembler not in assembler_found:
+        print(f"### {assembler} \n\n")
+        assembler_found.append(assembler)
+
+    print(f"\n\n#### {quality_step}\n\n")
+    print('![thumbnail]('+png_dotplot+') ![thumbnail]('+png_Nchart+') ![thumbnail]('+png_log_all_sizes+')\n\n')
+```
+
+```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('KAT' %in% quality_tools_vector)}
+print("""# KAT {.tabset .tabset-fade}\n\n""")
+sample_found = []
+for kat_file in r.kat_files:
+    sample = Path(f"{kat_file}").stem.split("_")[0]
+    assembler = Path(f"{kat_file}").stem.split("_")[1]
+    quality_step = '_'.join(Path(f"{kat_file}").stem.split("_")[2:])
+    path = Path(f"{kat_file}").parent
+
+    png_gcp_mx = path.joinpath(f"{sample}_{assembler}_{quality_step}.gcp.mx.png").as_posix()
+    png_hist = path.joinpath("kat.hist.png").as_posix()
+    png_density = path.joinpath("kat-density.png").as_posix()
+    png_spectra_cn = path.joinpath("kat-spectra-cn.png").as_posix()
+
+    png_spectra_hist = path.joinpath("kat-spectra-hist.png").as_posix()
+    png_comp_main_mx_spectra_cn = path.joinpath("kat.comp-main.mx.spectra-cn.png").as_posix()
+
+    if sample not in sample_found:
+        print("## "+sample+" {.tabset .tabset-pill}\n\n")
+        assembler_found = []
+        step_found = []
+        sample_found.append(sample)
+
+    if assembler not in assembler_found:
+        print(f"### {assembler} \n\n")
+        assembler_found.append(assembler)
+
+    print(f"\n\n#### {quality_step}\n\n")
+
+    print('![thumbnail]('+png_gcp_mx+') ![thumbnail]('+png_hist+')\n\n')
+    print('![thumbnail]('+png_density+') ![thumbnail]('+png_spectra_cn+')\n\n')
+    #print('![thumbnail]('+png_spectra_hist+') ![thumbnail]('+png_comp_main_mx_spectra_cn+')\n\n')
+
+```
+
+```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('FLAGSTATS' %in% quality_tools_vector)}
+print("""# FLAGSTATS{.tabset .tabset-fade}
+
+SAMTOOLS FLAGSTATS was used to calculate remapping between illumina reads and each last assembler.
+""")
+dico_flag = {}
+dico_flag_file = {}
+for flag_file in r.flagstats_stats:
+    sample = Path(f"{flag_file}").stem.split("_")[0]
+    #print(f"## {sample}\n\n")
+    df = pd.read_csv(Path(f"{flag_file}"), sep=",", engine='python', header=0, index_col=None)
+    #df.rename(columns={"Unnamed: 0":'Assembler',"Unnamed: 1":'Steps' }, inplace=True)
+    #print(f"{df}\n")
+    dico_flag[sample] = df
+    dico_flag_file[sample] = flag_file
+```
+
+```{r, flagstats, echo=FALSE, message = FALSE, warning = FALSE, eval=('FLAGSTATS' %in% quality_tools_vector)}
+flagstat = NULL
+for (i in 1:length(samples_list)) {
+    #print(paste0("## ",samples_list,"\n\n"))
+    file = py$dico_flag_file[[samples_list[[i]]]]
+    #print(file)
+    #data = read.csv(file, header = TRUE, sep=",")
+    #colnames(data)[1]  <- "Assembler"
+    #colnames(data)[2]  <- "Steps"
+    #print(data)
+    flagstat = c(flagstat, knit_expand(text="## {{samples_list[[i]]}}\n\n{{dt}}\n\n",
+                                dt = DT::datatable(py_to_r(py$dico_flag[[samples_list[[i]]]]),
+                                                  escape = FALSE,
+                                                  rownames = FALSE,
+                                                  filter = list(position = 'top', clear = TRUE, plain = FALSE),
+                                                  option= list(paging=FALSE,searching = FALSE, ordering=TRUE, scrollX = FALSE, dom = 'Blfrtip'))
+                                )
+            )
+}
+```
+
+```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('FLAGSTATS' %in% quality_tools_vector)}
+cat(paste(knit(text = flagstat), collapse = '\n'))
+```
+
+# Versions
+
+```{r, echo=FALSE, include=TRUE}
+DT::datatable(read.csv(as.character(versions))[-1],escape = FALSE,
+              rownames = FALSE,
+              option= list(paging=FALSE, searching = FALSE, ordering=TRUE, scrollX = FALSE, dom = 'tip'))
+```

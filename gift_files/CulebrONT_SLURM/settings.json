@@ -1,6 +1,0 @@
-{
-    "SBATCH_DEFAULTS": "--export=ALL",
-    "CLUSTER_NAME": "",
-    "CLUSTER_CONFIG": "${PROFILE}/cluster_config.yaml",
-    "ADVANCED_ARGUMENT_CONVERSION": "no"
-}
