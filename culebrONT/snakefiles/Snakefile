@@ -1,39 +1,37 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from pathlib import Path
-from pprint import pprint as pp
 from snakemake.logging import logger
+import logging
+import pprint
 # load own functions
 import culebrONT
 from culebrONT.module import CulebrONT
-from culebrONT.usefull_function import get_version
-
-from culebrONT.global_variable import *
+from culebrONT.snakeWrapper import *
 
 # GLOBAL VARIABLES
 version_CulebrONT = get_version()
+try:
+    culebront = CulebrONT(workflow, config)
+except Exception as e:
+    logger.logger.fatal(e, exc_info=False)
+    logging.shutdown()
+    raise SystemExit()
 
-# logger.info(culebrONT.description_tools)
-
-
-# pp(workflow.basedir)
-culebront = CulebrONT(workflow, config)
 tools_config = culebront.tools_config
 cluster_config = culebront.cluster_config
+
 #print(culebront.string_to_dag)
 # pp(culebront.export_use_yaml)
 
 # print for debug:
-#logger.debug(pp(culebront))
-#exit()
+# logger.debug(pp(culebront))
+# exit()
 
 # Getting paths on usefully variables
 output_dir = config['DATA']['OUTPUT']
 fastq_dir = config['DATA']['FASTQ']
 reference_file = config['DATA']['REF']
-
-# path_snake = workflow.snakefile
-# print(f"path_snake: {path_snake}")
 
 ################ WILDCARDS  ################
 FASTQ, = glob_wildcards(f"{config['DATA']['FASTQ']}{{fastq}}{culebront.fastq_files_ext}")
@@ -55,22 +53,32 @@ TAG = culebront.TAG
 workdir:config["DATA"]["OUTPUT"]
 #######################################
 
-
 def get_threads(rule, default):
     """
-    give threads or 'cpus-per-task from cluster_config rule : threads to SGE and cpus-per-task to SLURM
+    retrieve threads value from cluster_config file avail for SGE and SLURM
+    If local get the --core value
+    if fail return default value define on each rules
+
+    Examples:
+        rule rule_graph:
+            threads: get_threads('rule_graph', 1)
     """
+    # if cluster mode
     if cluster_config:
-        if rule in cluster_config and 'threads' in cluster_config[rule]:
-            return int(cluster_config[rule]['threads'])
-        elif rule in cluster_config and 'cpus-per-task' in cluster_config[rule]:
-            return int(cluster_config[rule]['cpus-per-task'])
-        elif '__default__' in cluster_config and 'cpus-per-task' in cluster_config['__default__']:
-            return int(cluster_config['__default__']['cpus-per-task'])
-        elif '__default__' in cluster_config and 'threads' in cluster_config['__default__']:
-            return int(cluster_config['__default__']['threads'])
-    if workflow.global_resources["_cores"]:
+        if rule in cluster_config:
+            if 'threads' in cluster_config[rule]:
+                return int(cluster_config[rule]['threads'])
+            elif 'cpus-per-task' in cluster_config[rule]:
+                return int(cluster_config[rule]['cpus-per-task'])
+        elif '__default__' in cluster_config:
+            if 'cpus-per-task' in cluster_config['__default__']:
+                return int(cluster_config['__default__']['cpus-per-task'])
+            elif 'threads' in cluster_config['__default__']:
+                return int(cluster_config['__default__']['threads'])
+    # if local
+    elif workflow.global_resources["_cores"]:
         return workflow.global_resources["_cores"]
+    # if cluster not rule and not default or local not _cores return value from call
     return default
 
 
@@ -146,19 +154,19 @@ rule final:
 
 
 ################################ ASSEMBLY ####################################
-include: f"{culebrONT.CULEBRONT_PATH}/snakefiles/assemblers.snake"
+include: f"{INSTALL_PATH}/snakefiles/assemblers.snake"
 
 ############################### CIRCULARISATION ##############################
-include: f"{culebrONT.CULEBRONT_PATH}/snakefiles/circular.snake"
+include: f"{INSTALL_PATH}/snakefiles/circular.snake"
 
 ################################ POLISHING ####################################
-include: f"{culebrONT.CULEBRONT_PATH}/snakefiles/polishers.snake"
+include: f"{INSTALL_PATH}/snakefiles/polishers.snake"
 
 ################################ CORRECTION ####################################
-include: f"{culebrONT.CULEBRONT_PATH}/snakefiles/correction.snake"
+include: f"{INSTALL_PATH}/snakefiles/correction.snake"
 
 ################################ QUALITY ####################################
-include: f"{culebrONT.CULEBRONT_PATH}/snakefiles/quality.snake"
+include: f"{INSTALL_PATH}/snakefiles/quality.snake"
 
 ################################ RAPPORT ####################################
 
@@ -168,9 +176,9 @@ rule rule_graph:
     """
     threads: get_threads('rule_graph', 1)
     input:
-        config = f"{output_dir}config_corrected.yaml",
+        config = f"{output_dir}config_corrected.yaml"
     params:
-        tmp = temp(f"{output_dir}FINAL_REPORT/dag.tmp"),
+        tmp = f"{output_dir}FINAL_REPORT/dag.tmp",
         cmd = culebront.string_to_dag
     output:
         dag = f"{output_dir}FINAL_REPORT/dag.png"
@@ -189,14 +197,13 @@ rule rule_graph:
         dot -Tpng {params.tmp} > {output.dag}) 1>{log.output} 2>{log.error}
         """
 
-
 rule run_report_snakemake:
     """
     run dag on {rule}
     """
     threads: get_threads('run_report_snakemake', 1)
     input:
-        conf = str(culebront.path_config),
+        conf = str(culebront.path_config)
     output:
         report_snakemake = f"{output_dir}FINAL_REPORT/snake_report.html"
     log:
@@ -205,14 +212,13 @@ rule run_report_snakemake:
     message:
         """
         making report ...
-        snakemake -n {culebrONT.CULEBRONT_SNAKEFILE} --configfile {input.conf} --report {output.report_snakemake}
+        snakemake -n {SNAKEFILE} --configfile {input.conf} --report {output.report_snakemake}
         """
     shell:
         """
-        cd {culebrONT.CULEBRONT_PATH}
-        snakemake -s {culebrONT.CULEBRONT_SNAKEFILE} --configfile {input.conf} --report {output.report_snakemake}
+        cd {INSTALL_PATH}
+        snakemake -s {SNAKEFILE} --configfile {input.conf} --report {output.report_snakemake} 1>{log.output} 2>{log.error}
         """
-
 
 rule run_flagstats_stats:
     """
@@ -222,11 +228,11 @@ rule run_flagstats_stats:
     input:
         summary = expand(rules.run_flagstat.output.txt, fastq='{fastq}', assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list)
     output:
-        stat = f"{output_dir}{{fastq}}/REPORT/{{fastq}}_flagstats.csv",
+        stat = f"{output_dir}{{fastq}}/REPORT/{{fastq}}_flagstats.csv"
     params:
         quality_list = culebront.quality_step,
         assembly_list = culebront.assembly_tools_activated,
-        out_dir = directory(f"{output_dir}{{fastq}}/"),
+        out_dir = directory(f"{output_dir}{{fastq}}/")
     log:
         output = f"{output_dir}LOGS/run_flagstats_stats/{{fastq}}.o",
         error = f"{output_dir}LOGS/run_flagstats_stats/{{fastq}}.e"
@@ -235,8 +241,7 @@ rule run_flagstats_stats:
         make stats from flagstats
         """
     script:
-        f"{culebrONT.CULEBRONT_SCRIPTS}/get_stats_flagstats.py"
-
+        f"{SNAKEMAKE_SCRIPTS}/get_stats_flagstats.py"
 
 rule run_busco_stats:
     """
@@ -246,11 +251,11 @@ rule run_busco_stats:
     input:
         summary = expand(rules.run_busco.output.summary, fastq='{fastq}', assemblers=culebront.assembly_tools_activated, quality_step=culebront.quality_step)
     output:
-        stat = f"{output_dir}{{fastq}}/REPORT/{{fastq}}_busco.csv",
+        stat = f"{output_dir}{{fastq}}/REPORT/{{fastq}}_busco.csv"
     params:
         quality_list = culebront.quality_step,
         assembly_list = culebront.assembly_tools_activated,
-        out_dir = directory(f"{output_dir}{{fastq}}/"),
+        out_dir = directory(f"{output_dir}{{fastq}}/")
     log:
         output = f"{output_dir}LOGS/run_busco_stats/{{fastq}}.o",
         error = f"{output_dir}LOGS/run_busco_stats/{{fastq}}.e"
@@ -259,8 +264,7 @@ rule run_busco_stats:
         make stats
         """
     script:
-        f"{culebrONT.CULEBRONT_SCRIPTS}/get_stats_busco.py"
-
+        f"{SNAKEMAKE_SCRIPTS}/get_stats_busco.py"
 
 rule run_racon_version:
     """
@@ -268,9 +272,9 @@ rule run_racon_version:
     """
     threads: get_threads('run_racon_version', 1)
     input:
-        fastq = get_fastq,
+        fastq = get_fastq
     output:
-        version = f"{output_dir}{{fastq}}/REPORT/RACON-version.txt",
+        version = f"{output_dir}{{fastq}}/REPORT/RACON-version.txt"
     log:
         output = f"{output_dir}LOGS/run_racon_version/{{fastq}}.o",
         error = f"{output_dir}LOGS/run_racon_version/{{fastq}}.e"
@@ -285,7 +289,6 @@ rule run_racon_version:
         ln -s -f {output.version} {output_dir}versions/RACON-version.txt
         """
 
-
 rule run_busco_version:
     """
     busco version
@@ -295,7 +298,7 @@ rule run_busco_version:
         stats = rules.run_busco_stats.output.stat
     output:
         busco_version = f"{output_dir}{{fastq}}/REPORT/BUSCO-version.txt",
-        augustus_version = f"{output_dir}{{fastq}}/REPORT/BUSCO_AUGUSTUS-version.txt",
+        augustus_version = f"{output_dir}{{fastq}}/REPORT/BUSCO_AUGUSTUS-version.txt"
     log:
         output = f"{output_dir}LOGS/run_busco_version/{{fastq}}.o",
         error = f"{output_dir}LOGS/run_busco_version/{{fastq}}.e"
@@ -311,14 +314,19 @@ rule run_busco_version:
         """
         [ ! -f {output.busco_version} ] &&  [ ! -d versions ] && mkdir -p versions; busco --version > {output.busco_version}
         cp -f {output.busco_version} {output_dir}versions/BUSCO-version.txt
-        [ ! -f {output.augustus_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {culebrONT.CULEBRONT_SCRIPTS}/which_version.py "augustus --version" | grep 'AUGUSTUS' > {output.augustus_version}
+        [ ! -f {output.augustus_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {SNAKEMAKE_SCRIPTS}/which_version.py "augustus --version" | grep 'AUGUSTUS' > {output.augustus_version}
         cp -f {output.augustus_version} {output_dir}versions/BUSCO_AUGUSTUS-version.txt
         """
 
 def get_inputs_benchmark(wildcards):
     dico_benchmark_inputs = {
-            "assembly_list": expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/ASSEMBLER/{{assemblers}}.txt", assemblers=culebront.assembly_tools_activated)
+            "assembly_list": expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/ASSEMBLER/{{assemblers}}.txt",
+                                    assemblers=[ass for ass in culebront.assembly_tools_activated if ass not in ["MINIASM"]]),
     }
+    if culebront.assembly_tools_activated:
+        if "MINIASM" in culebront.assembly_tools_activated:
+            dico_benchmark_inputs["assembly_list"].append(f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIASM_MINIPOLISH.txt"),
+
     if culebront.polishing_tools_activated:
         dico_benchmark_inputs["polishers_list"] = expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/POLISHING/{{assemblers}}_{{polishers}}{{nb}}.txt",
                     assemblers=[ass for ass in culebront.assembly_tools_activated if ass not in ["MINIASM"]],
@@ -339,9 +347,8 @@ def get_inputs_benchmark(wildcards):
                     # assemblers=culebront.assembly_tools_activated,
                     # polishers=culebront.polishing_tools_activated,
                     # nb = range(1, int(nb_racon_rounds)+1))
-    # pprint.pprint(dico_benchmark_inputs)
+    #pprint.pprint(dico_benchmark_inputs)
     return dico_benchmark_inputs
-
 
 rule run_benchmark_time:
     """
@@ -351,7 +358,7 @@ rule run_benchmark_time:
     input:
         unpack(get_inputs_benchmark)
     output:
-        stat_time = f"{output_dir}{{fastq}}/REPORT/{{fastq}}_time.csv",
+        stat_time = f"{output_dir}{{fastq}}/REPORT/{{fastq}}_time.csv"
     params:
         out_dir = f"{output_dir}{{fastq}}",
         sample = f"{{fastq}}",
@@ -364,7 +371,7 @@ rule run_benchmark_time:
         unpacking final dico and benchmark
         """
     script:
-        f"{culebrONT.CULEBRONT_SCRIPTS}/get_benchmark.py"
+        f"{SNAKEMAKE_SCRIPTS}/get_benchmark.py"
 
 rule run_get_versions:
     """
@@ -377,13 +384,11 @@ rule run_get_versions:
         correction = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/{{correction}}/{{correction}}-version.txt", fastq=FASTQ[0], assemblers=culebront.assembly_tools_activated, correction=culebront.correction_tools_activated),
         circular = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR-version.txt", fastq=FASTQ[0], assemblers=[ass for ass in culebront.assembly_tools_activated if ass in ["CANU","SMARTDENOVO"] and bool(culebront.config['CIRCULAR'])]),
         quality = expand(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/{{quality}}/{{quality}}-version.txt", fastq=FASTQ[0], assemblers=culebront.assembly_tools_activated[0], quality_step=culebront.last_steps_list, quality=[qual for qual in culebront.quality_tools_activated if qual not in ["QUAST", "MAUVE", "BUSCO"]]),
-        quast = expand(rules.run_quast.output.version, fastq=FASTQ[0], quality=[qual for qual in culebront.quality_tools_activated if qual in ["QUAST"]]),
-        busco = expand(rules.run_busco_version.output.busco_version, fastq=FASTQ[0]),
-        mauve = expand(f"{output_dir}/versions/{{quality}}-version.txt", quality=[qual for qual in culebront.quality_tools_activated if qual in ["MAUVE"]]),
+        mauve = expand(f"{output_dir}/versions/{{quality}}-version.txt", quality=[qual for qual in culebront.quality_tools_activated if qual in ["MAUVE"]])
     params:
         dir =f'{output_dir}versions/'
     output:
-        csv = f"{output_dir}versions.csv",
+        csv = f"{output_dir}versions.csv"
     message:
         """
         picking software versions used by CulebrONT
@@ -392,47 +397,7 @@ rule run_get_versions:
         output=f"{output_dir}LOGS/GETVERSIONS/get_versions.o",
         error = f"{output_dir}LOGS/GETVERSIONS/get_versions.e"
     script:
-        f"{culebrONT.CULEBRONT_SCRIPTS}/get_versions.py"
-
-
-def output_final(wildcards):
-    dico_final = {
-        "fasta_list" : expand(rules.preparing_fasta_to_quality.output.renamed, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.quality_step),
-        "bench_list" : expand(rules.run_benchmark_time.output.stat_time,fastq=FASTQ),
-        "dag" : rules.rule_graph.output.dag,
-        "versions" : rules.run_get_versions.output.csv,
-        "stats_assembly": expand(rules.stats_assembly.output.csv, fastq = FASTQ)
-         # "report_snakemake" : rules.run_report_snakemake.output.report_snakemake,
-        }
-    if config['QUALITY']['QUAST']:
-        dico_final.update({
-            "quast_files": expand(rules.run_quast.output.report_file, fastq=FASTQ)
-         })
-    if config['QUALITY']['BUSCO']:
-         dico_final.update({
-         "busco_stats": expand(rules.run_busco_stats.output.stat, fastq = FASTQ)
-         })
-    if config['QUALITY']['BLOBTOOLS']:
-        dico_final.update({
-            "blob_files": expand(rules.run_blobtools.output.table, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list)
-        })
-    if config['QUALITY']['ASSEMBLYTICS']:
-        dico_final.update({
-             "assemblytics_files": expand(rules.run_assemblytics.output.summary, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list)
-        })
-    if config['QUALITY']['KAT']:
-        dico_final.update({
-            "kat_files":  expand(rules.run_KAT.output.gcp, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list)
-        })
-    if config['QUALITY']['FLAGSTATS']:
-         dico_final.update({
-         "flagstats_stats": expand(rules.run_flagstats_stats.output.stat, fastq = FASTQ)
-         })
-    if config['MSA']['MAUVE']:
-        dico_final.update({
-            "mauve_files": expand(f"{output_dir}{{fastq}}/AGGREGATED_QC/MAUVE_ALIGN/candidate_assemblies.xmfa", fastq=FASTQ)
-        })
-    return dico_final
+        f"{SNAKEMAKE_SCRIPTS}/get_versions.py"
 
 rule stats_assembly:
     """ build stats on assembly"""
@@ -459,7 +424,48 @@ rule stats_assembly:
             error: {log.error}
         """
     script:
-        f"{culebrONT.CULEBRONT_SCRIPTS}/assembly-stats.py"
+        f"{SNAKEMAKE_SCRIPTS}/assembly-stats.py"
+
+def output_final(wildcards):
+    dico_final = {
+        "fasta_list" : expand(rules.preparing_fasta_to_quality.output.renamed, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.quality_step),
+        "bench_list" : expand(rules.run_benchmark_time.output.stat_time,fastq=FASTQ),
+        "dag" : rules.rule_graph.output.dag,
+        "versions" : rules.run_get_versions.output.csv,
+        "stats_assembly": expand(rules.stats_assembly.output.csv, fastq = FASTQ)
+         # "report_snakemake" : rules.run_report_snakemake.output.report_snakemake,
+        }
+    if config['QUALITY']['QUAST']:
+        dico_final.update({
+            "quast_files": expand(rules.run_quast.output.report_file, fastq=FASTQ),
+            "quast_version" : expand(rules.run_quast.output.version,fastq=FASTQ[0])
+         })
+    if config['QUALITY']['BUSCO']:
+         dico_final.update({
+         "busco_stats": expand(rules.run_busco_stats.output.stat, fastq = FASTQ),
+         "busco_version": expand(rules.run_busco_version.output.busco_version,fastq=FASTQ[0])
+         })
+    if config['QUALITY']['BLOBTOOLS']:
+        dico_final.update({
+            "blob_files": expand(rules.run_blobtools.output.table, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list)
+        })
+    if config['QUALITY']['ASSEMBLYTICS']:
+        dico_final.update({
+             "assemblytics_files": expand(rules.run_assemblytics.output.summary, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list)
+        })
+    if config['QUALITY']['KAT']:
+        dico_final.update({
+            "kat_files":  expand(rules.run_KAT.output.gcp, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list)
+        })
+    if config['QUALITY']['FLAGSTATS']:
+         dico_final.update({
+         "flagstats_stats": expand(rules.run_flagstats_stats.output.stat, fastq = FASTQ)
+         })
+    if config['MSA']['MAUVE']:
+        dico_final.update({
+            "mauve_files": expand(f"{output_dir}{{fastq}}/AGGREGATED_QC/MAUVE_ALIGN/candidate_assemblies.xmfa", fastq=FASTQ)
+        })
+    return dico_final
 
 rule run_report:
     """
@@ -467,7 +473,7 @@ rule run_report:
     """
     threads: get_threads('run_report', 1)
     input:
-        unpack(output_final),
+        unpack(output_final)
     params:
         samples_list = FASTQ,
         txt_config = culebront.export_use_yaml,
@@ -488,4 +494,4 @@ rule run_report:
     envmodules:
         tools_config['ENVMODULE']['R']
     script:
-        f"{culebrONT.CULEBRONT_SCRIPTS}/Report.Rmd"
+        f"{SNAKEMAKE_SCRIPTS}/Report.Rmd"

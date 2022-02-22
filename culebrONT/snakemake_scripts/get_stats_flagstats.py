@@ -5,6 +5,8 @@ from collections import OrderedDict
 from pprint import pprint as pp
 import re
 version = "0.0.1"
+pd.set_option("display.precision", 2)
+
 
 def replace_all(repls, str):
     """
@@ -48,8 +50,8 @@ class AutoVivification(OrderedDict):
             value = self[item] = type(self)()
             return value
 
+
 def main():
-    
     assembly_list = snakemake.params.assembly_list
     quality_list = snakemake.params.quality_list
     out_repository = snakemake.params.out_dir
@@ -57,7 +59,6 @@ def main():
     summary_flagstats = snakemake.input.summary
     
     dico_flagstats_time = AutoVivification()
-
 
     for flagstats_file in sorted(summary_flagstats):
         flagstats_file_path = Path(flagstats_file)
@@ -81,35 +82,19 @@ def main():
                             mapped = str(re.search("([0-9]+ [\+] [0-9]+) mapped", line).groups()).strip('(').strip(')').strip('\',')
                         elif 'mapped (' in line:
                             mapped = str(re.search("([0-9]+ [\+] [0-9]+) mapped", line).groups()).strip('(').strip(')').strip('\',')
-                        #elif 'paired' in line:
-                        #    paired = str(re.search("([0-9]+ [\+] [0-9]+) paired in sequencing", line).groups()).strip('(').strip(')').strip('\',')
-
-
-                            #paired = re.search("([0-9]+ [\+] [0-9]+) paired in sequencing", line).groups()
-                            #read1 = re.search("([0-9]+ [\+] [0-9]+) read1", line).groups()
-                            #read2 = re.search("([0-9]+ [\+] [0-9]+) read2", line).groups()
-                            #properly = re.search("([0-9]+ [\+] [0-9]+) properly paired", line).groups()
-                            #mate = re.search("([0-9]+ [\+] [0-9]+) with itself and mate mapped", line).groups()
-                            #singletons = re.search("([0-9]+ [\+] [0-9]+) singletons", line).groups()
-                            #mate_diff_chr = re.search("([0-9]+ [\+] [0-9]+) with mate mapped to a different chr$", line).groups()
-                            #mapq5 = re.search("([0-9]+ [\+] [0-9]+) with mate mapped to a different chr (mapQ>=5)", line).groups()
-
 
         dico_flagstats_time[assembler][step]['Total'] = f'{total}'
         dico_flagstats_time[assembler][step]['Secondary'] = f'{secondary}'
         dico_flagstats_time[assembler][step]['Supplementary'] = f'{supplementary}'
         dico_flagstats_time[assembler][step]['Duplicates'] = f'{duplicates}'
         dico_flagstats_time[assembler][step]['Mapped'] = f'{mapped}'
-        #dico_flagstats_time[assembler][step]['Paired'] = f'{paired}'
 
     df = pd.DataFrame.from_dict(dico_flagstats_time)
-    #df.columns.values[0] = "Assembler"
-    #df.columns.values[1] = "Step"
+
     dataframe_flag = df.T.stack().apply(pd.Series)
     with open(out_stats, "w") as flagstats_out:
-        #columns = ['Assembler', "Step", "Total", "Secondary", "Supplementary", "Duplicates","Mapped"]
-        #print(f"dataframe_flag:\n{dataframe_flag}\n")
         dataframe_flag.to_csv(flagstats_out, index=True)
+
 
 if __name__ == '__main__':
     main()

@@ -1,9 +1,9 @@
-.. image:: ./culebrONT/culebront_logo.png
+.. image:: https://raw.githubusercontent.com/SouthGreenPlatform/culebrONT/master/culebrONT/culebront_logo.png
    :alt: Culebront Logo
    :align: center
 
 
-|PythonVersions| |SnakemakeVersions| |Singularity|
+|PythonVersions| |SnakemakeVersions| |Singularity|  |Downloads|
 
 .. contents:: Table of Contents
     :depth: 2
@@ -72,14 +72,21 @@ License
 
 Licencied under `CeCill-C <http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html>`_ and GPLv3.
 
-Intellectual property belongs to IRD, CIRAD and authors.
+Intellectual property belongs to `IRD <https://www.ird.fr>`_ , `CIRAD <https://www.cirad.fr/>`_ and authors.
 
-.. |PythonVersions| image:: https://img.shields.io/badge/python-3.7%2B-blue
+.. |PythonVersions| image:: https://img.shields.io/badge/python-≥3.6%2B-blue
    :target: https://www.python.org/downloads
-.. |SnakemakeVersions| image:: https://img.shields.io/badge/snakemake-≥5.10.0-brightgreen.svg?style=flat
+
+.. |SnakemakeVersions| image:: https://img.shields.io/badge/snakemake-≥6.10.0-brightgreen.svg
    :target: https://snakemake.readthedocs.io
+
 .. |Singularity| image:: https://img.shields.io/badge/singularity-≥3.3.0-7E4C74.svg
    :target: https://sylabs.io/docs/
+
 .. |readthedocs| image:: https://pbs.twimg.com/media/E5oBxcRXoAEBSp1.png
    :target: https://culebront-pipeline.readthedocs.io/en/latest/
    :width: 400px
+
+.. |Downloads| image:: https://img.shields.io/pypi/dm/culebrONT?color=purple&logo=culebrONT-pypi
+   :target: https://pypi.org/project/culebrONT
+   :alt: PyPi downloads

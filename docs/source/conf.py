@@ -12,11 +12,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import sys
-import os
-import sphinx_rtd_theme
 import culebrONT
-from culebrONT.global_variable import *
+from culebrONT.snakeWrapper.global_variable import *
 
 # The short X.Y version.
 version = culebrONT.__version__
@@ -24,13 +21,13 @@ version = culebrONT.__version__
 release = culebrONT.__version__
 
 rst_prolog = f"""
-.. |tools_path| replace:: {CULEBRONT_TOOLS_PATH}
+.. |tools_path| replace:: {GIT_TOOLS_PATH}
 """
 
 # -- Project information -----------------------------------------------------
 # General information about the project.
 project = 'CulebrONT'
-copyright = '2019-2021, J Orjuela (IRD), A Comte (IRD), S Ravel (CIRAD), F Charriat (INRAE), T Vi (IRD, AGI), F Sabot (IRD) and S Cunnac (IRD)'
+copyright = '2019-2022, J Orjuela (IRD), A Comte (IRD), S Ravel (CIRAD), F Charriat (INRAE), T Vi (IRD, AGI), F Sabot (IRD) and S Cunnac (IRD)'
 github_doc_root = 'https://github.com/SouthGreenPlatform/CulebrONT_pipeline/tree/master/docs/'
 issues_github_path = 'https://github.com/SouthGreenPlatform/CulebrONT_pipeline/issues'
 

@@ -145,7 +145,7 @@ conda install r-plyr -n assemblytics
 conda install assemblytics -n assemblytics
 
 conda create -n kat
-conda install kat -n kat
+conda install kat=2.4.1 -n kat
 
 %runscript
 exec /bin/bash "$@"

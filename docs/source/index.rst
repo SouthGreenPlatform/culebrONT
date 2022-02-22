@@ -7,7 +7,7 @@ Welcome to CulebrONT's documentation!
    :align: center
    :alt: Culebront Logo
 
-Today, assembly a genome using long reads from Oxford Nanopore Technologies is really interesting in particular to solve repeats and structural variants in prokaryotic as well as in eukaryotic genomes. Assemblies are increasing contiguity and accuracy.
+Today, assembling a genome using long reads from Oxford Nanopore Technologies is really interesting in particular to solve repeats and structural variants in prokaryotic as well as in eukaryotic genomes. Assemblies are increasing in contiguity and accuracy.
 
 The daily increase of data sequences obtained and the fact that more and more tools are being released or updated every week,
 many species are having their genomes assembled and that’s is great ...

@@ -41,7 +41,7 @@ rule run_makerange :
     shell:
         """
         (cd {params.dir}
-        python3 {culebrONT.CULEBRONT_SCRIPTS}/makerange.py --draft {input.draft} --segment-length {params.segment_len} --overlap-length {params.overlap_len} --output-file {output.segments_list}) 1> {log.output} 2> {log.error}
+        python3 {SNAKEMAKE_SCRIPTS}/makerange.py --draft {input.draft} --segment-length {params.segment_len} --overlap-length {params.overlap_len} --output-file {output.segments_list}) 1> {log.output} 2> {log.error}
         """
 
 
@@ -137,7 +137,7 @@ rule preparing_ref_to_nanopolish :
         ln -s -f {output.nanopolish_samtools_version} {output_dir}versions/NANOPOLISH_SAMTOOLS-version.txt
         [ ! -f {output.nanopolish_minimap2_version} ] &&  [ ! -d versions ] && mkdir -p versions; minimap2 --version |head -n1 > {output.nanopolish_minimap2_version}
         ln -s -f {output.nanopolish_minimap2_version} {output_dir}versions/NANOPOLISH_MINIMAP2-version.txt
-        [ ! -f {output.nanopolish_seqtk_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {culebrONT.CULEBRONT_SCRIPTS}/which_version.py seqtk | grep 'Version' > {output.nanopolish_seqtk_version}
+        [ ! -f {output.nanopolish_seqtk_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {SNAKEMAKE_SCRIPTS}/which_version.py seqtk | grep 'Version' > {output.nanopolish_seqtk_version}
         ln -s -f {output.nanopolish_seqtk_version} {output_dir}versions/NANOPOLISH_SEQTK-version.txt
 
         (cd {params.dir}
@@ -550,7 +550,7 @@ rule run_pilon_first_round:
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; pilon | head -n1 > {output.version}
         ln -s -f {output.version} {output_dir}versions/PILON-version.txt
         (bwa index {input.draft}
-        bwa mem -t {threads} {input.draft} {params.illumina} | samtools view - -Sb | samtools sort - -@{threads} -o {params.bam}
+        bwa mem -t {threads} {input.draft} {params.illumina} | samtools view - -Sb -h | samtools sort - -@{threads} -o {params.bam}
         samtools index {params.bam}
         pilon --genome {input.draft} --fix all --changes --bam {params.bam} --threads {threads} {params.options} --output {params.rep} ) 1>{log.output} 2>{log.error}
         sed 's/_pilon//g' {output.pilon} > {output.corrected}
@@ -606,7 +606,7 @@ rule run_pilon:
     shell:
         """
         (bwa index {input.draft}
-        bwa mem -t {threads} {input.draft} {params.illumina} | samtools view -@ {threads}-Sb | samtools sort -@ {threads} -o {params.bam}
+        bwa mem -t {threads} {input.draft} {params.illumina} | samtools view -h -@ {threads}-Sb | samtools sort -@ {threads} -o {params.bam}
         samtools index {params.bam}
         pilon --genome {input.draft} --fix all --changes --bam {params.bam} --threads {threads} --output {params.rep} {params.options}) 1>{log.output} 2>{log.error}
         sed 's/_pilon//g' {output.pilon} > {output.corrected}

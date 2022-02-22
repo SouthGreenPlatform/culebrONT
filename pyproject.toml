@@ -1,44 +1,62 @@
 [build-system]
-requires = [ "setuptools" , "wheel"]
+requires = ["setuptools>=45", "wheel>=0.37.1", "setuptools_scm>=6.2"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+fallback_version = "2.0.0b3"
+# See configuration details in https://github.com/pypa/setuptools_scm
+version_scheme = "release-branch-semver"
+local_scheme = "node-and-date"
+normalize = false
+#git_describe_command = "git describe --tags  --first-parent"
+root = "."
+relative_to = "setup.py"
+write_to = 'culebrONT/_version.py'
 
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{36,37,38,39}
-skip_missing_interpreters = true
+envlist = py{38,39}
+skip_missing_interpreters = True
 skipsdist=False
 
-[gh-actions]
-python =
-    3.6: py36
-    3.7: py37
-    3.8: py38
-    3.9: py39
-
-# install testing framework
-[testenv]
-deps= pytest
-      PyYAML
-      pandas
-      matplotlib
-      tabulate
-      rpy2
-      ipython
-      biopython
-      pysam
-      numpy
-      argparse
-      snakemake
-      tqdm
-      click>=8.0.3
-      cookiecutter
-      
+[testenv:py{38,39}]
+description = Run the install in Python 3.8
+skip_install = False
 changedir={envdir}
-
-# run the tests
-# ... or run any other command line tool you need to run here
-commands=
+envdir =
+    py38: {toxworkdir}/py38
+    py39: {toxworkdir}/py39
+commands =
     culebrONT --help
     culebrONT install_local
+
+
+[run]
+description = Run Installation culebrONT install_local
+changedir={envdir}
+skipsdist=True
+commands =
+    culebrONT test_install -d test
+    culebrONT run_local --threads 8 --config {posargs} --singularity-args '--bind /builds:/builds'
+
+
+[testenv:py38-run]
+description = Run workflow pass on args to culebrONT
+envdir =
+    py38: {toxworkdir}/py38
+    py39: {toxworkdir}/py39
+changedir={envdir}
+commands = {[run]commands}
+
+
+#[testenv:py{38,39}-run]
+#description = Run workflow pass on args to culebrONT
+#envdir = {toxworkdir}/py{38,39}-tests
+#skipsdist=True
+#commands = culebrONT run_local --threads 8 --config {posargs}
+#    #culebrONT run_local --threads 8 --config ../../culebrONT/install_files/config_test/config_A.yaml
+#    #culebrONT run_local --threads 8 --config ../../culebrONT/install_files/config_test/config_APC.yaml
+
 """
+

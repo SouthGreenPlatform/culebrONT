@@ -3,11 +3,26 @@
 import os
 from pathlib import Path
 from setuptools import setup, find_packages
+# add for remove error with pip install -e . with pyproject.toml
+import site
+import sys
+site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
 NAME = 'culebrONT'
-URL = 'https://github.com/SouthGreenPlatform/CulebrONT_pipeline'
+URL = 'https://github.com/SouthGreenPlatform/culebrONT'
 CURRENT_PATH = Path(__file__).resolve().parent
-VERSION = CURRENT_PATH.joinpath(f'{NAME}','VERSION').open('r').readline().strip()
+VERSION = "2.0.0b3"
+
+__doc__ = """Today, assembly a genome using long reads from Oxford Nanopore Technologies is really interesting in 
+particular to solve repeats and structural variants in prokaryotic as well as in eukaryotic genomes. Assemblies are 
+increasing contiguity and accuracy. The daily increase of data sequences obtained and the fact that more and more 
+tools are being released or updated every week, many species are having their genomes assembled and that’s is great … 
+“But which assembly tool could give the best results for your favorite organism?” CulebrONT can help you! CulebrONT 
+is an open-source, scalable, modular and traceable Snakemake pipeline, able to launch multiple assembly tools in 
+parallel, giving you the possibility of circularise, polish, and correct assemblies, checking quality. CulebrONT can 
+help to choose the best assembly between all possibilities. """
+
+
 
 def main():
     setup(
@@ -17,7 +32,7 @@ def main():
         url=URL,
         project_urls={
             'Bug Tracker': f'{URL}/issues',
-            'Documentation': f'https://{NAME}.readthedocs.io/en/latest/',
+            'Documentation': f'https://{NAME}-pipeline.readthedocs.io/en/latest/',
             'Source Code': URL
         },
         download_url=f'{URL}/archive/{VERSION}.tar.gz',
@@ -29,7 +44,7 @@ def main():
                    François Sabot (IRD)
                    Sebastien Cunnac (IRD)''',
         author_email='sebastien.ravel@cirad.fr',
-        #description=culebrONT.__doc__,
+        description=__doc__.replace("\n",""),
         long_description=CURRENT_PATH.joinpath('README.rst').open('r', encoding='utf-8').read(),
         long_description_content_type='text/x-rst',
         license='GPLv3',
@@ -46,10 +61,18 @@ def main():
 
         # Package information
         packages=find_packages(),
-        package_data={
-            '': ['*'],
-        },
         include_package_data=True,
+        # use_scm_version=True,
+        use_scm_version={
+            "version_scheme": 'release-branch-semver',
+            'local_scheme': "node-and-date",
+            'normalize' : True,
+            "root": ".",
+            "relative_to": __file__,
+            "fallback_version": VERSION,
+            "write_to": 'culebrONT/_version.py',
+        },
+        setup_requires=['setuptools_scm'],
         python_requires='>=3.6',
         install_requires=[
             'PyYAML',
@@ -74,8 +97,8 @@ def main():
             'dev': ['tox'],
         },
         entry_points={
-            'culebrONT': ['culebrONT = __init__'],
-            'console_scripts': [f'culebrONT = culebrONT.main:main']},
+            f'{NAME}': [f'{NAME} = __init__'],
+            'console_scripts': [f'{NAME} = {NAME}.main:main']},
 
         # Pypi information
         platforms=['unix', 'linux'],
@@ -103,9 +126,9 @@ def main():
             'Topic :: Software Development :: Assemblers'
         ],
         options={
-            'bdist_wheel': {'universal': False}
+            'bdist_wheel': {'universal': True}
         },
-        zip_safe=False,  # Don't install the lib as an .egg zipfile
+        zip_safe=True,  # Don't install the lib as an .egg zipfile
     )
 
 

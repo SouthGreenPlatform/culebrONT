@@ -5,20 +5,14 @@
 Requirements
 ============
 
-CulebrONT requires |PythonVersions|, |SnakemakeVersions| and |graphviz|.
+CulebrONT requires |PythonVersions| and |graphviz|.
 
 CulebrONT has been mostly developed to work on an HPC but a local installation is also possible.
 
 ------------------------------------------------------------------------
 
-Steps for LOCAL installation
-============================
-
-CulebrONT and dependencies and also every tool used to create a pipeline are available through a ``Singularity images``.
-To install CulebrONT on *local* mode you must use singularity:
-
-1. Install culebrONT package
-----------------------------
+Install culebrONT PyPI package
+===============================
 
 First install culebrONT python package with pip.
 
@@ -27,16 +21,23 @@ First install culebrONT python package with pip.
    python3 -m pip install culebrONT
    culebrONT --help
 
-Then run the commande line to install on LOCAL
+Now, follow this documentation according to what you want, local or HPC mode.
 
-.. code-block:: bash
+------------------------------------------------------------------------
 
-   culebrONT install_local --help
-   culebrONT install_local
+Steps for LOCAL installation
+============================
 
-The script automatically download singularity images required and configure culebrONT.
+Install CulebrONT in a *local* mode using ``culebrONT install_local`` command line.
 
-Test CulebrONT install (Optional but recommended) using an available dataset.
+.. click:: culebrONT.main:install_local
+    :prog: culebrONT install_local
+    :show-nested:
+
+To create a pipeline, tools used by CulebrONT are wrapped into ``Singularity images``. These images are automatically downloaded and used to configure files needed by the pipeline.  Local mode install, without scheduler, is constrains to use singularity.
+
+
+After install, optionally (but recommended) you can now check CulebrONT installation using a scaled dataset.
 See the section :ref:`Check install` for details.
 
 ------------------------------------------------------------------------
@@ -44,65 +45,86 @@ See the section :ref:`Check install` for details.
 Steps for HPC installation
 ==========================
 
-As CulebrONT uses many tools, you must install them through two possibilities:
+CulebrONT uses available snakemake profiles to easier cluster installation and resources management.
+Run the command `culebrONT install_cluster` to install on HPC.
+We tried to make HPC installation as easy as possible but it's necessary to adapt some files according to your HPC environment.
+
+
+.. click:: culebrONT.main:install_cluster
+    :prog: culebrONT install_cluster
+    :show-nested:
+
+1. Adapt `profile` and `cluster_config.yaml`
+---------------------------------------------
+
+Now that CulebrONT is installed, it offers default configuration files but they can be modified. Please check and adapt these files to your system architecture.
+
+1. Adapt the pre-formatted `f –env si`snakemake profile`` to configure cluster options.
+See the section :ref:`1. Snakemake profiles` for details.
+
+2. Adapt the :file:`cluster_config.yaml` file to manage cluster resources such as partition, memory and threads available for each job.
+See the section :ref:`2. Adapting *cluster_config.yaml*` for further details.
+
+
+2. Adapt `tools_path.yaml`
+--------------------------
+
+As CulebrONT uses many tools, you must install them using one of two possibilities:
 
 1. Either through the |Singularity| containers,
 
 2. Or using the ``module load`` mode,
 
-Let's check steps for **HPC installation** :
-
-First install culebrONT python package with pip.
-
-.. code-block:: bash
-
-   python3 -m pip install culebrONT
-   culebrONT --help
-
-Then run the commande line to install on HPC
-
 .. code-block:: bash
 
    culebrONT install_cluster --help
-   culebrONT install_cluster --scheduler slurm --env modules --bash_completion --create_envmodule --modules_dir /path/to/dir/culebrONT/
+   culebrONT install_cluster --scheduler slurm --env modules
+   # OR
+   culebrONT install_cluster --scheduler slurm --env singularity
 
-the script uses the snakemake profiles to build the installation profile for culebrONT.
-if --env is singularity, culebrONT download images.
-Then, the script proposes to modify the following files to adapt to your system achitecture
+If ``--env singularity`` argument is used, CulebrONT download previously build images containing environment need to run CulebrONT (tools and dependencies).
 
-
-1. Adapt the :file:`cluster_config.yaml` file to manage cluster resources such as partition, memory and threads available for each job.
-See the section :ref:`1. Preparing *cluster_config.yaml*` for further details.
-
-2. Create a *snakemake profile* to configure cluster options.
-See the section :ref:`2. Snakemake profiles` for details.
-
-3. Adapt the file :file:`tools_path.yaml` - in YAML (Yet Another Markup Language) - format  to indicate to CulebrONT where the tools are installed.
+Adapt the file :file:``tools_path.yaml`` - in YAML (Yet Another Markup Language) - format  to indicate to CulebrONT where the tools are installed.
 See the section :ref:`3. How to configure tools_path.yaml` for details.
 
-4. Test CulebrONT install (Optional but recommended) using an available dataset.
-See the section :ref:`Check install` for details.
+
+------------------------------------------------------------------------
+
+Check install
+==============
+
+Optionally, in order to test your install of CulebrONT pipeline, a data test called ``Data-Xoo-sub/`` is available on https://itrop.ird.fr/culebront_utilities/.
+
+.. click:: culebrONT.main:test_install
+    :prog: culebrONT test_install
+    :show-nested:
+
+This dataset is automatically downloaded by culebrONT in the ``-d`` repertory using :
+
+.. code-block:: bash
+
+   culebrONT test_install -d test
+
+Launching suggested command line done by CulebrONT, in CLUSTER mode :
+
+.. code-block:: bash
+
+    culebrONT run_cluster --config test/data_test_config.yaml
+
+Or in local mode :
+
+.. code-block:: bash
+
+    culebrONT run_local -t 8 -c test/data_test_config.yaml --singularity-args "--bind $HOME"
 
 
+------------------------------------------------------------------------
 
-1. Preparing *cluster_config.yaml*
-----------------------------------
-
-In the ``cluster_config.yaml`` file, you can add partition, memory and threads to be used by default or specifically for each rule/tool.
-
-
-.. warning::
-    If more memory or threads are requested, please adapt the content of this file before running on your cluster.
-
-Here is a example of the configuration file we used on our `i-Trop HPC <../../cluster_config.yaml>`_ .
-
-A list of rules names can be found in the section :ref:`Threading rules inside culebrONT`
-
-.. warning::
-    Please give to *cluster_config.yaml* specific parameters to rules get_versions and rule_graph without using wildcards into log files.
+Advance installation
+====================
 
 
-2. Snakemake profiles
+1. Snakemake profiles
 ---------------------
 
 The Snakemake-profiles project is an open effort to create configuration profiles allowing to execute Snakemake in various computing environments
@@ -110,10 +132,14 @@ The Snakemake-profiles project is an open effort to create configuration profile
 
 In order to run CulebrONT on HPC cluster, we use profiles.
 
-Quickly, here is an example of the Snakemake SLURM profile we use for the French national bioinformatics infrastructure at IFB.
-We followed the documentation found here https://github.com/Snakemake-Profiles/slurm#quickstart.
+Quickly, see `here <https://github.com/SouthGreenPlatform/culebrONT/blob/master/culebrONT/install_files/cluster_config_SLURM.yaml>`_ an example of the Snakemake SLURM profile we use for the French national bioinformatics infrastructure at IFB.
 
-Now, your basic profile is created. To finalize it, change the ``CulebrONT_pipeline/profiles/CulebrONT/config.yaml`` to :
+More info about profiles can be found here https://github.com/Snakemake-Profiles/slurm#quickstart.
+
+Preparing the profile's *config.yaml* file
+******************************************
+
+Once, your basic profile is created. To finalize it, modify as necessary the ``culebrONT/culebrONT/default_profile/config.yaml`` to customize Snakemake parameters that will be used internally by CulebrONT:
 
 .. code-block:: ini
 
@@ -132,15 +158,26 @@ Now, your basic profile is created. To finalize it, change the ``CulebrONT_pipel
     printshellcmds: true
 
 
-.. note::
-   You can find the generated files when profiles are created following this documentation. IFB profile example can be found on the `̀ gift_files/CulebrONT_SLURM/`` repertory on our github repository.
+2. Adapting *cluster_config.yaml*
+----------------------------------
+
+In the ``cluster_config.yaml`` file, you can manage HPC resources, choosing partition, memory and threads to be used by default or specifically for each rule/tool depending on your HPC Job Scheduler (see `there <https://snakemake.readthedocs.io/en/latest/snakefiles/configuration.html#cluster-configuration-deprecated>`_). This file generally belongs to a Snakemake profile (see above).
+
+.. warning::
+    If more memory or threads are requested, please adapt the content of this file before running on your cluster.
+
+A list of CulebrONT rules names can be found in the section :ref:`Threading rules inside culebrONT`
+
+.. warning::
+    For some rules in the *cluster_config.yaml* as `rule_graph` or `run_get_versions` we use by default wildcards, please don't remove it.
+
 
 3. How to configure tools_path.yaml
 -----------------------------------
 
-In the ``|tools_path|`` file, you can find two sections: SINGULARITY and ENVMODULES. In order to fill it correctly, you have 2 options:
+In the ``tools_path`` file, you can find two sections: SINGULARITY and ENVMODULES. In order to fill it correctly, you have 2 options:
 
-1. Use only SINGULARITY containers. In this case, fill only this section. Put the path to the builded singularity images.
+1. Use only SINGULARITY containers. In this case, fill only this section. Put the path to the build singularity images you want to use.
 Absolute paths are strongly recommended but not mandatory. See the section :ref:`'How to build singularity images'<How to build singularity images>`  for further details.
 
 .. literalinclude:: ../../culebrONT/install_files/tools_path.yaml
@@ -148,7 +185,7 @@ Absolute paths are strongly recommended but not mandatory. See the section :ref:
     :lines: 6-8
 
 .. warning::
-    The use of SINGULARITY is constraint with the use the *--use-singularity* parameter in the snakemake command line.
+    For SINGULARITY containers to be actually used, one needs to make sure that the *--use-singularity* flag is included in the snakemake command line.
 
 2. Use only ENVMODULES. In this case, fill this section with modules available on your cluster (here is an example):
 
@@ -164,57 +201,33 @@ Yes, plenty of packages!! That's why we provide build singularity containers rea
     TIP !! We provide a singularity container for R packages (Singularity.report.def), you can use this one to create a module environment.
 
 .. warning::
-    The use of ENVMODULE is constraint with the use the *--use-envmodules* parameter in the snakemake command line.
+    Make sure to specify the *--use-envmodules* flag in the snakemake command line for ENVMODULE to be implemented.
     More details can be found here: https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html#using-environment-modules
 
-------------------------------------------------------------------------
-
-Check install
-=============
-
-Optionally, in order to test your install of CulebrONT pipeline, a data test called ``Data-Xoo-sub/`` is available on https://itrop.ird.fr/culebront_utilities/.
-Feel free to download it using ``wget`` and put it on CulebrONT directory.
-
-.. code-block:: bash
-
-    cd CulebrONT_pipeline
-    wget --no-check-certificat -rm -nH --cut-dirs=1 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/Data-Xoo-sub/
-
-
-Now, it is time to prepare the configuration file ``config.yaml`` file to indicate to CulebrONT which kind of pipeline you want to create and to run on your data ! :ref:`How to create a workflow`.
-
-Finally run CulebrONT!!
-
-.. code-block:: bash
-
-    culebrONT run_cluster --config config.yaml --dry-run
-    culebrONT run_local --config config.yaml --threads 6 --dry-run
 
 ------------------------------------------------------------------------
 
-Advance installation
-====================
+And more ...
+-------------
 
 How to build singularity images
--------------------------------
+*******************************
 
 You can build your own image using the available *.def* recipes from the ``culebrONT/culebrONT/containers/`` directory.
 
 .. warning::
-    Be careful, you need root rights to build singularity images
+    Be careful, you need root access to build singularity images
 
 .. code-block:: bash
 
     cd culebrONT/culebrONT/containers/
     sudo make build
 
-------------------------------------------------------------------------
-
 Threading rules inside culebrONT
---------------------------------
+********************************
 
 Please find here the rules names found in CulebrONT code.
-It could be useful to set threads in local running using the snakemake command or in the cluster configuration to manage cluster resources.
+It is recommended to set threads using the snakemake command when running on a single machine or in the cluster configuration file to manage cluster resources via the job scheduler.
 This would save the user a painful exploration of the snakefiles code of CulebrONT.
 
 .. code-block:: python

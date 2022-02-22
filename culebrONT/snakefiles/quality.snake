@@ -397,7 +397,7 @@ rule run_mummer:
     shell:
         """
        (mkdir -p {params.dir} && cd {params.dir};
-        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; python {culebrONT.CULEBRONT_SCRIPTS}/which_version.py "nucmer --version" > {output.version};
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; python {SNAKEMAKE_SCRIPTS}/which_version.py "nucmer --version" > {output.version};
         ln -s -f {output.version} {output_dir}versions/MUMMER-version.txt
         nucmer -p {params.prefix} --maxmatch  -l {params.minmatch} -c {params.mincluster} {input.reference_file} {input.fasta};
         gzip mummer.delta) 1>{log.output} 2>{log.error}
@@ -588,7 +588,7 @@ rule run_mauve:
     envmodules:
         tools_config["ENVMODULE"]["MAUVE"]
     script:
-         f'{culebrONT.CULEBRONT_SCRIPTS}/run_mauve.py'
+         f'{SNAKEMAKE_SCRIPTS}/run_mauve.py'
 
 
 rule run_bwa_mem2:
@@ -670,7 +670,7 @@ rule run_flagstat:
         """
         [ ! -f {output.flagstats_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.flagstats_samtools_version}
         ln -s -f {output.flagstats_samtools_version} {output_dir}versions/FLAGSTATS_SAMTOOLS-version.txt
-        [ ! -f {output.flagstats_bwa_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {culebrONT.CULEBRONT_SCRIPTS}/which_version.py bwa | grep 'Version' > {output.flagstats_bwa_version};
+        [ ! -f {output.flagstats_bwa_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {SNAKEMAKE_SCRIPTS}/which_version.py bwa | grep 'Version' > {output.flagstats_bwa_version};
         ln -s -f {output.flagstats_bwa_version} {output_dir}versions/FLAGSTATS_BWA-version.txt
         (samtools flagstat {input.bam} --threads {threads}) > {output.txt} 2>{log.error}
         """

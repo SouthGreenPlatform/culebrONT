@@ -5,6 +5,8 @@ from collections import OrderedDict
 from pprint import pprint as pp
 import re
 version = "0.0.1"
+pd.set_option("display.precision", 2)
+
 
 def replace_all(repls, str):
     """
@@ -48,8 +50,8 @@ class AutoVivification(OrderedDict):
             value = self[item] = type(self)()
             return value
 
+
 def main():
-    
     assembly_list = snakemake.params.assembly_list
     quality_list = snakemake.params.quality_list
     out_repository = snakemake.params.out_dir
@@ -84,8 +86,9 @@ def main():
     df=pd.DataFrame.from_dict(dico_busco_time)
     dataframe_busco= df.T.stack().apply(pd.Series)
     with open(out_stats, "w") as busco_file:
+        with pd.option_context('display.float_format', '{:0.4f}'.format):
         #print(f"dataframe_busco:\n{dataframe_busco}\n")
-        dataframe_busco.to_csv(busco_file, index=True)
+            dataframe_busco.to_csv(busco_file, index=True)
 
 
 if __name__ == '__main__':

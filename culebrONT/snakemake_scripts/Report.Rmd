@@ -20,14 +20,14 @@ h1,h2,h3,h4,h5,h6,legend{
 color: #2980B9;
 }
 #main a {
-	background-image: linear-gradient(180deg,#0057FD,#0097FB);
-	background-size: 100% 100%;
-	background-repeat: no-repeat;
-	background-position: 0 2em;
-	color: #015EC1;
-	font-weight: 300;
-	padding: .125em 1px 0 1px;
-	transition: background-position .15s, color .15s;
+    background-image: linear-gradient(180deg,#0057FD,#0097FB);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: 0 2em;
+    color: #015EC1;
+    font-weight: 300;
+    padding: .125em 1px 0 1px;
+    transition: background-position .15s, color .15s;
 }
 #content {
     max-width: 1100px;
@@ -39,14 +39,14 @@ body {
   overflow: auto
 }
 img.image-thumb {
-	width: 500px;
-	border: 0px solid #CCC;
-	padding: 2px;
+    width: 500px;
+    border: 0px solid #CCC;
+    padding: 2px;
 }
 big.img.image-thumb {
-	width: 100%;
-	border: 0px solid #CCC;
-	padding: 20px;
+    width: 100%;
+    border: 0px solid #CCC;
+    padding: 20px;
 }
 </style>
 
@@ -366,7 +366,8 @@ for kat_file in r.kat_files:
 
     print('![thumbnail]('+png_gcp_mx+') ![thumbnail]('+png_hist+')\n\n')
     print('![thumbnail]('+png_density+') ![thumbnail]('+png_spectra_cn+')\n\n')
-    #print('![thumbnail]('+png_spectra_hist+') ![thumbnail]('+png_comp_main_mx_spectra_cn+')\n\n')
+    print('![thumbnail]('+png_spectra_hist+') ![thumbnail]('+png_comp_main_mx_spectra_cn+')\n\n')
+
 
 ```
 
@@ -381,7 +382,7 @@ for flag_file in r.flagstats_stats:
     sample = Path(f"{flag_file}").stem.split("_")[0]
     #print(f"## {sample}\n\n")
     df = pd.read_csv(Path(f"{flag_file}"), sep=",", engine='python', header=0, index_col=None)
-    #df.rename(columns={"Unnamed: 0":'Assembler',"Unnamed: 1":'Steps' }, inplace=True)
+    df.rename(columns={"Unnamed: 0":'Assembler',"Unnamed: 1":'Steps' }, inplace=True)
     #print(f"{df}\n")
     dico_flag[sample] = df
     dico_flag_file[sample] = flag_file

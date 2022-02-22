@@ -1,6 +1,4 @@
 ############################### CIRCULARISATION POST CANU ##############################
-import culebrONT
-
 rule run_circlator:
     """
     launch Circlator
@@ -91,7 +89,7 @@ rule tag_circular:
         tools_config["ENVMODULE"]["R"]
     shell:
         f"""
-        Rscript {culebrONT.CULEBRONT_SCRIPTS}/tagCircSeq.R --seqFile="{{input.fasta}}" --logFile="{{input.info}}" --assembler="{{params.assembler}}" --outFilePath="{{output.tagged_fasta}}"  1>{{log.output}} 2>{{log.error}}
+        Rscript {SNAKEMAKE_SCRIPTS}/tagCircSeq.R --seqFile="{{input.fasta}}" --logFile="{{input.info}}" --assembler="{{params.assembler}}" --outFilePath="{{output.tagged_fasta}}"  1>{{log.output}} 2>{{log.error}}
         """
 
 
@@ -135,7 +133,7 @@ rule tag_circular_to_minipolish:
         tools_config["ENVMODULE"]["R"]
     shell:
         f"""
-        Rscript {culebrONT.CULEBRONT_SCRIPTS}/tagCircSeq.R --seqFile="{{input.fasta}}" --logFile="{{input.info}}" --assembler="{{params.assembler}}" --outFilePath="{{output.tagged_fasta}}" 1>{{log.output}} 2>{{log.error}}
+        Rscript {SNAKEMAKE_SCRIPTS}/tagCircSeq.R --seqFile="{{input.fasta}}" --logFile="{{input.info}}" --assembler="{{params.assembler}}" --outFilePath="{{output.tagged_fasta}}" 1>{{log.output}} 2>{{log.error}}
         """
 
 
@@ -171,7 +169,7 @@ rule rotate_circular:
         tools_config["ENVMODULE"]["R"]
     shell:
         f"""
-        Rscript {culebrONT.CULEBRONT_SCRIPTS}/rotateCircSeqs.R --seqFile "{{input.draft}}" --outFilePath "{{output.rotated}}" 1>{{log.output}} 2>{{log.error}}
+        Rscript {SNAKEMAKE_SCRIPTS}/rotateCircSeqs.R --seqFile "{{input.draft}}" --outFilePath "{{output.rotated}}" 1>{{log.output}} 2>{{log.error}}
         """
 
 

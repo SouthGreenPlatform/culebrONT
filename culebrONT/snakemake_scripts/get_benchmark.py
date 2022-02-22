@@ -7,6 +7,7 @@ from pathlib import Path
 from collections import OrderedDict
 from pprint import pprint as pp
 version = "0.0.1"
+pd.set_option("display.precision", 2)
 
 
 class AutoVivification(OrderedDict):
@@ -31,8 +32,8 @@ class AutoVivification(OrderedDict):
             value = self[item] = type(self)()
             return value
 
-def main():
 
+def main():
     dico_step_files = {}
     for key, list_files in snakemake.params.dico.items():
         dico_step_files[key] = [path.replace("{fastq}",snakemake.params.sample) for path in list_files]
@@ -91,8 +92,10 @@ def main():
     df=pd.DataFrame.from_dict(dico_benchmark_time)
     dataframe_benchmark= df.T.stack().apply(pd.Series)
     with open(stat_time, "w") as benchmark_file:
+        with pd.option_context('display.float_format', '{:0.2f}'.format):
         # print(f"dico_benchmark_time:\n{dataframe_benchmark}\n")
-        dataframe_benchmark.to_csv(benchmark_file, index=True)
+            dataframe_benchmark.to_csv(benchmark_file, index=True)
+
 
 if __name__ == '__main__':
     main()

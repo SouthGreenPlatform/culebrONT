@@ -1,41 +1,41 @@
 DATA:
-    FASTQ: 'DATA_DIR/Data-Xoo-sub/fastq/'
-    FAST5: 'DATA_DIR/Data-Xoo-sub/fast5/'
-    ILLUMINA: 'DATA_DIR/Data-Xoo-sub/illumina/'
+    FASTQ: './test/Data-Xoo-sub/fastq/'
+    FAST5: './test/Data-Xoo-sub/fast5/'
+    ILLUMINA: './test/Data-Xoo-sub/illumina/'
     GENOME_SIZE: '4.8m'
-    REF: 'DATA_DIR/Data-Xoo-sub/ref/BAI3.fasta'
-    OUTPUT: './culebrONT_OUTPUT/'
+    REF: './test/Data-Xoo-sub/ref/BAI3.fasta'
+    OUTPUT: './test/CulebrONT_OUTPUT/'
 
 ############ TOOLS ################
 ASSEMBLY:
-    CANU: true
-    FLYE: true
-    MINIASM: false
+    CANU: false
+    FLYE: false
+    MINIASM: true
     RAVEN: false
     SMARTDENOVO:  false
     SHASTA: false
 
 POLISHING:
-    RACON: true
+    RACON: false
 
 CIRCULAR: false
 
 CORRECTION:
     NANOPOLISH: false
-    MEDAKA: false
-    PILON: true
+    MEDAKA: true
+    PILON: false
 
 FIXSTART: false
 
 # BUSCO and QUAST will be launched on all activated steps (ASSEMBLY, POLISHING, CORRECTION)
 QUALITY:
-    BUSCO: true
-    QUAST: true
-#### Others quality tools are launched only in last assemblies
-    BLOBTOOLS: true
-    ASSEMBLYTICS: true
-#### Others quality soft but illumina reads are required
-    FLAGSTATS: true
+    BUSCO: false
+    QUAST: false
+#### Others quality tools are lauched only in last assemblies
+    BLOBTOOLS: false
+    ASSEMBLYTICS: false
+#### Others quality softs but illumina reads are required
+    FLAGSTATS: false
     KAT: false
 
 #### Alignment of the various assemblies derived from a fastq file for small genomes (<10-20Mbp);
@@ -59,7 +59,7 @@ params:
     SHASTA:
         MEM_MODE: 'filesystem'
         MEM_BACKING: 'disk'
-        OPTIONS: '--Reads.minReadLength 0'
+        OPTIONS: '--Reads.minReadLength 0 --config Nanopore-Oct2021'
 
 
     #### CIRCULAR
@@ -81,7 +81,7 @@ params:
         OPTIONS: ''
 
     MEDAKA:
-        MEDAKA_TRAIN_WITH_REF: false    # if 'MEDAKA_TRAIN_WITH_REF' is True, training uses reference to found in DATA REF param.
+        MEDAKA_TRAIN_WITH_REF: false    # if 'MEDAKA_TRAIN_WITH_REF' is True, training uses reference found in DATA REF param.
 
         # Medaka does not take in count other parameters below if MEDAKA_TRAIN_WITH_REF is TRUE.
         MEDAKA_MODEL_PATH: 'r941_min_high_g303' # use a path if you have downloaded a model (or you want to use your own trained model) OR a simple string like 'r941_min_high_g303'
@@ -95,17 +95,17 @@ params:
 
     #### QUALITY
     BUSCO:
-        #DATABASE: "DATA_DIR/Data-Xoo-sub/bacteria_odb10"
+        #DATABASE: "./Data-Xoo-sub/bacteria_odb10"
         DATABASE: 'bacteria_odb10 --update-data ' # use a path if you have downloaded a taxonomic database from busco OR a simple string like 'bacteria_odb10'
         MODEL: 'genome'
-        SP: ''                         #--augustus-specie parameter on busco
+        SP: ''                         #--augustus-specie parametter on busco
 
     QUAST:
         GFF: ''
         OPTIONS: '--large'
 
     DIAMOND:
-        DATABASE: 'DATA_DIR/Data-Xoo-sub/testBacteria.dmnd'
+        DATABASE: './test/Data-Xoo-sub/testBacteria.dmnd'
 
     MUMMER:
         MINMATCH: 100                  # is -l option with default 20 on MUMMER
@@ -117,5 +117,5 @@ params:
         MAX_VARIANT_SIZE: 10000
 
     BLOBTOOLS:
-        NAMES: 'DATA_DIR/Data-Xoo-sub/blobtools/names.dmp'
-        NODES: 'DATA_DIR/Data-Xoo-sub/blobtools/nodes.dmp'
+        NAMES: './test/Data-Xoo-sub/blobtools/names.dmp'
+        NODES: './test/Data-Xoo-sub/blobtools/nodes.dmp'

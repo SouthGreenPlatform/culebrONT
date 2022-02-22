@@ -1,35 +1,35 @@
 ## BUILD SINGULARITY IMAGES PATH
-## PLEASE FILL IN SINGULARITY IMAGES PATH IF YOU HAVE CHOSE INSTALL CULEBRONT WITH ENV MODE SINGULARITY (option --env singularity)
-## PLEASE FILL IN "ENVMODULES" SECTION IF YOU HAVE CHOSE INSTALL CULEBRONT WITH ENV MODE MODULES (option --env modules)
+## PLEASE FILL IN SINGULARITY IMAGES PATH IF YOU HAVE CHOSEN INSTALL CULEBRONT WITH ENV MODE SINGULARITY (option --env singularity)
+## PLEASE FILL IN "ENVMODULES" SECTION IF YOU HAVE CHOSEN INSTALL CULEBRONT WITH ENV MODE MODULES (option --env modules)
 ## WARNING!!! DO NOT ERASE LINES OR COMMENT THEM !  è_é
 
 SINGULARITY:
-    REPORT : '{CULEBRONT_PATH}/containers/Singularity.report.sif'
-    TOOLS : '{CULEBRONT_PATH}/containers/Singularity.culebront_tools.sif'
+    REPORT : '{INSTALL_PATH}/containers/Singularity.report.sif'
+    TOOLS : '{INSTALL_PATH}/containers/Singularity.culebront_tools.sif'
 
 ENVMODULE:
-    R : "bioinfo/R/4.0.2"
-    QUAST : "bioinfo/quast/5.0.2"
-    MAUVE : "bioinfo/mauve/2.4.0"
-    SHASTA : "bioinfo/shasta/0.1.0"
-    ASSEMBLYTICS : "bioinfo/Assemblytics/1.0"
-    MEDAKA : "bioinfo/medaka-gpu/0.10.0"
-    KAT : "bioinfo/kat/2.4.1"
-    BLOBTOOLS : "bioinfo/blobtools/1.0.1"
-    BUSCO : "bioinfo/BUSCO/3.0.2"
-    PILON : "bioinfo/pilon/1.23"
-    FLYE : "bioinfo/Flye/2.4.1"
-    CANU : "bioinfo/canu/1.9"
-    MINIPOLISH : "bioinfo/Minipolish/0.1.2"
-    RAVEN : "bioinfo/raven-assembler/0.0.1"
-    SMARTDENOVO : "bioinfo/SMARTdenovo/1.0"
-    CIRCLATOR : "bioinfo/circlator/1.5.5"
-    DIAMOND : "bioinfo/diamond/0.9.30"
-    MUMMER : "bioinfo/MUMmer/4.0.0beta2"
-    MINIASM : "bioinfo/miniasm/0.3"
-    MINIMAP2 : "bioinfo/minimap2/2.17"
-    SAMTOOLS : "bioinfo/samtools/1.10"
-    RACON : "bioinfo/racon-gpu/1.4.10"
-    NANOPOLISH : "bioinfo/nanopolish/0.11.1"
-    SEQTK : "bioinfo/seqtk/1.3-r106"
-    BWA: "bioinfo/bwa/0.7.17"
+    R : "r"
+    QUAST : "quast"
+    MAUVE : "mauve"
+    SHASTA : "shasta"
+    ASSEMBLYTICS : "assemblytics"
+    MEDAKA : "medaka"
+    KAT : "kat"
+    BLOBTOOLS : "blobtools"
+    BUSCO : "busco"
+    PILON : "pilon bwa samtools"
+    FLYE : "flye"
+    CANU : "canu"
+    MINIPOLISH : "minipolish"
+    RAVEN : "raven-assembler"
+    SMARTDENOVO : "smartdenovo"
+    CIRCLATOR : ""
+    DIAMOND : "diamond"
+    MUMMER : "mummer4"
+    MINIASM : "miniasm"
+    MINIMAP2 : "minimap2"
+    SAMTOOLS : "samtools"
+    RACON : "racon"
+    NANOPOLISH : "nanopolish"
+    SEQTK : "seqtk"
+    BWA: "bwa"

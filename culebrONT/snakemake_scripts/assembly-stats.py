@@ -5,6 +5,8 @@ import sys
 import pandas as pd
 from pathlib import Path
 from collections import OrderedDict
+pd.set_option("display.precision", 2)
+
 
 class AutoVivification(OrderedDict):
     """
@@ -113,7 +115,7 @@ def read_genome(fasta_file):
                 gc += contig.count('G') + contig.count('C')
                 total_len += len(contig)
                 contig_lens.append(len(contig))
-    gc_cont = (gc / total_len) * 100
+    gc_cont = round(float((gc / total_len) * 100), 2)
     return contig_lens, scaffold_lens, gc_cont
 
 
@@ -141,8 +143,8 @@ def calculate_stats(seq_lens, gc_cont):
 
 
 if __name__ == "__main__":
-    files_list =  snakemake.input.fasta_list
-    outfile =  snakemake.output.csv
+    files_list = snakemake.input.fasta_list
+    outfile = snakemake.output.csv
     sample = snakemake.params.sample
     stat_output = AutoVivification()
 
@@ -156,5 +158,6 @@ if __name__ == "__main__":
     df=pd.DataFrame.from_dict(stat_output)
     dataframe_stats= df.T.stack().apply(pd.Series)
     with open(outfile, "w") as csv_out:
-        dataframe_stats.to_csv(csv_out)
+        with pd.option_context('display.float_format', '{:0.2f}'.format):
+            dataframe_stats.to_csv(csv_out)
 

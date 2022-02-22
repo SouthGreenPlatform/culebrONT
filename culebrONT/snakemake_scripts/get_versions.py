@@ -4,11 +4,11 @@ from pathlib import Path
 from collections import OrderedDict
 from pprint import pprint as pp
 import re
-
 version = "0.0.1"
 
 import pandas as pd
 from pathlib import Path
+
 
 def main():
     dir = snakemake.params.dir
@@ -27,6 +27,7 @@ def main():
     df = pd.DataFrame(rows, columns=["Tool", "Secondary", "Version"])
     #print(df)
     df.to_csv(output, index=True)
+
 
 if __name__ == '__main__':
     main()

@@ -43,6 +43,15 @@ Please check conda installation. On i-Trop cluster you can add it on sbatch scri
 
     source activate snakemake
 
+**Error in assemblytics log file**
+
+.. code-block:: bash
+
+    Error in revalue(bed$type, c(Repeat_expansion = "Repeat expansion", Repeat_contraction = "Repeat contraction",  : x is not a factor or a character vector.
+    Execution halted
+
+After trying the delta files for the failling assemblytics rules on the Assemblytics webserver, it seems the problem comes from the fact that Assemblytics do not detect any structural variation between these assemblies and the reference and so fail to write some of the (graphical) files in connexion with struct. variation. Hence, CulebrONT throughts an error when the output files are not found. You can put False to ASSEMBLYTICS tool in CulebrONT pipeline.
+
 
 **QUAST takes to much time to run**
 

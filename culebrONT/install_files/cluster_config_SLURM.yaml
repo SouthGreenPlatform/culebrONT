@@ -1,75 +1,64 @@
 __default__:
     cpus-per-task : 4
     mem-per-cpu : 10G
-    partition : "long"
+    partition : PARTITION
     output : 'slurm_logs/stdout/{rule}/{wildcards}.o'
     error : 'slurm_logs/error/{rule}/{wildcards}.e'
     job-name : '{rule}.{wildcards}'
 
-run_flye:
-    cpus-per-task : 10
-    mem-per-cpu : 15G
-    partition : "long"
-
-run_canu:
-    cpus-per-task : 10
-    mem-per-cpu : 25G
-    partition : "long"
-
-run_raven:
-    cpus-per-task : 8
-    mem-per-cpu : 15G
-    partition : "long"
-
-run_shasta:
-    cpus-per-task : 8
-    mem-per-cpu : 20G
-    partition : "long"
-
-run_smartdenovo:
-    cpus-per-task : 8
-    mem-per-cpu : 15G
-    partition : "long"
-
-run_miniasm:
-    cpus-per-task : 8
-    mem-per-cpu : 15G
-    partition : "long"
-
-run_minipolish:
-    cpus-per-task : 8
-    mem-per-cpu : 15G
-    partition : "long"
-
-run_circlator:
-    cpus-per-task : 8
-    mem-per-cpu : 8G
-    partition : "long"
-
-run_racon:
-    cpus-per-task : 8
-    mem-per-cpu : 8G
-    partition : "long"
-
-run_nanopolish:
-    cpus-per-task : 8
-    mem-per-cpu : 8G
-    partition : "long"
-
 run_medaka_train:
     cpus-per-task : 8
     mem-per-cpu : 8G
-    partition : "bigmem"
+    partition : PARTITION
 
 run_medaka_consensus:
     cpus-per-task : 8
     mem-per-cpu : 8G
-    partition : "bigmem"
+    partition : PARTITION
+
+run_flye:
+    cpus-per-task : 10
+    mem-per-cpu : 15G
+
+run_canu:
+    cpus-per-task : 10
+    mem-per-cpu : 25G
+
+run_raven:
+    cpus-per-task : 8
+    mem-per-cpu : 15G
+
+run_shasta:
+    cpus-per-task : 8
+    mem-per-cpu : 20G
+
+run_smartdenovo:
+    cpus-per-task : 8
+    mem-per-cpu : 15G
+
+run_miniasm:
+    cpus-per-task : 8
+    mem-per-cpu : 15G
+
+run_minipolish:
+    cpus-per-task : 8
+    mem-per-cpu : 15G
+
+run_circlator:
+    cpus-per-task : 8
+    mem-per-cpu : 8G
+
+run_racon:
+    cpus-per-task : 8
+    mem-per-cpu : 8G
+
+run_nanopolish:
+    cpus-per-task : 8
+    mem-per-cpu : 8G
 
 run_kat:
     cpus-per-task : 1
     mem-per-cpu : 8G
-    partition : "long"
 
 rule_graph:
     output : 'slurm_logs/stdout/{rule}/rule_graph.o'

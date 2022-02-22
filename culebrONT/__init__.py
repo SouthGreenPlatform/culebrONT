@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from pathlib import Path
-from .run import run_cluster, run_local
-from .edit_files import edit_tools, create_config, create_cluster_config
-from .install import install_cluster, install_local, test_install
-from .usefull_function import get_version, get_last_version
-from .global_variable import *
+from .snakeWrapper import *
+from culebrONT.global_variables import *
 
-logo = CULEBRONT_PATH.joinpath('culebront_logo.png').as_posix()
+logo = INSTALL_PATH.joinpath('culebront_logo.png').as_posix()
 
 
 __version__ = get_version()
@@ -56,7 +52,7 @@ MODULE_FILE = f"""#%Module1.0
 ##
 
 ## Required internal variables
-set     prefix       {CULEBRONT_PATH.as_posix().strip()}
+set     prefix       {INSTALL_PATH.as_posix().strip()}
 set     version      {__version__.strip()}
 
 # check if install directory exist
