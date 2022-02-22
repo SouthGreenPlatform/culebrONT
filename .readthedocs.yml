@@ -9,6 +9,9 @@ sphinx:
 submodules:
   include: all
 
+build:
+  apt_packages:
+    - r-base-core
 
 # Optionally set the version of Python and requirements required to build your docs
 python:
