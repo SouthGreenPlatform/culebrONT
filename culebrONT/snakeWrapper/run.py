@@ -20,7 +20,7 @@ def rewrite_if_bind(snakemake_other):
 @click.option('--config', '-c', type=click.Path(exists=True, file_okay=True, readable=True, resolve_path=True), required=True, show_default=True, help=f'Configuration file for run {package_name()}')
 @click.option('--pdf', '-pdf', is_flag=True, required=False, default=False, show_default=True, help='Run snakemake with --dag, --rulegraph and --filegraph')
 @click.argument('snakemake_other', nargs=-1, type=click.UNPROCESSED)
-def run_cluster(config, clusterconfig, pdf, snakemake_other):
+def run_cluster(config, pdf, snakemake_other):
     """
     \b
     Run snakemake command line with mandatory parameters.
