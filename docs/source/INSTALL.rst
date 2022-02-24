@@ -180,27 +180,35 @@ In the ``tools_path`` file, you can find two sections: SINGULARITY and ENVMODULE
 1. Use only SINGULARITY containers: in this case, fill only this section. Put the path to the built Singularity images you want to use.
 Absolute paths are strongly recommended. See the section :ref:`'How to build singularity images'<How to build singularity images>`  for further details.
 
+
 .. literalinclude:: ../../culebrONT/install_files/tools_path.yaml
     :language: YAML
     :lines: 6-8
 
+
 .. warning::
+
     To ensure SINGULARITY containers to be really used, one needs to make sure that the *--use-singularity* flag is included in the snakemake command line.
 
 2. Use only ENVMODULES: in this case, fill this section with the modules available on your cluster (here is an example):
+
 
 .. literalinclude:: ../../culebrONT/install_files/tools_path.yaml
     :language: YAML
     :lines: 10-18
 
+
 CulebrONT needs a wide set of R modules for reporting. If you use ENVMODULE R, just have a look at dependencies in the ``Containers/Singularity.report.def`` file.
 Yes, plenty of packages!! That's why we provide build Singularity containers ready to use and recommend them for the R part.
+
 
 .. note::
 
     TIP !! We provide a Singularity container for all R packages (Singularity.report.def), thus you can use this one to create a dedicated module environment.
 
+
 .. warning::
+
     Make sure to specify the *--use-envmodules* flag in the snakemake command line for ENVMODULE to be implemented.
     More details can be found here: https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html#using-environment-modules
 
