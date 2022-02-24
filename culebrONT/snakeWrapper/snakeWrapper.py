@@ -41,7 +41,7 @@ class SnakeWrapper(object):
         else:
             self.tools_config = load_configfile(GIT_TOOLS_PATH)
 
-    def get_config_value(self, level1, level2, level3=None):
+    def get_config_value(self, level1, level2=None, level3=None):
         """get value on config_file"""
         # TODO add type_value to load a good type
         if level3:

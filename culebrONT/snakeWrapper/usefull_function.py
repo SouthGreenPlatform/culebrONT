@@ -72,7 +72,7 @@ def get_last_version(url, current_version):
         HTML = urlopen(f"{url}/tags").read().decode('utf-8')
         str_search = f"{url.replace('https://github.com', '')}/releases/tag/.*"
         lastRelease = search(str_search, HTML).group(0).split("/")[-1].split('"')[0]
-        epilogTools = ""
+        epilogTools = "\n"
         if str(current_version) != lastRelease:
             if lastRelease < str(current_version):
                 epilogTools = click.style(f"\n    ** NOTE: This {module_mane} version ({current_version}) is higher than the production version ({lastRelease}), you are using a dev version\n\n", fg="yellow", bold=True)

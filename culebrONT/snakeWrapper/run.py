@@ -5,8 +5,12 @@ from .usefull_function import package_name
 import os
 import re
 
+
 def rewrite_if_bind(snakemake_other):
-    """function to process click.UNPROCESSED to rewrite --bind params"""
+    """
+    Function to rewrite --bind params
+    It modifies click.UNPROCESSED
+    """
     bind_args = list(filter(re.compile(".*--bind.*").match, snakemake_other))  # Try to select --bind
     if bind_args:
         bind_args_rewrite = f'"--bind {bind_args[0].split(" ")[1]}"'
@@ -15,6 +19,7 @@ def rewrite_if_bind(snakemake_other):
         return snakemake_other_list
     else:
         return snakemake_other
+
 
 @click.command("run_cluster", short_help='Run workflow on HPC', context_settings=dict(ignore_unknown_options=True, max_content_width=800), no_args_is_help=True)
 @click.option('--config', '-c', type=click.Path(exists=True, file_okay=True, readable=True, resolve_path=True), required=True, show_default=True, help=f'Configuration file for run {package_name()}')
@@ -25,8 +30,9 @@ def run_cluster(config, pdf, snakemake_other):
     \b
     Run snakemake command line with mandatory parameters.
     SNAKEMAKE_OTHER: You can also pass additional Snakemake parameters
-    through this arguments command using the same syntax.
-    This will take precedence over Snakemake parameters defined in the profile.
+    using snakemake syntax.
+    These parameters will take precedence over Snakemake ones, which were
+    defined in the profile.
     See: https://snakemake.readthedocs.io/en/stable/executing/cli.html
 
     Example:
@@ -70,7 +76,7 @@ def run_cluster(config, pdf, snakemake_other):
         os.system(filegraph_cmd_snakemake)
 
 
-@click.command("run_local", short_help='Run workflow on local computer (use singularity mandatory)', context_settings=dict(ignore_unknown_options=True, max_content_width=800),
+@click.command("run_local", short_help='Run a workflow on local computer (use singularity mandatory)', context_settings=dict(ignore_unknown_options=True, max_content_width=800),
                no_args_is_help=True)
 @click.option('--config', '-c', type=click.Path(exists=True, file_okay=True, readable=True, resolve_path=True), required=True, help=f'Configuration file for run {package_name()}')
 @click.option('--threads', '-t', type=int, required=True, help='Number of threads')
@@ -80,17 +86,21 @@ def run_local(config, threads, pdf, snakemake_other):
     """
     \b
     Run snakemake command line with mandatory parameters.
-    SNAKEMAKE_OTHER: You can also pass additional Snakemake parameters (check it https://snakemake.readthedocs.io/en/stable/executing/cli.html)
-    through this arguments command using the same syntax.
-    This will take precedence over Snakemake parameters defined in the profile.
+    SNAKEMAKE_OTHER: You can also pass additional Snakemake parameters
+    using snakemake syntax.
+    These parameters will take precedence over Snakemake ones, which were
+    defined in the profile.
     See: https://snakemake.readthedocs.io/en/stable/executing/cli.html
-
+    
     Example:
-    \b
+
         culebrONT run_local -c config.yaml --threads 8 --dry-run
+
         culebrONT run_local -c config.yaml --threads 8 --singularity-args '--bind /mnt:/mnt'
-        # in LOCAL using 6 threads for Canu assembly from the total 8 threads
+
+        # in LOCAL using 6 threads for Canu assembly from the total 8 threads\n
         culebrONT run_local -c config.yaml --threads 8 --set-threads run_canu=6
+
     """
     click.secho(f'    Config file: {config}', fg='yellow')
 

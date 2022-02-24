@@ -3,7 +3,8 @@ from click import Abort
 from shutil import rmtree, unpack_archive
 import subprocess
 from cookiecutter.main import cookiecutter
-from culebrONT.snakeWrapper import *
+from .usefull_function import *
+from .snakeWrapper import *
 
 required_options = {
     True: 'modules_dir',
@@ -89,6 +90,16 @@ def install_cluster(scheduler, env, bash_completion, create_envmodule, modules_d
                               f"true\nprintshellcmds: true"
                 with open(f"{default_profile}/config.yaml", "w") as config_file:
                     config_file.write(f"{default_slurm}{extra_slurm}")
+
+                # adding a line in RESOURCES_MAPPING dico in slurm profile
+                with open(f"{default_profile}/slurm-submit.py", "r") as slurm_submit_script:
+                    search_text = '"nodes": ("nodes", "nnodes"),'
+                    replace_text = '"nodes": ("nodes", "nnodes"),\n    "nodelist" : ("w", "nodelist"),'
+                    data = slurm_submit_script.read()
+                    data = data.replace(search_text, replace_text)
+                with open(f"{default_profile}/slurm-submit.py", "w") as slurm_submit_script:
+                    slurm_submit_script.write(data)
+
             click.secho(f"\n    Profile is success install on {default_profile}", fg="yellow")
         except Abort:
             fail()
@@ -102,6 +113,8 @@ def install_cluster(scheduler, env, bash_completion, create_envmodule, modules_d
         if env == 'singularity':
             # check if already download
             check_and_download_singularity()
+            git_tools_file = GIT_TOOLS_PATH.open("r").read()
+            GIT_TOOLS_PATH.open("w").write(git_tools_file.replace("{INSTALL_PATH}", f"{INSTALL_PATH}"))
         # if envmodule activation
         if create_envmodule:
             create_envmodules(modules_dir)
@@ -152,7 +165,7 @@ def install_local(bash_completion):
               type=click.Path(exists=False, file_okay=False, dir_okay=True, readable=True, resolve_path=True),
               required=True, show_default=False, help='Path to download data test and create config.yaml to run test')
 def test_install(data_dir):
-    """Test_install fonction downloads a scaled data test, writes a configuration file adapted to it and proposes a command line already to run !!!"""
+    """Test_install function downloads a scaled data test, writes a configuration file adapted to it and proposes a command line already to run !!!"""
     # create dir test and configure config.yaml
     data_dir = Path(data_dir).resolve()
     click.secho(f"\n    Created data test dir {data_dir}\n", fg="yellow")

@@ -7,14 +7,17 @@ Welcome to CulebrONT's documentation!
    :align: center
    :alt: Culebront Logo
 
-Today, assembling a genome using long reads from Oxford Nanopore Technologies is really interesting in particular to solve repeats and structural variants in prokaryotic as well as in eukaryotic genomes. Assemblies are increasing in contiguity and accuracy.
+Today, assembly a genome using long reads from either Oxford Nanopore Technologies or Pacific Biosciences is really powerful, in particular to solve repeats and structural variants, for prokaryotic as well as for eukaryotic genomes. Such technologies provide assemblies that are increased in contiguity and accuracy.
 
-The daily increase of data sequences obtained and the fact that more and more tools are being released or updated every week,
-many species are having their genomes assembled and that’s is great ...
+Due to the daily deluge of data sequences and the increasing number of released tools that are even updated every week, many species see having their genome assembled in almost chromosome-scale, and that’s great...
 
-"\ *But which assembly tool could give the best results for your favorite organism?*\ "
+However a huge question remains:
 
-**CulebrONT can help you!** CulebrONT is an open-source, scalable, modular and traceable Snakemake pipeline, able to launch multiple assembly tools in parallel, giving you the possibility of circularise, polish, and correct assemblies, checking quality. CulebrONT can help to choose the best assembly between all possibilities.
+"\ *But which assembly tool will provide the best result for your favorite organism?*\ "
+
+To that anguishing idea, we can answer: **CulebrONT can help you!**
+
+CulebrONT is an open-source, scalable, modular and traceable *Snakemake* pipeline, able to launch multiple assembly tools in parallel, giving you the possibility of circularise, polish, and correct assemblies, in addition to perform quality controls. CulebrONT can help to choose the best assembly pipeline between all possibilities.
 
 .. toctree::
    :caption: About CulebrONT

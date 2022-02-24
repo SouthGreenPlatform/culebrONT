@@ -11,12 +11,11 @@ site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 NAME = 'culebrONT'
 URL = 'https://github.com/SouthGreenPlatform/culebrONT'
 CURRENT_PATH = Path(__file__).resolve().parent
-VERSION = "2.0.0"
+VERSION = CURRENT_PATH.joinpath("culebrONT", "VERSION").open('r').readline().strip()
 
 __doc__ = """CulebrONT is an open-source, scalable, modular and traceable Snakemake pipeline, able to launch multiple
 assembly tools in parallel, giving you the possibility of circularise, polish, and correct assemblies, checking quality.
 CulebrONT can help to choose the best assembly between all possibilities. """
-
 
 
 def main():
@@ -57,7 +56,6 @@ def main():
         # Package information
         packages=find_packages(),
         include_package_data=True,
-        # use_scm_version=True,
         use_scm_version={
             "version_scheme": 'release-branch-semver',
             'local_scheme': "node-and-date",
