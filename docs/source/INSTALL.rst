@@ -161,15 +161,20 @@ Once your basic profile is created, to finalize it, modify as necessary the ``cu
 2. Adapting *cluster_config.yaml*
 ----------------------------------
 
-In the ``cluster_config.yaml`` file, you can manage HPC resources, choosing partition, memory and threads to be used by default, or specifically, for each rule/tool depending on your HPC Job Scheduler (see `there <https://snakemake.readthedocs.io/en/latest/snakefiles/configuration.html#cluster-configuration-deprecated>`_). This file generally belongs to a Snakemake profile (see above).
+In the ``cluster_config.yaml`` file, you can manage HPC resources, choosing partition, memory and threads to be used by default,
+or specifically, for each rule/tool depending on your HPC Job Scheduler (see `there <https://snakemake.readthedocs.io/en/latest/snakefiles/configuration.html#cluster-configuration-deprecated>`_). This file generally belongs to a Snakemake profile (see above).
 
 .. warning::
-    If more memory or threads are requested, please adapt the content of this file before running on your cluster.
+    If more memory or threads are requested, please adapt the content 
+    of this file before running on your cluster.
+
 
 A list of CulebrONT rules names can be found in the section :ref:`Threading rules inside culebrONT`
 
+
 .. warning::
-    For some rules in the *cluster_config.yaml* as `rule_graph` or `run_get_versions`, we use by default wildcards, please don't remove it.
+    For some rules in the *cluster_config.yaml* as `rule_graph` or `run_get_versions`,
+    we use by default wildcards, please don't remove it.
 
 
 3. How to configure tools_path.yaml
@@ -232,7 +237,8 @@ Threading rules inside CulebrONT
 ********************************
 
 Please find here the rules names found in CulebrONT code.
-It is recommended to set threads using the snakemake command when running on a single machine, or in a cluster configuration file to manage cluster resources through the job scheduler.
+It is recommended to set threads using the snakemake command when running on a single machine, 
+or in a cluster configuration file to manage cluster resources through the job scheduler.
 This would save users a painful exploration of the snakefiles of CulebrONT.
 
 .. code-block:: python
