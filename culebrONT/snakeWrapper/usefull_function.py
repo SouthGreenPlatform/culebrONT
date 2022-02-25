@@ -206,6 +206,7 @@ def check_and_download_singularity():
         url, path_install = imgs_list
         if not Path(path_install).exists():
             SINGULARITY_URL_FILES_DOWNLOAD.append(imgs_list)
+            click.secho(f"    File: {path_install} is download.", fg="yellow", nl=True)
         else:
             click.secho(f"    File: {path_install} already download, done.", fg="yellow", nl=True)
     results = multiprocessing_download(SINGULARITY_URL_FILES_DOWNLOAD)

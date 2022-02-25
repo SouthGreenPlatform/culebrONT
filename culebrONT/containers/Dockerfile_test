@@ -1,0 +1,44 @@
+#INFORMATION
+#MAINTAINER Julie Orjuela & Francois Sabot (Docker)
+#version="1.0"
+#software="all Culebront dependencies"
+#description="All dependencies used to launch CulebrONT in LOCAL mode"
+#website="https://culebront-pipeline.readthedocs.io/en/latest/"
+
+FROM ubuntu:focal
+USER root
+
+# ENVIRONMENT
+
+# INSTALL, Global
+RUN apt update
+RUN DEBIAN_FRONTEND=noninteractive apt -y install keyboard-configuration git vim curl wget less locate graphviz python3-pip
+RUN DEBIAN_FRONTEND=noninteractive apt -y install python3.8 python3.8-dev python3.8-venv python3.8-full python3.8-distutils
+RUN DEBIAN_FRONTEND=noninteractive apt -y install python3.9 python3.9-dev python3.9-venv python3.9-full python3.9-distutils
+RUN ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+RUN apt install -y tzdata
+RUN dpkg-reconfigure --frontend noninteractive tzdata
+
+# Install for Python
+RUN echo 'export LC_ALL=C.UTF-8' >> /environment
+RUN echo 'export LANG=C.UTF-8' >> /environment
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+RUN python3.8 -m pip install tox
+RUN python3.9 -m pip install tox
+
+# installing Singularity
+RUN wget https://dl.google.com/go/go1.16.4.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzvf go1.16.4.linux-amd64.tar.gz 
+RUN rm go1.16.4.linux-amd64.tar.gz 
+ENV PATH=/usr/local/go/bin:$PATH
+
+## Install Singularity itself
+RUN wget https://github.com/sylabs/singularity/releases/download/v3.8.1/singularity-ce-3.8.1.tar.gz 
+RUN tar -xzf singularity-ce-3.8.1.tar.gz
+ENV PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig/
+RUN cd /singularity-ce-3.8.1 && ./mconfig -p /usr/local && make -C builddir && make -C builddir install
+
+# Download build singularity
+RUN mkdir -p /usr/local/culebrONT/Containers && cd /usr/local/culebrONT/Containers && wget --no-check-certificate -rm -nH --cut-dirs=2 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/singularity_build/
+

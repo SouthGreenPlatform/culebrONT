@@ -426,13 +426,44 @@ rule stats_assembly:
     script:
         f"{SNAKEMAKE_SCRIPTS}/assembly-stats.py"
 
+
+rule copy_final_assemblies:
+    """ build stats on assembly"""
+    threads: get_threads('copy_final_assemblies', 1)
+    input:
+        fasta_list = rules.preparing_fasta_to_quality.output.renamed
+    output:
+        fasta_final = f"{output_dir}ASSEMBLIES/{{fastq}}-{{assemblers}}-{{quality_step}}{f'-{add_circular_name}' if add_circular_name else ''}.fasta"
+    params:
+        sample = '{fastq}'
+    log:
+        output = f"{output_dir}LOGS/copy_final_assemblies/{{fastq}}_{{assemblers}}_{{quality_step}}.o",
+        error = f"{output_dir}LOGS/copy_final_assemblies/{{fastq}}_{{assemblers}}_{{quality_step}}.e"
+    message:
+        """
+        Launching {rule}
+        threads : {threads}
+        input:
+             fasta_list : {input.fasta_list}
+        output:
+             fasta_final : {output.fasta_final}
+        log:
+            output : {log.output}
+            error: {log.error}
+        """
+    shell:
+        """
+        cp {input.fasta_list} {output.fasta_final}
+        """
+
 def output_final(wildcards):
     dico_final = {
         "fasta_list" : expand(rules.preparing_fasta_to_quality.output.renamed, fastq=FASTQ, assemblers=culebront.assembly_tools_activated, quality_step=culebront.quality_step),
         "bench_list" : expand(rules.run_benchmark_time.output.stat_time,fastq=FASTQ),
         "dag" : rules.rule_graph.output.dag,
         "versions" : rules.run_get_versions.output.csv,
-        "stats_assembly": expand(rules.stats_assembly.output.csv, fastq = FASTQ)
+        "stats_assembly": expand(rules.stats_assembly.output.csv, fastq = FASTQ),
+        "all_assemblies":  expand(rules.copy_final_assemblies.output.fasta_final, fastq=FASTQ,assemblers=culebront.assembly_tools_activated,quality_step=culebront.quality_step)
          # "report_snakemake" : rules.run_report_snakemake.output.report_snakemake,
         }
     if config['QUALITY']['QUAST']:

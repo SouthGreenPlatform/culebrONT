@@ -54,9 +54,9 @@ rule preparing_fasta_to_quality:
     input:
         fasta = fasta_to_busco
     output:
-        renamed =  f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/{{assemblers}}-{{quality_step}}-{add_circular_name}.fasta"
+        renamed =  f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/{{fastq}}-{{assemblers}}-{{quality_step}}{f'-{add_circular_name}' if add_circular_name else ''}.fasta"
     params:
-        index_mmi = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/{{assemblers}}-{{quality_step}}-{add_circular_name}.fasta.mmi"
+        index_mmi = f"{output_dir}{{fastq}}/AGGREGATED_QC/DATA/{{fastq}}-{{assemblers}}-{{quality_step}}{f'-{add_circular_name}' if add_circular_name else ''}.fasta.mmi"
     log:
         output = f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/{{fastq}}-{{assemblers}}-{{quality_step}}-preparing_DATA.o",
         error = f"{output_dir}{{fastq}}/LOGS/QUALITY/AGGREGATED_QC/{{fastq}}-{{assemblers}}-{{quality_step}}-preparing_DATA.e",
