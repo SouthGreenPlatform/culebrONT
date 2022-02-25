@@ -31,8 +31,8 @@ Steps for LOCAL installation
 Install CulebrONT in a *local* (single machine) mode using ``culebrONT install_local`` command line.
 
 .. click:: culebrONT.main:install_local
-    :prog: culebrONT install_local
-    :show-nested:
+   :prog: culebrONT install_local
+   :show-nested:
 
 To create a pipeline, tools used by CulebrONT are wrapped into ``Singularity images``. These images are automatically downloaded and used by the configuration files of the pipeline. Local mode install, without scheduler, is constrains to use these Singularity images.
 
@@ -51,8 +51,8 @@ We tried to make cluster installation as easy as possible, but it is somehow nec
 
 
 .. click:: culebrONT.main:install_cluster
-    :prog: culebrONT install_cluster
-    :show-nested:
+   :prog: culebrONT install_cluster
+   :show-nested:
 
 1. Adapt `profile` and `cluster_config.yaml`
 ---------------------------------------------
@@ -96,8 +96,8 @@ Check install
 In order to test your install of CulebrONT, a data test called ``Data-Xoo-sub/`` is available at https://itrop.ird.fr/culebront_utilities/.
 
 .. click:: culebrONT.main:test_install
-    :prog: culebrONT test_install
-    :show-nested:
+   :prog: culebrONT test_install
+   :show-nested:
 
 This dataset will be automatically downloaded by CulebrONT in the ``-d`` repertory using :
 
@@ -109,13 +109,13 @@ Launching the (suggested, to be adapted) command line in CLUSTER mode will perfo
 
 .. code-block:: bash
 
-    culebrONT run_cluster --config test/data_test_config.yaml
+   culebrONT run_cluster --config test/data_test_config.yaml
 
 In local mode, type :
 
 .. code-block:: bash
 
-    culebrONT run_local -t 8 -c test/data_test_config.yaml --singularity-args "--bind $HOME"
+   culebrONT run_local -t 8 -c test/data_test_config.yaml --singularity-args "--bind $HOME"
 
 
 ------------------------------------------------------------------------
@@ -143,19 +143,19 @@ Once your basic profile is created, to finalize it, modify as necessary the ``cu
 
 .. code-block:: ini
 
-    restart-times: 0
-    jobscript: "slurm-jobscript.sh"
-    cluster: "slurm-submit.py"
-    cluster-status: "slurm-status.py"
-    max-jobs-per-second: 1
-    max-status-checks-per-second: 10
-    local-cores: 1
-    jobs: 200                   # edit to limit the number of jobs submitted in parallel
-    latency-wait: 60000000
-    use-envmodules: true        # adapt True/False for env of singularuty, but only active one possibility !
-    use-singularity: false      # if False, please install all R packages listed in tools_config.yaml ENVMODULE/R
-    rerun-incomplete: true
-    printshellcmds: true
+   restart-times: 0
+   jobscript: "slurm-jobscript.sh"
+   cluster: "slurm-submit.py"
+   cluster-status: "slurm-status.py"
+   max-jobs-per-second: 1
+   max-status-checks-per-second: 10
+   local-cores: 1
+   jobs: 200                   # edit to limit the number of jobs submitted in parallel
+   latency-wait: 60000000
+   use-envmodules: true        # adapt True/False for env of singularuty, but only active one possibility !
+   use-singularity: false      # if False, please install all R packages listed in tools_config.yaml ENVMODULE/R
+   rerun-incomplete: true
+   printshellcmds: true
 
 
 2. Adapting *cluster_config.yaml*
@@ -165,16 +165,16 @@ In the ``cluster_config.yaml`` file, you can manage HPC resources, choosing part
 or specifically, for each rule/tool depending on your HPC Job Scheduler (see `there <https://snakemake.readthedocs.io/en/latest/snakefiles/configuration.html#cluster-configuration-deprecated>`_). This file generally belongs to a Snakemake profile (see above).
 
 .. warning::
-    If more memory or threads are requested, please adapt the content 
-    of this file before running on your cluster.
+   If more memory or threads are requested, please adapt the content
+   of this file before running on your cluster.
 
 
 A list of CulebrONT rules names can be found in the section :ref:`Threading rules inside culebrONT`
 
 
 .. warning::
-    For some rules in the *cluster_config.yaml* as `rule_graph` or `run_get_versions`,
-    we use by default wildcards, please don't remove it.
+   For some rules in the *cluster_config.yaml* as `rule_graph` or `run_get_versions`,
+   we use by default wildcards, please don't remove it.
 
 
 3. How to configure tools_path.yaml
@@ -186,33 +186,33 @@ In the ``tools_path`` file, you can find two sections: SINGULARITY and ENVMODULE
 Absolute paths are strongly recommended. See the section :ref:`'How to build singularity images'<How to build singularity images>`  for further details.
 
 .. literalinclude:: ../../culebrONT/install_files/tools_path.yaml
-    :language: YAML
-    :lines: 6-8
+   :language: YAML
+   :lines: 6-8
 
 .. warning::
-    To ensure SINGULARITY containers to be really used, one needs to make
-    sure that the *--use-singularity* flag is included in the snakemake command line.
+   To ensure SINGULARITY containers to be really used, one needs to make
+   sure that the *--use-singularity* flag is included in the snakemake command line.
 
 
 2. Use only ENVMODULES: in this case, fill this section with the modules available on your cluster (here is an example):
 
 .. literalinclude:: ../../culebrONT/install_files/tools_path.yaml
-    :language: YAML
-    :lines: 10-18
+   :language: YAML
+   :lines: 10-18
 
 CulebrONT needs a wide set of R modules for reporting. If you use ENVMODULE R, just have a look at dependencies in the ``Containers/Singularity.report.def`` file.
 Yes, plenty of packages!! That's why we provide build Singularity containers ready to use and recommend them for the R part.
 
 .. note::
-    TIP !! We provide a Singularity container for all R packages (Singularity.report.def),
-    thus you can use this one to create a dedicated module environment.
+   TIP !! We provide a Singularity container for all R packages (Singularity.report.def),
+   thus you can use this one to create a dedicated module environment.
 
 
 .. warning::
-    Make sure to specify the *--use-envmodules* flag in the snakemake command
-    line for ENVMODULE to be implemented.
-    More details can be found here:
-    https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html#using-environment-modules
+   Make sure to specify the *--use-envmodules* flag in the snakemake command
+   line for ENVMODULE to be implemented.
+   More details can be found here:
+   https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html#using-environment-modules
 
 
 ------------------------------------------------------------------------
@@ -226,74 +226,74 @@ How to build Singularity images
 You can build your own image using the available *.def* recipes from the ``culebrONT/culebrONT/containers/`` directory.
 
 .. warning::
-    Be careful, you need root access to build Singularity images
+   Be careful, you need root access to build Singularity images
 
 .. code-block:: bash
 
-    cd culebrONT/culebrONT/containers/
-    sudo make build
+   cd culebrONT/culebrONT/containers/
+   sudo make build
 
 Threading rules inside CulebrONT
 ********************************
 
 Please find here the rules names found in CulebrONT code.
-It is recommended to set threads using the snakemake command when running on a single machine, 
+It is recommended to set threads using the snakemake command when running on a single machine,
 or in a cluster configuration file to manage cluster resources through the job scheduler.
 This would save users a painful exploration of the snakefiles of CulebrONT.
 
 .. code-block:: python
 
-    run_flye
-    run_canu
-    run_minimap_for_miniasm
-    run_miniasm
-    run_minipolish
-    run_raven
-    convert_fastq_to_fasta
-    run_smartdenovo
-    run_shasta
-    run_circlator
-    tag_circular
-    tag_circular_to_minipolish
-    rotate_circular
-    run_fixstart
-    run_makerange
-    run_nanopolish_index
-    preparing_ref_to_nanopolish
-    run_nanopolish_variants
-    run_nanopolish_merge
-    index_fasta_to_correction
-    run_minialign_to_medaka
-    run_medaka_train
-    run_medaka_consensus
-    run_medaka_merge
-    run_pilon_first_round
-    run_pilon
-    run_racon
-    preparing_fasta_to_quality
-    run_quast
-    run_busco
-    run_diamond
-    run_minimap2
-    run_blobtools
-    run_mummer
-    run_assemblytics
-    combined_fastq
-    run_KAT
-    run_mauve
-    run_bwa_mem2
-    run_flagstat
-    final
-    rule_graph
-    run_report_snakemake
-    run_flagstats_stats
-    run_busco_stats
-    run_racon_version
-    run_busco_version
-    run_benchmark_time
-    run_get_versions
-    stats_assembly
-    run_report
+   run_flye
+   run_canu
+   run_minimap_for_miniasm
+   run_miniasm
+   run_minipolish
+   run_raven
+   convert_fastq_to_fasta
+   run_smartdenovo
+   run_shasta
+   run_circlator
+   tag_circular
+   tag_circular_to_minipolish
+   rotate_circular
+   run_fixstart
+   run_makerange
+   run_nanopolish_index
+   preparing_ref_to_nanopolish
+   run_nanopolish_variants
+   run_nanopolish_merge
+   index_fasta_to_correction
+   run_minialign_to_medaka
+   run_medaka_train
+   run_medaka_consensus
+   run_medaka_merge
+   run_pilon_first_round
+   run_pilon
+   run_racon
+   preparing_fasta_to_quality
+   run_quast
+   run_busco
+   run_diamond
+   run_minimap2
+   run_blobtools
+   run_mummer
+   run_assemblytics
+   combined_fastq
+   run_KAT
+   run_mauve
+   run_bwa_mem2
+   run_flagstat
+   final
+   rule_graph
+   run_report_snakemake
+   run_flagstats_stats
+   run_busco_stats
+   run_racon_version
+   run_busco_version
+   run_benchmark_time
+   run_get_versions
+   stats_assembly
+   run_report
 
 
 
