@@ -81,7 +81,8 @@ def main():
             'snakemake',
             'tqdm',
             'click>=8.0.3',
-            'cookiecutter'
+            'cookiecutter',
+            'docutils < 0.18'
         ],
         extras_require={
             'docs': ['sphinx_copybutton',
