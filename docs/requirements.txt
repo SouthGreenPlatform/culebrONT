@@ -5,7 +5,6 @@ setuptools>=45
 wheel>=0.37.1
 setuptools_scm>=6.2
 sphinx-rtd-theme==1.0.0
-docutils==0.17.1
 sphinx==4.4.0
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
@@ -14,3 +13,4 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-mermaid==0.7.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
+docutils==0.17.1
