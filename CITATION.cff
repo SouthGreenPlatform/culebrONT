@@ -1,0 +1,47 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  Code source of CulebrONT: a streamlined long reads
+  multi-assembler pipeline for prokaryotic and
+  eukaryotic genomes
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - orcid: 'https://orcid.org/0000-0001-8387-2266'
+    email: julie.orjuela@ird.fr
+    affiliation: IRD
+    given-names: Orjuela
+    name-particle: Julie
+  - orcid: 'https://orcid.org/0000-0002-6891-5739'
+    affiliation: IRD
+    email: aurore.compte@ird.fr
+    given-names: Aurore
+    name-particle: Comte
+  - given-names: Ravel
+    name-particle: Sébastien
+    email: sebastien.ravel@cirad.fr
+    affiliation: CIRAD
+    orcid: 'https://orcid.org/0000-0001-6663-782X'
+  - given-names: Florian
+    name-particle: Charriat
+    email: florian.charriat@inrae.fr
+    affiliation: INRAe
+    orcid: 'https://orcid.org/0000-0001-9485-4119'
+  - given-names: Tram
+    name-particle: Vi
+    affiliation: IRD
+    email: baotram.vi@ird.fr
+  - orcid: 'https://orcid.org/0000-0002-8522-7583'
+    given-names: François
+    name-particle: Sabot
+    email: francois.sabot@ird.fr
+    affiliation: IRD
+  - orcid: 'https://orcid.org/0000-0002-3695-491X'
+    given-names: Sébastien
+    name-particle: Cunnac
+    email: sebastien.cunnac@ird.fr
+    affiliation: IRD
