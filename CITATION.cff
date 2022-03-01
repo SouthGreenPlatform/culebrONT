@@ -21,8 +21,8 @@ authors:
     email: aurore.compte@ird.fr
     given-names: Aurore
     name-particle: Comte
-  - given-names: Ravel
-    name-particle: Sébastien
+  - given-names: Sébastien
+    name-particle: Ravek
     email: sebastien.ravel@cirad.fr
     affiliation: CIRAD
     orcid: 'https://orcid.org/0000-0001-6663-782X'
