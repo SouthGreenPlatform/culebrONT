@@ -46,3 +46,4 @@ culebrONT/default_profile
 culebrONT/containers/Singularity.culebront_tools.sif
 culebrONT/containers/Singularity.report.sif
 .tox
+culebrONT/_version.py
