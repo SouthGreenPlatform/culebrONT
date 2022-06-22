@@ -208,6 +208,7 @@ class CulebrONT(SnakeWrapper):
 
         # CHECK ILLUMINA
         need_illumina = [var_2_bool("QUALITY", "KAT", self.get_config_value("QUALITY", "KAT")),
+                         var_2_bool("QUALITY", "MERQURY", self.get_config_value("QUALITY", "MERQURY")),
                          var_2_bool("CORRECTION", "PILON", self.get_config_value("CORRECTION", "PILON")),
                          var_2_bool("QUALITY", "FLAGSTATS", self.get_config_value("QUALITY", "FLAGSTATS"))]
         if True in need_illumina:
@@ -239,6 +240,12 @@ class CulebrONT(SnakeWrapper):
             self._check_file_or_string(level1="DATA", level2="REF")
         genome_pb = convert_genome_size(self.get_config_value('DATA', 'GENOME_SIZE'))
         self.set_config_value(level1="params", level2="QUAST", level3="GENOME_SIZE_PB", value=genome_pb)
+
+        # check files if MERQURY
+        if bool(self.config["QUALITY"]["MERQURY"]):
+            self._check_file_or_string(level1="DATA", level2="REF")
+        genome_pb = convert_genome_size(self.get_config_value('DATA', 'GENOME_SIZE'))
+        self.set_config_value(level1="params", level2="MERQURY", value={"GENOME_SIZE_PB":genome_pb})
 
         # check files if MAUVE
         if bool(self.config["MSA"]["MAUVE"]):
@@ -279,6 +286,9 @@ class CulebrONT(SnakeWrapper):
 
         ##############################
         # check workflow compatibility
+        if bool(self.config['QUALITY']['ASSEMBLYTICS']):
+            self._check_file_or_string(level1='DATA', level2='REF', mandatory=["ASSEMBLYTICS"])
+
         if not bool(self.config['POLISHING']['RACON']) and bool(self.config['ASSEMBLY']['MINIASM']):
             logger.warning(
                 f"\nWARNING: RACON is automatically launched (2 rounds by default) for minipolish if MINIASM is activated !! . \n")
@@ -295,9 +305,9 @@ class CulebrONT(SnakeWrapper):
                 f"CONFIG FILE CHECKING ERROR : FIXSTART is irrelevant if you have not activated CIRCULAR. FIXSTART will not be run !! \n")
 
         # if you want to run mauve fixstart has to be activated
-        if bool(self.config['CIRCULAR']) and not bool(self.config['FIXSTART']):
+        if (bool(self.config['CIRCULAR']) and bool(self.config['MSA']['MAUVE'])) and not bool(self.config['FIXSTART']):
             raise ValueError(
-                f"CONFIG FILE CHECKING ERROR : FIXSTART must be activated if CIRCULAR is TRUE on config file.  !! \n")
+                f"CONFIG FILE CHECKING ERROR : FIXSTART must be activated for MAUVE if CIRCULAR is TRUE on config file.  !! \n")
 
         # check for BLOBTOOLS
         if bool(self.config["QUALITY"]["BLOBTOOLS"]):

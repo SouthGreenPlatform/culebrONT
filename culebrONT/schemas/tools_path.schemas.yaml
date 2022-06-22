@@ -67,6 +67,9 @@ required:
             'KAT':
                 type: string
                 description: "module env"
+            'MERQURY' :
+                type : string
+                description : "module env"
             'BLOBTOOLS':
                 type: string
                 description: "module env"

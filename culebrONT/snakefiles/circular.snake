@@ -23,17 +23,17 @@ rule run_circlator:
     message:
         """
         Launching {rule}
-        threads : {threads}
+        threads: {threads}
         input:
-             fastq : {input.fastq}
-             draft : {input.draft}
+             fastq: {input.fastq}
+             draft: {input.draft}
         output:
-             fasta : {output.fasta}
-             info : {output.info}
+             fasta: {output.fasta}
+             info: {output.info}
         params:
              out_dir: {params.out_dir}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -73,15 +73,15 @@ rule tag_circular:
     message:
         """
         Launching {rule}
-        threads : {threads}
+        threads: {threads}
         input:
-            fasta : {input.fasta}
-            info : {input.info}
+            fasta: {input.fasta}
+            info: {input.info}
         output:
-            tagged_fasta : {output.tagged_fasta}
+            tagged_fasta: {output.tagged_fasta}
         log:
-            output : {log.output}
-            error :  {log.error}
+            output: {log.output}
+            error:  {log.error}
         """
     singularity:
         tools_config['SINGULARITY']['REPORT']
@@ -97,7 +97,7 @@ rule tag_circular_to_minipolish:
     """
     Tagging title of circular molecules in assembly fasta only to MINIASM-MINIPOLISH
     """
-    threads: get_threads('tag_circular', 1)
+    threads: get_threads('tag_circular_to_minipolish', 1)
     input:
         #fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assemblyCIRCULARISED_TMP.fasta",
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta",
@@ -117,15 +117,15 @@ rule tag_circular_to_minipolish:
     message:
         """
         Launching {rule}
-        threads : {threads}
+        threads: {threads}
         input:
-            fasta : {input.fasta}
-            info : {input.info}
+            fasta: {input.fasta}
+            info: {input.info}
         output:
-            tagged_fasta : {output.tagged_fasta}
+            tagged_fasta: {output.tagged_fasta}
         log:
-            output : {log.output}
-            error :  {log.error}
+            output: {log.output}
+            error:  {log.error}
         """
     singularity:
         tools_config['SINGULARITY']['REPORT']
@@ -141,7 +141,7 @@ rule rotate_circular:
     """
     Rotate circular
     """
-    threads: get_threads('rotate_circular', 4)
+    threads: get_threads('rotate_circular', 1)
     input:
         draft = draft_to_rotate,
     output:
@@ -154,13 +154,13 @@ rule rotate_circular:
     message:
         """
         Launching {rule}
-        threads : {threads}
+        threads: {threads}
         input:
-            draft : {input.draft}
+            draft: {input.draft}
         output:
-            rotated : {output.rotated}
+            rotated: {output.rotated}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -176,7 +176,7 @@ rule rotate_circular:
 def fasta_to_fixstart(wildcards):
     #CORRECTION
     if len(culebront.correction_tools_activated)>=1:
-        if wildcards.quality_step == 'STEP_CORRECTION_NANOPOLISH' :
+        if wildcards.quality_step == 'STEP_CORRECTION_NANOPOLISH':
             return rules.run_nanopolish_merge.output.fasta
         elif wildcards.quality_step == 'STEP_CORRECTION_MEDAKA':
             return rules.run_medaka_merge.output.fasta
@@ -217,13 +217,13 @@ rule run_fixstart:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            assembly_file  : {input.assembly_file}
+            assembly_file: {input.assembly_file}
         params:
-            prefix : {params.prefix}
+            prefix: {params.prefix}
         output:
-            fix_start_fasta : {output.fix_start_fasta}
+            fix_start_fasta: {output.fix_start_fasta}
         """
     singularity:
         tools_config['SINGULARITY']['TOOLS']

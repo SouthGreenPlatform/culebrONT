@@ -1,5 +1,5 @@
 ---
-title: "CulebrONT 2.0.1 report"
+title: "CulebrONT 2.1.0 report"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   rmdformats::readthedown:
@@ -79,6 +79,8 @@ frc_files <- r_to_py(as.list(snakemake@input$frc_files))
 blob_files <- r_to_py(as.list(snakemake@input$blob_files))
 assemblytics_files <- r_to_py(as.list(snakemake@input$assemblytics_files))
 kat_files <- r_to_py(as.list(snakemake@input$kat_files))
+merqury_files <- r_to_py(as.list(snakemake@input$merqury_files))
+merqury_stats <- r_to_py(as.list(snakemake@input$merqury_stats))
 report_snakemake <- r_to_py(snakemake@input$report_snakemake)
 versions <- r_to_py(snakemake@input$versions)
 
@@ -115,6 +117,7 @@ dico_tools = {
     "BLOBTOOLS" : "* BLOBTOOLS: https://blobtools.readme.io/docs",
     "ASSEMBLYTICS" : "* ASSEMBLYTICS: http://assemblytics.com/",
     "KAT" : "* KAT : https://github.com/TGAC/KAT",
+    "MERQURY" : "* MERQURY : https://github.com/marbl/merqury",
     "FLAGSTATS" : "* SAMTOOLS FLAGSTATS : http://www.htslib.org/doc/samtools-flagstat.html",
 }
 tools = []
@@ -368,8 +371,78 @@ for kat_file in r.kat_files:
     print('![thumbnail]('+png_density+') ![thumbnail]('+png_spectra_cn+')\n\n')
     print('![thumbnail]('+png_spectra_hist+') ![thumbnail]('+png_comp_main_mx_spectra_cn+')\n\n')
 
+```
+
+
+```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('MERQURY' %in% quality_tools_vector)}
+print("""
+# MERQURY{.tabset .tabset-fade}
+MERQURY : Overall k-mer evaluation is performed using the k-mer multiplicity of illumina WGS reads
+""")
+dico_merqury = {}
+dico_merqury_file = {}
+dico_merqury_stats = {}
+dico_merqury_2 = {}
+for merqury_file in r.merqury_files:
+    sample = Path(f"{merqury_file}").stem
+    df = pd.read_csv(Path(f"{merqury_file}"), sep="\t", engine='python', header=None, index_col=None)
+    df.rename(columns={0:'Assembly',1:'mapped_kmer', 2:'all_kmers', 3:'QV', 4:'error_rate' }, inplace=True)
+    if sample not in dico_merqury:
+        dico_merqury[sample] = df
+    else:
+        dico_merqury[sample] = pd.concat([dico_merqury[sample], df])
+    dico_merqury_file[sample] = merqury_file
+
+for merqury_stat in r.merqury_stats:
+    sample = Path(f"{merqury_stat}").stem.replace(".completeness","")
+    df2 = pd.read_csv(Path(f"{merqury_stat}"), sep="\t", engine='python', header=None, index_col=None)
+    df2.rename(columns={0:'Assembly',1:'read_set', 2:'kmer', 3:'total_kmer', 4:'completeness' }, inplace=True)
+    if sample not in dico_merqury_2:
+        dico_merqury_2[sample] = df2
+    else:
+        dico_merqury_2[sample] = pd.concat([dico_merqury_2[sample], df2])
+    dico_merqury_stats[sample] = merqury_stat
+
+df_merqury_final = {}
+for sample in dico_merqury:
+    df_merqury_final[sample] = pd.merge(dico_merqury[sample], dico_merqury_2[sample], on="Assembly", how = "inner" )
+    df_merqury_final[sample] = df_merqury_final[sample].drop(["read_set","kmer", "total_kmer"], axis=1)
 
 ```
+
+
+```{r, merqury, echo=FALSE, include=FALSE, message = FALSE, warning = FALSE, eval=('MERQURY' %in% quality_tools_vector)}
+merqury = NULL
+for (i in 1:length(samples_list)) {
+    file = py$dico_merqury_file[[samples_list[[i]]]]
+    data = read.csv(file,
+                 header = FALSE,
+                 sep="\t",
+                 dec = ".")
+    colnames(data)[1]  <- "Assembly"
+    colnames(data)[2]  <- "mapped_kmer"
+    colnames(data)[3]  <- "all_kmers"
+    colnames(data)[4]  <- "QV"
+    colnames(data)[5]  <- "error_rate"
+    print(data)
+
+  merqury = c(merqury, knit_expand(text="## {{samples_list[[i]]}}\n\n{{dt}}\n\n",
+                                dt = DT::datatable(py_to_r(py$df_merqury_final[[samples_list[[i]]]]),
+                                                  escape = FALSE,
+                                                  rownames = FALSE,
+                                                  filter = list(position = 'top', clear = TRUE, plain = FALSE),
+                                                  option= list(paging=FALSE,searching = FALSE,ordering=TRUE, scrollX = FALSE, dom = 'Blfrtip'))
+                                )
+            )
+}
+```
+
+
+```{r, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('MERQURY' %in% quality_tools_vector)}
+cat(paste(knit(text = merqury), collapse = '\n'))
+```
+
+
 
 ```{python, results='asis', echo=FALSE, message = FALSE, warning = FALSE, eval=('FLAGSTATS' %in% quality_tools_vector)}
 print("""# FLAGSTATS{.tabset .tabset-fade}
@@ -381,9 +454,7 @@ dico_flag_file = {}
 for flag_file in r.flagstats_stats:
     sample = Path(f"{flag_file}").stem.split("_")[0]
     #print(f"## {sample}\n\n")
-    df = pd.read_csv(Path(f"{flag_file}"), sep=",", engine='python', header=0, index_col=None)
-    df.rename(columns={"Unnamed: 0":'Assembler',"Unnamed: 1":'Steps' }, inplace=True)
-    #print(f"{df}\n")
+    df = pd.read_csv(Path(f"{flag_file}"), sep="\t", engine='python', header=0, index_col=None)
     dico_flag[sample] = df
     dico_flag_file[sample] = flag_file
 ```

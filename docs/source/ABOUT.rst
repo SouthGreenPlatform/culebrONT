@@ -147,7 +147,8 @@ CulebrONT checks the quality of the assemblies with using these optional tools:
    * Assemblytics: compares structural variations of assemblies versus a reference genome
    * KAT: explores k-mers frequencies and checks for possible contamination
    * Samtools flagstats: calculates remapping stats using Illumina reads over assemblies
-   * Mauve: allows multiple alignment of several assembles (for small genome only).
+   * Mauve: allows multiple alignment of several assembles (for small genome only)
+   * Merqury: Evaluate assembly quality with the the k-mer spectrum of an illumina read set
 
 .. danger::
    Please, activate Mauve only for small genomes.
@@ -161,3 +162,4 @@ Included tools :
 * KAT version >= 2.4.2
 * Samtools version>= 1.10
 * Mauve > 2.4.0.snapshot_2015_02_13
+* Merqury >= 1.3

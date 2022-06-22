@@ -37,6 +37,7 @@ QUALITY:
 #### Others quality softs but illumina reads are required
     FLAGSTATS: false
     KAT: false
+    MERQURY : false
 
 #### Alignment of the various assemblies derived from a fastq file for small genomes (<10-20Mbp);
 MSA:
@@ -52,7 +53,7 @@ params:
         OPTIONS: '' ## use --scaffold if flye>=2.9 # you can also use --resume option
     CANU:
         MODE : '-nanopore'
-        OPTIONS: 'useGrid=false maxThreads=8'
+        OPTIONS: 'useGrid=false maxThreads=20'
     SMARTDENOVO:
         KMER_SIZE: 16
         OPTIONS: '-J 5000'

@@ -1,84 +1,133 @@
 __default__:
-    cpus-per-task : 4
-    mem-per-cpu : 10G
-    partition : PARTITION
+    cpus-per-task: 1
+    mem-per-cpu: 10G
+    partition: PARTITION
     output: '{log.output}_cluster'
     error: '{log.error}_cluster'
-    job-name : '{rule}.{wildcards}'
+    job-name: '{rule}.{wildcards}'
 
 run_medaka_train:
-    cpus-per-task : 8
-    mem-per-cpu : 8G
-    partition : PARTITION
+    cpus-per-task: 8
+    mem-per-cpu: 8G
+    partition: PARTITION
 
 run_medaka_consensus:
-    cpus-per-task : 8
-    mem-per-cpu : 8G
-    partition : PARTITION
+    cpus-per-task: 8
+    mem-per-cpu: 8G
+    partition: PARTITION
 
+# ASSEMBLERS TOOLS
 run_flye:
-    cpus-per-task : 10
-    mem-per-cpu : 15G
-
+    cpus-per-task: 10
+    mem-per-cpu: 15G
 run_canu:
-    cpus-per-task : 10
-    mem-per-cpu : 25G
-
-run_raven:
-    cpus-per-task : 8
-    mem-per-cpu : 15G
-
-run_shasta:
-    cpus-per-task : 8
-    mem-per-cpu : 20G
-
-run_smartdenovo:
-    cpus-per-task : 8
-    mem-per-cpu : 15G
-
+    cpus-per-task: 10
+    mem-per-cpu: 25G
+run_minimap_for_miniasm:
+    cpus-per-task: 8
+    mem-per-cpu: 15G
 run_miniasm:
-    cpus-per-task : 8
-    mem-per-cpu : 15G
-
+    cpus-per-task: 8
+    mem-per-cpu: 15G
 run_minipolish:
-    cpus-per-task : 8
-    mem-per-cpu : 15G
+    cpus-per-task: 8
+    mem-per-cpu: 15G
+run_raven:
+    cpus-per-task: 8
+    mem-per-cpu: 15G
+run_smartdenovo:
+    cpus-per-task: 8
+    mem-per-cpu: 15G
+run_shasta:
+    cpus-per-task: 8
+    mem-per-cpu: 20G
 
+# CIRCULAR TOOLS
 run_circlator:
-    cpus-per-task : 8
-    mem-per-cpu : 8G
+    cpus-per-task: 8
+    mem-per-cpu: 8G
 
+# CORRECTION TOOLS
+preparing_ref_to_nanopolish:
+    cpus-per-task: 8
+run_nanopolish_variants:
+    cpus-per-task: 8
+index_fasta_to_correction:
+    cpus-per-task: 8
+run_minialign_to_medaka:
+    cpus-per-task: 8
+run_medaka_train:
+    cpus-per-task: 8
+run_medaka_consensus:
+    cpus-per-task: 4
+run_medaka_merge:
+    cpus-per-task: 2
+run_pilon_first_round:
+    cpus-per-task: 2
+run_pilon:
+    cpus-per-task: 2
+
+# POLISHERS TOOLS
 run_racon:
-    cpus-per-task : 8
-    mem-per-cpu : 8G
+    cpus-per-task: 8
+    mem-per-cpu: 8G
 
-run_nanopolish:
-    cpus-per-task : 8
-    mem-per-cpu : 8G
-
+# QUALITY TOOLS
+preparing_fasta_to_quality:
+    cpus-per-task: 8
+run_quast:
+    cpus-per-task: 8
+run_busco:
+    cpus-per-task: 8
+run_diamond:
+    cpus-per-task: 8
+run_minimap2:
+    cpus-per-task: 8
 run_kat:
-    cpus-per-task : 1
-    mem-per-cpu : 8G
+    cpus-per-task: 8
+    mem-per-cpu: 10G
+run_merqury:
+    cpus-per-task: 8
+    mem-per-cpu: 15G
+run_bwa_mem2:
+    cpus-per-task: 8
+run_flagstat:
+    cpus-per-task: 8
 
+# OTHER SNAKEMAKE RULES
 rule_graph:
-    output : 'slurm_logs/stdout/{rule}/rule_graph.o'
-    error : 'slurm_logs/error/{rule}/rule_graph.e'
-    job-name : '{rule}'
+    job-name: '{rule}'
 
 run_get_versions:
-    output : 'slurm_logs/stdout/{rule}/run_get_versions.o'
-    error : 'slurm_logs/error/{rule}/run_get_versions.e'
-    job-name : '{rule}'
+    job-name: '{rule}'
 
 run_report_snakemake:
-    output : 'slurm_logs/stdout/{rule}/run_report_snakemake.o'
-    error : 'slurm_logs/error/{rule}/run_report_snakemake.e'
-    job-name : '{rule}'
+    job-name: '{rule}'
 
 run_report:
-    output : 'slurm_logs/stdout/{rule}/run_report.o'
-    error : 'slurm_logs/error/{rule}/run_report.e'
-    job-name : '{rule}'
+    job-name: '{rule}'
 
 #you can add nodelist option if you want force slurm into a particular node
-#nodelist : nodeX
+#nodelist: nodeX
+
+## rule not able to multi-threading
+# convert_fastq_to_fasta
+# tag_circular
+# tag_circular_to_minipolish
+# rotate_circular
+# run_fixstart
+# run_makerange
+# run_nanopolish_index
+# run_nanopolish_merge
+# run_blobtools
+# run_mummer
+# run_assemblytics
+# combined_fastq
+# run_mauve
+# run_flagstats_stats
+# run_busco_stats
+# run_racon_version
+# run_busco_version
+# run_benchmark_time
+# stats_assembly
+# copy_final_assemblies

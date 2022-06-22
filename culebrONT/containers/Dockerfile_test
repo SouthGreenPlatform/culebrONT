@@ -11,13 +11,17 @@ USER root
 # ENVIRONMENT
 
 # INSTALL, Global
-RUN apt update
-RUN DEBIAN_FRONTEND=noninteractive apt -y install keyboard-configuration git vim curl wget less locate graphviz python3-pip
-RUN DEBIAN_FRONTEND=noninteractive apt -y install python3.8 python3.8-dev python3.8-venv python3.8-full python3.8-distutils
-RUN DEBIAN_FRONTEND=noninteractive apt -y install python3.9 python3.9-dev python3.9-venv python3.9-full python3.9-distutils
+
+RUN DEBIAN_FRONTEND=noninteractive
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+RUN apt-get update && apt-get upgrade -y
 RUN ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
-RUN apt install -y tzdata
+RUN apt-get install -y apt-utils dialog
+RUN apt-get install -y tzdata
 RUN dpkg-reconfigure --frontend noninteractive tzdata
+RUN apt-get -y install keyboard-configuration git vim curl wget less locate graphviz python3-pip
+RUN apt-get -y install python3.8 python3.8-dev python3.8-venv
+RUN apt-get -y install python3.9 python3.9-dev python3.9-venv
 
 # Install for Python
 RUN echo 'export LC_ALL=C.UTF-8' >> /environment
@@ -41,4 +45,5 @@ RUN cd /singularity-ce-3.8.1 && ./mconfig -p /usr/local && make -C builddir && m
 
 # Download build singularity
 RUN mkdir -p /usr/local/culebrONT/Containers && cd /usr/local/culebrONT/Containers && wget --no-check-certificate -rm -nH --cut-dirs=2 --reject="index.html*" --no-parent https://itrop.ird.fr/culebront_utilities/singularity_build/
-
+RUN apt-get -y install r-base-core
+RUN apt-get clean

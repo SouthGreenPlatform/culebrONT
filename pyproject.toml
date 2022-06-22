@@ -17,6 +17,7 @@ legacy_tox_ini = """
 envlist = py{38,39}
 skip_missing_interpreters = True
 skipsdist=False
+isolated_build=True
 
 [gh-actions]
 python = 3.8: py38
@@ -31,8 +32,10 @@ whitelist_externals =
 envdir =
     py38: {toxworkdir}/py38
     py39: {toxworkdir}/py39
+setenv =
+    PATH = {toxinidir}{:}{env:PATH}
 commands =
-    #culebrONT --help
+    culebrONT --help
     bash -ec 'echo `pwd`'
     bash -ec 'CPDIR="./lib/python3.8/site-packages/culebrONT/containers/"; DIR="/usr/local/culebrONT/Containers"; if [[ -d $DIR ]]; then ls $DIR;  echo "copy Containers files in $DIR to $CPDIR"; ln -sf $DIR/* $CPDIR; fi'
     culebrONT install_local
@@ -42,9 +45,10 @@ commands =
 description = Run Installation culebrONT install_local
 changedir={envdir}
 skipsdist=True
+skip_install=True
 commands =
     culebrONT test_install -d test
-    culebrONT run_local --threads 8 --config {posargs} --singularity-args '--bind /builds:/builds'
+    culebrONT run_local --threads 14 --config {posargs} --singularity-args '--bind /builds:/builds'
 
 
 [testenv:py38-run]
@@ -52,17 +56,12 @@ description = Run workflow pass on args to culebrONT
 envdir =
     py38: {toxworkdir}/py38
     py39: {toxworkdir}/py39
+setenv =
+    PATH = {toxinidir}{:}{env:PATH}
 changedir={envdir}
+skipsdist=True
+skip_install=True
 commands = {[run]commands}
-
-
-#[testenv:py{38,39}-run]
-#description = Run workflow pass on args to culebrONT
-#envdir = {toxworkdir}/py{38,39}-tests
-#skipsdist=True
-#commands = culebrONT run_local --threads 8 --config {posargs}
-#    #culebrONT run_local --threads 8 --config ../../culebrONT/install_files/config_test/config_A.yaml
-#    #culebrONT run_local --threads 8 --config ../../culebrONT/install_files/config_test/config_APC.yaml
 
 """
 

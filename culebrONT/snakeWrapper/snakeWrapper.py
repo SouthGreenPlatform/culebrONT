@@ -72,7 +72,7 @@ class SnakeWrapper(object):
             if path_value != "" and "/" in path_value:
                 if (not Path(path).exists() or not Path(path).is_dir()) and level2 not in ["OUTPUT"]:
                     raise NotADirectoryError(
-                        f'CONFIG FILE CHECKING FAIL : in section:{level1}, {f"subsection:{level2} directory:{level3}" if level3 else f"directory:{level3}"}, "{path}" {"does not exist" if not Path(path).exists() else "is not a valid directory"}')
+                        f'CONFIG FILE CHECKING FAIL : in section:{level1}, {f"subsection:{level2} directory:{level3}" if level3 else f"directory:{level2}"}, "{path}" {"does not exist" if not Path(path).exists() else "is not a valid directory"}')
                 else:
                     self.set_config_value(level1=level1, level2=level2, level3=level3, value=path)
             # it is not a path
@@ -84,7 +84,7 @@ class SnakeWrapper(object):
                     f'CONFIG FILE CHECKING FAIL : in section:{level1}, {f"subsection:{level2} value:{level3}" if level3 else f"value:{level2}"}, "{path_value}" is empty')
         elif len(mandatory) > 0:
             raise NotADirectoryError(
-                f'CONFIG FILE CHECKING FAIL : in section:{level1}, {f"subsection:{level2} directory:{level3}" if level3 else f"directory:{level2}"}, "{path_value}" {"does not exist" if not Path(path_value).exists() else "is not a valid directory"} but is mandatory for tool: {" ".join(mandatory)}')
+                f'CONFIG FILE CHECKING FAIL : in section:{level1}, {f"subsection:{level2} directory:{level3}" if level3 else f"directory:{level2}"}, "{path_value}" {"does not exist" if not Path(path_value).exists() else "is not a valid directory"} but is mandatory for tool: "{",".join(mandatory)}"')
 
     def _check_file_or_string(self, level1, level2, mandatory=(), level3=None, check_string=False):
         """Check if path is a file if not empty
@@ -107,7 +107,7 @@ class SnakeWrapper(object):
                 f'CONFIG FILE CHECKING FAIL : in section:{level1}, {f"subsection:{level2}, value {level3}" if level3 else f"value:{level2}"}, "{path_value}" is empty')
         elif len(mandatory) > 0:
             raise FileNotFoundError(
-                f'CONFIG FILE CHECKING FAIL : in  section:{level1} , {f"subsection:{level2}, value {level3}" if level3 else f"value:{level2}"}, "{path_value}" {"does not exist" if not Path(path_value).exists() else "is not a valid file"} but is mandatory for tool: {" ".join(mandatory)}')
+                f'CONFIG FILE CHECKING FAIL : in  section:{level1} , {f"subsection:{level2}, value {level3}" if level3 else f"value:{level2}"}, "{path_value}" {"does not exist" if not Path(path_value).exists() else "is not a valid file"} but is mandatory for tool: "{",".join(mandatory)}"')
 
     @property
     def export_use_yaml(self):

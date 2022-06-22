@@ -3,7 +3,7 @@ rule run_racon:
     """
     launch Racon recursively n times (given by config.yaml)
     """
-    threads: get_threads('run_racon', 4)
+    threads: get_threads('run_racon', 8)
     input:
         draft = draft_to_racon,
     params:
@@ -21,13 +21,13 @@ rule run_racon:
     message:
         """
         Launching {rule}
-        threads : {threads}
+        threads: {threads}
         input:
-            draft : {input.draft}
-            fastq : {params.fastq}
+            draft: {input.draft}
+            fastq: {params.fastq}
         output:
-            paf : {output.paf}
-            fasta : {output.fasta}
+            paf: {output.paf}
+            fasta: {output.fasta}
         log:
             error: {log.error}
         """

@@ -4,7 +4,7 @@ from .global_variable import *
 from .usefull_function import package_name
 import os
 import re
-
+import subprocess
 
 def rewrite_if_bind(snakemake_other):
     """
@@ -61,8 +61,12 @@ def run_cluster(config, pdf, snakemake_other):
 
     cmd_snakemake_base = f"snakemake --show-failed-logs -p -s {SNAKEFILE} --configfile {config} --profile {profile} {cmd_clusterconfig} {' '.join(rewrite_if_bind(snakemake_other))}"
     click.secho(f"\n    {cmd_snakemake_base}\n", fg='bright_blue')
-    # exit()
-    os.system(cmd_snakemake_base)
+    process = subprocess.run(cmd_snakemake_base, shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if int(process.returncode) >= 1:
+        sys.stderr.buffer.write(process.stderr) #snakemake writes error in stdout
+        sys.stdout.buffer.write(process.stdout)
+        sys.exit(1)
+    sys.stdout.buffer.write(process.stdout)
 
     if pdf:
         dag_cmd_snakemake = f"{cmd_snakemake_base} --dag | dot -Tpdf > schema_pipeline_dag.pdf"
@@ -91,7 +95,7 @@ def run_local(config, threads, pdf, snakemake_other):
     These parameters will take precedence over Snakemake ones, which were
     defined in the profile.
     See: https://snakemake.readthedocs.io/en/stable/executing/cli.html
-    
+
     Example:
 
         culebrONT run_local -c config.yaml --threads 8 --dry-run
@@ -103,10 +107,17 @@ def run_local(config, threads, pdf, snakemake_other):
 
     """
     click.secho(f'    Config file: {config}', fg='yellow')
+    click.secho(f'    Tools config file: {USER_TOOLS_PATH}', fg='yellow')
 
     cmd_snakemake_base = f"snakemake --latency-wait 1296000 --cores {threads} --use-singularity --show-failed-logs --printshellcmds -s {SNAKEFILE} --configfile {config}  {' '.join(rewrite_if_bind(snakemake_other))}"
     click.secho(f"\n    {cmd_snakemake_base}\n", fg='bright_blue')
-    os.system(cmd_snakemake_base)
+    process = subprocess.run(cmd_snakemake_base, shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if int(process.returncode) >= 1:
+        sys.stderr.buffer.write(process.stderr) #snakemake writes error in stdout
+        sys.stdout.buffer.write(process.stdout)
+        sys.exit(1)
+    sys.stdout.buffer.write(process.stdout)
+
     if pdf:
         dag_cmd_snakemake = f"{cmd_snakemake_base} --dag | dot -Tpdf > schema_pipeline_dag.pdf"
         click.secho(f"    {dag_cmd_snakemake}\n", fg='bright_blue')

@@ -47,7 +47,7 @@ Find here a summary table with the description of each data needed to run Culebr
     "REF","Only one REFERENCE genome file will be used in each CulebrONT run. This REFERENCE will be used for various quality steps (i.e. ASSEMBLYTICS, QUAST and MAUVE)"
     "GENOME_SIZE", "Estimated genome size of the assembly can be provided in mega (Mb), giga(Gb) or kilobases (Kb). This size is used by some assemblers (e.g. CANU) and also by the QUAST quality step"
     "FAST5","Nanopolish uses FAST5 files to polish, and Medaka needs FAST5 files if a model training step is requested. Please give the path of the FAST5 folder in the *FAST5* DATA parameter. Inside this directory, a subdirectory with the exact same name as the corresponding FASTQ (before the *.fastq.gz*\ ) is required. For instance, if in the *FASTQ* directory we have *run1.fastq.gz* and *run2.fastq.gz*\ , CulebrONT is expecting the *run1/* and *run2/* subdirectories in the FAST5 main directory"
-    "ILLUMINA","Indicates the path to the directory with *Illumina* sequence data (in fastq or fastq.gz format), to perform pilon correction or KAT QC or both. Use preferentially paired-end data. All fastq files need to be homogeneous in their extension name. Please use *run1_R1* and *run1_R2* nomenclature."
+    "ILLUMINA","Indicates the path to the directory with *Illumina* sequence data (in fastq or fastq.gz format), to perform pilon correction, KAT QC or MERQURY QC. Use preferentially paired-end data. All fastq files need to be homogeneous in their extension name. Please use *run1_R1* and *run1_R2* nomenclature."
     "OUTPUT","output *path* directory"
 
 .. warning::
@@ -82,9 +82,9 @@ CulebrONT can use several quality control tools to check assemblies.
 
 * If BUSCO or QUAST are used, they will run on every fasta assembly generated along the various steps of the pipeline.
 
-* If BLOBTOOLS, ASSEMBLYTICS, FLAGSTATS and KAT are activated, only the fasta assembly generated after the last sequence processing step of the pipeline will be checked.
+* If BLOBTOOLS, ASSEMBLYTICS, FLAGSTATS, MERQURY and KAT are activated, only the fasta assembly generated after the last sequence processing step of the pipeline will be checked.
 
-* KAT quality tool can be activated but Illumina reads are mandatory in this case. These reads can be compressed or not.
+* KAT and MERQURY quality tools can be activated but Illumina reads are mandatory in this case. These reads can be compressed or not.
 
 .. literalinclude:: ../../culebrONT/install_files/config.yaml
     :language: YAML

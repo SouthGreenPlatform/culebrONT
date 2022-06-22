@@ -150,7 +150,9 @@ if __name__ == "__main__":
 
     for assembly_file in sorted(files_list):
         assembly_file_path = Path(assembly_file)
-        sample, assembler, step, _ = assembly_file_path.stem.split("-")
+        print(assembly_file_path.stem)
+        print(assembly_file_path.stem.split("-"))
+        sample, assembler, step, *_ = assembly_file_path.stem.split("-")
         step = replace_all({"STEP_": "", "_STARTFIXED": ""}, step)
         contig_lens, scaffold_lens, gc_cont = read_genome(assembly_file)
         scaffold_stats = calculate_stats(scaffold_lens, gc_cont)

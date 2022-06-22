@@ -280,6 +280,7 @@ This would save users a painful exploration of the snakefiles of CulebrONT.
    run_assemblytics
    combined_fastq
    run_KAT
+   run_merqury
    run_mauve
    run_bwa_mem2
    run_flagstat

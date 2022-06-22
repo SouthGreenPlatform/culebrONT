@@ -6,6 +6,7 @@ from setuptools import setup, find_packages
 # add for remove error with pip install -e . with pyproject.toml
 import site
 import sys
+
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
 NAME = 'culebrONT'
@@ -38,7 +39,7 @@ def main():
                    François Sabot (IRD)
                    Sebastien Cunnac (IRD)''',
         author_email='sebastien.ravel@cirad.fr',
-        description=__doc__.replace("\n",""),
+        description=__doc__.replace("\n", ""),
         long_description=CURRENT_PATH.joinpath('README.rst').open('r', encoding='utf-8').read(),
         long_description_content_type='text/x-rst',
         license='GPLv3',
@@ -49,8 +50,8 @@ def main():
                 'project': ('setup.py', NAME),
                 'version': ('setup.py', VERSION),
                 'release': ('setup.py', VERSION),
-                'source_dir': ('setup.py', CURRENT_PATH.joinpath('docs','source').as_posix()),
-                'build_dir': ('setup.py', CURRENT_PATH.joinpath('docs','build').as_posix()),
+                'source_dir': ('setup.py', CURRENT_PATH.joinpath('docs', 'source').as_posix()),
+                'build_dir': ('setup.py', CURRENT_PATH.joinpath('docs', 'build').as_posix()),
             }},
 
         # Package information
@@ -59,7 +60,7 @@ def main():
         use_scm_version={
             "version_scheme": 'release-branch-semver',
             'local_scheme': "node-and-date",
-            'normalize' : True,
+            'normalize': True,
             "root": ".",
             "relative_to": __file__,
             "fallback_version": VERSION,

@@ -115,6 +115,7 @@ properties:
             - ASSEMBLYTICS
             - KAT
             - FLAGSTATS
+            - MERQURY
         additionalProperties: false
         properties:
             BUSCO:
@@ -132,6 +133,9 @@ properties:
             KAT:
                 type: boolean
                 description: true if you want to use kat for quality
+            MERQURY:
+                type: boolean
+                description: true if you want to use merqury for quality
             FLAGSTATS:
                 type: boolean
                 description: true if you want to use flagstats for quality
@@ -163,6 +167,7 @@ properties:
             - MUMMER
             - ASSEMBLYTICS
             - BLOBTOOLS
+            - MERQURY
         additionalProperties: false
         properties:
             FLYE:
@@ -348,3 +353,10 @@ properties:
                     NODES:
                         type: string
                         description: "blobtools path to NODES.dmp file"
+            MERQURY:
+                type: object
+                additionalProperties: false
+                properties:
+                    GENOME_SIZE_PB:
+                        type: integer
+                        description: "genome size for merqury"

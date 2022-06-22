@@ -50,7 +50,7 @@ rule preparing_fasta_to_quality:
     """
     preparing fasta to quality
     """
-    threads: get_threads('preparing_fasta_to_quality', 2)
+    threads: get_threads('preparing_fasta_to_quality', 8)
     input:
         fasta = fasta_to_busco
     output:
@@ -63,13 +63,13 @@ rule preparing_fasta_to_quality:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            fasta : {input.fasta},
+            fasta: {input.fasta},
         output:
-            renamed : {output.renamed}
+            renamed: {output.renamed}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -81,7 +81,7 @@ rule preparing_fasta_to_quality:
         """
         (ln -s {input.fasta} {output.renamed};
         samtools faidx {output.renamed};
-        minimap2 -d {params.index_mmi} {output.renamed}) 1>{log.output} 2>{log.error}
+        minimap2 -t {threads} -d {params.index_mmi} {output.renamed}) 1>{log.output} 2>{log.error}
         """
 
 ################################ QUALITY CHECK ####################################
@@ -113,19 +113,19 @@ rule run_quast:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
             liste = {input.liste},
         output:
             report_file: {output.report_file}
         params:
-            icarus : {params.icarus}
-            genome_size  : {params.genome_size}
+            icarus: {params.icarus}
+            genome_size: {params.genome_size}
             reference_file = {params.reference_file},
-            gff : {params.gff}
-            options : {params.options}
+            gff: {params.gff}
+            options: {params.options}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -168,19 +168,19 @@ rule run_busco:
     message:
         """
         Launching {rule}
-        threads : {threads}
+        threads: {threads}
         input:
-            fasta : {input.fasta}
+            fasta: {input.fasta}
         output:
-            summary : {output.summary}
+            summary: {output.summary}
         params:
-            out_path : {params.out_path}
-            busco_name : {params.busco_name}
-            database : {params.database}
-            model : {params.model}
-            sp : {params.sp}
+            out_path: {params.out_path}
+            busco_name: {params.busco_name}
+            database: {params.database}
+            model: {params.model}
+            sp: {params.sp}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -194,7 +194,7 @@ rule run_busco:
         config_path=${{augustus_bin%/*/*}}/config
         cp -u -r $config_path {params.augustus_config};
         export AUGUSTUS_CONFIG_PATH={params.augustus_config}/config;
-        busco -f -i {input.fasta} -o {params.busco_name} --out_path {params.out_path} -l {params.database} -m {params.model} {params.sp} -c {threads};
+        busco -c {threads} -f -i {input.fasta} -o {params.busco_name} --out_path {params.out_path} -l {params.database} -m {params.model} {params.sp} -c {threads};
         mv {params.out_path}BUSCO/short_summary*BUSCO.txt {output.summary} ;) 1>{log.output} 2>{log.error}
         """
 
@@ -202,7 +202,7 @@ rule run_diamond:
     """
     running diamond to blobtools
     """
-    threads: get_threads('run_diamond', 4)
+    threads: get_threads('run_diamond', 8)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
     output:
@@ -221,17 +221,17 @@ rule run_diamond:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            fasta : {input.fasta}
+            fasta: {input.fasta}
         output:
-            csv : {output.csv}
+            csv: {output.csv}
         params:
             database: {params.db}
             mode: {params.mode}
-            format : {params.format}
+            format: {params.format}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -243,7 +243,7 @@ rule run_diamond:
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; diamond --version > {output.version}
         ln -s -f {output.version} {output_dir}versions/DIAMOND-version.txt
         (mkdir -p {params.dir};
-        diamond {params.mode} --query {input.fasta} --db {params.db} --outfmt {params.format} --threads {threads} --sensitive --max-target-seqs 1 --evalue 1e-25 --threads {threads} --out {output.csv}) 1>{log.output} 2>{log.error}
+        diamond {params.mode} --query {input.fasta} --db {params.db} --outfmt {params.format} --threads {threads} --sensitive --max-target-seqs 1 --evalue 1e-25 --out {output.csv}) 1>{log.output} 2>{log.error}
         """
 
 rule run_minimap2:
@@ -269,14 +269,14 @@ rule run_minimap2:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            fasta : {input.fasta}
-            fastq : {input.fastq}
+            fasta: {input.fasta}
+            fastq: {input.fastq}
         output:
-            bam : {output.bam}
+            bam: {output.bam}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -290,15 +290,15 @@ rule run_minimap2:
         ln -s -f {output.blob_minimap2_version} {output_dir}versions/BLOBTOOLS_MINIMAP2-version.txt
         [ ! -f {output.blob_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.blob_samtools_version}
         ln -s -f {output.blob_samtools_version} {output_dir}versions/BLOBTOOLS_SAMTOOLS-version.txt
-        (minimap2 -x {params.preset} -t {threads} {input.fasta} {input.fastq} -a | samtools sort -o {output.bam};
-        samtools index {output.bam})  1>{log.output} 2>{log.error}
+        (minimap2 -x {params.preset} -t {threads} {input.fasta} {input.fastq} -a | samtools sort -@ {threads} -o {output.bam};
+        samtools index -@ {threads} {output.bam})  1>{log.output} 2>{log.error}
         """
 
 rule run_blobtools:
     """
     blobtools v1
     """
-    threads: get_threads('run_blobtools', 8)
+    threads: get_threads('run_blobtools', 1)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
         sorted_bam = rules.run_minimap2.output.bam,
@@ -321,18 +321,18 @@ rule run_blobtools:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            fasta : {input.fasta}
-            sorted_bam : {input.sorted_bam}
-            diamond : {input.diamond}
+            fasta: {input.fasta}
+            sorted_bam: {input.sorted_bam}
+            diamond: {input.diamond}
         output:
             table: {output.table}
         params:
-            names : {params.names}
-            nodes : {params.nodes}
+            names: {params.names}
+            nodes: {params.nodes}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -356,7 +356,7 @@ rule run_mummer:
     """
     This rule run nucmer for assemblytics
     """
-    threads: get_threads('run_mummer', 4)
+    threads: get_threads('run_mummer', 1)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
         reference_file = reference_file
@@ -376,10 +376,10 @@ rule run_mummer:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            fasta : {input.fasta}
-            reference_file : {input.reference_file}
+            fasta: {input.fasta}
+            reference_file: {input.reference_file}
         output:
             delta: {output.delta}
         params:
@@ -387,7 +387,7 @@ rule run_mummer:
             mincluster = {params.mincluster}
             prefix: {params.prefix}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -397,7 +397,9 @@ rule run_mummer:
     shell:
         """
        (mkdir -p {params.dir} && cd {params.dir};
-        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; python {SNAKEMAKE_SCRIPTS}/which_version.py "nucmer --version" > {output.version};
+       set +o pipefail;
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions;nucmer --version 2>&1 | grep "version" > {output.version};
+        set -o pipefail;
         ln -s -f {output.version} {output_dir}versions/MUMMER-version.txt
         nucmer -p {params.prefix} --maxmatch  -l {params.minmatch} -c {params.mincluster} {input.reference_file} {input.fasta};
         gzip mummer.delta) 1>{log.output} 2>{log.error}
@@ -407,7 +409,7 @@ rule run_assemblytics:
     """
     Assemblytics analyze your assembly by comparing it to a reference genome https://github.com/MariaNattestad/assemblytics
     """
-    threads: get_threads('run_assemblytics', 4)
+    threads: get_threads('run_assemblytics', 1)
     input:
         delta = rules.run_mummer.output.delta,
     output:
@@ -430,9 +432,9 @@ rule run_assemblytics:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            delta : {input.delta}
+            delta: {input.delta}
         output:
             summary: {output.summary}
         params:
@@ -441,7 +443,7 @@ rule run_assemblytics:
             max_variant_size = {params.max_variant_size}
             prefix: {params.prefix}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -460,7 +462,7 @@ rule combined_fastq:
     """
     zcat des fastq.gz. fastq sequences must to be decompressed to KAT.
     """
-    threads: get_threads('combined_fastq', 2)
+    threads: get_threads('combined_fastq', 1)
     input:
         illumina_rep = config["DATA"]["ILLUMINA"]
     params:
@@ -473,9 +475,9 @@ rule combined_fastq:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            illumina_rep :{input.illumina_rep}
+            illumina_rep:{input.illumina_rep}
         output:
             combined: {output.combined_data}
         log:
@@ -524,20 +526,20 @@ rule run_KAT:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            fasta  : {input.fasta}
-            combined_data : {input.combined_data}
+            fasta: {input.fasta}
+            combined_data: {input.combined_data}
         params:
-            dir : {params.dir}
-            cmp : {params.cmp}
-            hist : {params.hist}
-            hist : {params.sect}
+            dir: {params.dir}
+            cmp: {params.cmp}
+            hist: {params.hist}
+            hist: {params.sect}
         output:
-            cmp : {output.gcp}
+            cmp: {output.gcp}
         log:
-            output : {log.output}
-            error : {log.error}
+            output: {log.output}
+            error: {log.error}
         """
     singularity:
         tools_config['SINGULARITY']['TOOLS']
@@ -561,7 +563,7 @@ rule run_KAT:
 
 rule run_mauve:
     threads:
-        get_threads('run_mauve', 8)
+        get_threads('run_mauve', 1)
     input:
         liste = lambda wc: expand(rules.preparing_fasta_to_quality.output.renamed, fastq=wc.fastq, assemblers=culebront.assembly_tools_activated, quality_step=culebront.last_steps_list),
     params:
@@ -577,7 +579,7 @@ rule run_mauve:
         """
         Launching {rule}
         Generating Mauve multiple alignment of sequences in all final assembly fasta files
-        threads : {threads}
+        threads: {threads}
         input:
             liste: {input.liste}
         output:
@@ -611,13 +613,13 @@ rule run_bwa_mem2:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            fasta : {input.draft}
+            fasta: {input.draft}
         params:
             illumina: {params.illumina}
         output:
-            bam : {output.bam}
+            bam: {output.bam}
         log:
             output: {log.output}
             error: {log.error}
@@ -631,7 +633,7 @@ rule run_bwa_mem2:
         """
         (bwa index {input.draft}
         bwa mem -t {threads} {input.draft} {params.illumina} | samtools view -@ {threads} -Shb | samtools sort -@ {threads} -o {output.bam}
-        samtools index {output.bam}) 1>{log.output} 2>{log.error}
+        samtools index -@ {threads} {output.bam}) 1>{log.output} 2>{log.error}
         """
 
 rule run_flagstat:
@@ -653,9 +655,9 @@ rule run_flagstat:
     message:
         """
         Launching {rule} ...
-        threads : {threads}
+        threads: {threads}
         input:
-            bam : {input.bam}
+            bam: {input.bam}
         output:
             txt: {output.txt}
         log:
@@ -668,9 +670,84 @@ rule run_flagstat:
         tools_config["ENVMODULE"]["SAMTOOLS"]
     shell:
         """
-        [ ! -f {output.flagstats_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.flagstats_samtools_version}
+        ([ ! -f {output.flagstats_samtools_version} ] &&  [ ! -d versions ] && mkdir -p versions; samtools --version > {output.flagstats_samtools_version}
         ln -s -f {output.flagstats_samtools_version} {output_dir}versions/FLAGSTATS_SAMTOOLS-version.txt
-        [ ! -f {output.flagstats_bwa_version} ] &&  [ ! -d versions ] && mkdir -p versions; python {SNAKEMAKE_SCRIPTS}/which_version.py bwa | grep 'Version' > {output.flagstats_bwa_version};
+        set +o pipefail;
+        [ ! -f {output.flagstats_bwa_version} ] &&  [ ! -d versions ] && mkdir -p versions;bwa 2>&1| grep 'Version' > {output.flagstats_bwa_version};
+        set -o pipefail;
         ln -s -f {output.flagstats_bwa_version} {output_dir}versions/FLAGSTATS_BWA-version.txt
-        (samtools flagstat {input.bam} --threads {threads}) > {output.txt} 2>{log.error}
+        samtools flagstat {input.bam} --threads {threads} > {output.txt}) 1> {log.output} 2>{log.error}
+        """
+
+def build_meryl_for_merqury(wildcards):
+    """
+    build command line for merqury in available illumina
+    """
+    R1,R2 = '',''
+    for element1 in culebront.R1 :
+        if wildcards.fastq in element1 :
+            R1 = element1
+    for element2 in culebront.R2 :
+        if wildcards.fastq in element2 :
+            R2 = element2
+    cmd = f'meryl k=$k count output {wildcards.fastq}_R1.meryl {R1}\n'
+    if R2:
+        cmd = cmd + f'meryl k=$k count output {wildcards.fastq}_R2.meryl {R2}\n'
+    cmd = cmd + f'meryl union-sum output {wildcards.fastq}.meryl {wildcards.fastq}_R*.meryl'
+    return cmd
+
+
+rule run_merqury:
+    """
+    calculate stats with merqury which use illumina reads : use to quality report
+    """
+    threads: get_threads('run_bwa_mem2', 4)
+    input:
+        draft = rules.preparing_fasta_to_quality.output.renamed
+    params:
+        cmd_meryl = build_meryl_for_merqury,
+        genome_size = f"{config['params']['MERQURY']['GENOME_SIZE_PB']}",
+        directory= directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MERQURY/"),
+        prefix = f"{{fastq}}",
+        to_report = f"{output_dir}FINAL_REPORT/MERQURY/{{fastq}}/",
+    output:
+        qv_global = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MERQURY/{{fastq}}.qv",
+        comp_stats =  f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MERQURY/{{fastq}}.completeness.stats",
+        version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/QUALITY/{{quality_step}}/MERQURY/MERQURY-version.txt"
+    log:
+        output = f"{output_dir}{{fastq}}/LOGS/QUALITY/MERQURY/{{fastq}}_{{assemblers}}_{{quality_step}}_MERQURY.o",
+        error = f"{output_dir}{{fastq}}/LOGS/QUALITY/MERQURY/{{fastq}}_{{assemblers}}_{{quality_step}}_MERQURY.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/LOGS/QUALITY/MERQURY/{{fastq}}_{{assemblers}}_{{quality_step}}MERQURY-BENCHMARK.txt"
+    message:
+        """
+        Launching {rule} ...
+        threads: {threads}
+        input:
+            fasta: {input.draft}
+        params:
+            cmd_meryl: {params.cmd_meryl}
+            genome_size : {params.genome_size}
+            prefix: {params.prefix}
+        output:
+            qv_global: {output.qv_global}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MERQURY"],
+    shell:
+        """
+        set +o pipefail;
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; meryl --version 2>{output.version}
+        set -o pipefail;
+        cp -f {output.version} {output_dir}versions/MERQURY-version.txt
+        
+        k=`sh $MERQURY/best_k.sh {params.genome_size} | tail -n 1`
+        cd {params.directory}
+        {params.cmd_meryl}
+        $MERQURY/eval/spectra-cn.sh {wildcards.fastq}.meryl {input.draft} {params.prefix}
         """

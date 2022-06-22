@@ -1,79 +1,55 @@
 BootStrap: docker
-From: ubuntu:18.04
+From: ubuntu:20.04
 
 %post
 
 ## Install dependance of R software
     apt -y update
     echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-    apt install -y python3-all-dev python3-pip python3-venv
-    apt install -y software-properties-common locales
-    apt install -y libpng16-16 libblas3 libblas-dev liblapack-dev liblapack3 libreadline7 r-recommended r-doc-html libxml2-dev libcurl4-openssl-dev libssl-dev libmagick++-dev libcurl3-gnutls perl
-    apt install -y dirmngr
-    apt install -y libv8-3.14-dev
+    apt install -y python3 python3-pip pandoc
 
     echo 'export LC_ALL=C.UTF-8' >> /environment
     echo 'export LANG=C.UTF-8' >> /environment
     export LC_ALL=C.UTF-8
     export LANG=C.UTF-8
     apt -y update
-    apt install -y git wget rsync tzdata gzip libcairo2-dev libxt-dev
-    apt install -y build-essential zlib1g-dev cmake curl
+    #apt install -y git wget rsync tzdata gzip libcairo2-dev libxt-dev
+    apt install -y zlib1g-dev cmake libjpeg62
     pip3 install PyYAML
     pip3 install pandas
-    pip3 install seaborn
     pip3 install matplotlib
     pip3 install tabulate
-    pip3 install rpy2
-    pip3 install ipython
+    pip3 install poetry
+
 
 ############################################################# R
 
 ## Add repository for download latest version of R
+apt install -y dirmngr gnupg apt-transport-https ca-certificates software-properties-common libcurl4-openssl-dev curl libssl-dev
+curl "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x51716619E084DAB9" | apt-key add -
+add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/'
+apt -y update
 
-    curl "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x51716619E084DAB9" | apt-key add -
-
-    #apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9
-    add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/"
-    apt -y update
-    
 ## Install R
-    apt install -y r-base-core pandoc
-    
-##  add R packages from CRAN
-### Install RMarkdown and TinyTeX
-    R --slave -e 'install.packages(c("rmarkdown","tinytex"))'
+    apt install -y r-base-core
 
 # add R packages from bioconductor
+    Rscript -e "install.packages(c('RCurl','GenomeInfoDb'))"
     Rscript -e "install.packages('BiocManager')"
-    Rscript -e "library(BiocManager); install('remotes')"
-    Rscript -e "library(BiocManager); install('Gviz')"
+    # for tagCircSeq.R and rotateCircSeqs.R
     Rscript -e "library(BiocManager); install('Biostrings')"
-    R -e "install.packages('ggplot2')"
-    R -e "install.packages('Cairo')"
-    R -e "install.packages('svglite')"
-    R -e "install.packages('nloptr')"
-    R -e "install.packages('optparse')"
-    R -e "install.packages('DT')"
+    Rscript -e "install.packages('optparse')"
+
+    # for Report.Rmd
     R -e "install.packages('knitr')"
-    R -e "install.packages('stringr')"
-    R -e "install.packages('tidyverse')"
     R -e "install.packages('plotly')"
-    R -e "install.packages('dplyr')"
-    R -e "install.packages('htmltools')"
     R -e "install.packages('rmdformats')"
-    R -e "install.packages('magrittr')"
-    R -e "install.packages('yaml')"
-    R -e "install.packages('png')"
-    R -e "install.packages('here')"
-    R -e "install.packages('htmlwidgets')"
-    R -e "install.packages('gridExtra')"
-    R -e "install.packages('cowplot')"
-    R -e "install.packages('magick')"
+    R -e "install.packages('DT')"
+    R -e "install.packages('ggplot2')"
+    R -e "install.packages('rmarkdown')"
     R -e "install.packages('reticulate')"
 
-# add R packages from github
-#    Rscript -e "library(remotes); install_github('strengejacke/strengejacke')"
-
+    pip3 install rpy2
+    apt clean
 
 

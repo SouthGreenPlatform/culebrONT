@@ -15,6 +15,7 @@ ENVMODULE:
     ASSEMBLYTICS : "assemblytics"
     MEDAKA : "medaka"
     KAT : "kat"
+    MERQURY: "merqury"
     BLOBTOOLS : "blobtools"
     BUSCO : "busco"
     PILON : "pilon bwa samtools"

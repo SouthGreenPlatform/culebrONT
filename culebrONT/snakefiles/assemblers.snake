@@ -35,7 +35,7 @@ rule run_flye:
             fasta_dir: {params.fasta_dir}
             genome_size:   {params.genome_size}
             circular:  {params.circular}
-            mode : {params.mode}
+            mode: {params.mode}
             options:  {params.options}
         log:
             output: {log.output}
@@ -92,7 +92,7 @@ rule run_canu:
             genome_size: {params.genome_size}
             options: {params.options}
         log:
-            output : {log.output}
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -125,11 +125,11 @@ rule run_minimap_for_miniasm:
     message:
            """
            Launching {rule}
-           threads : {threads}
+           threads: {threads}
            input:
-               fastq : {input.fastq}
+               fastq: {input.fastq}
            output:
-               paf : {output.paf}
+               paf: {output.paf}
            log:
                error: {log.error}
            """
@@ -163,12 +163,12 @@ rule run_miniasm:
     message:
            """
            Launching {rule}
-           threads : {threads}
+           threads: {threads}
            input:
-               fastq : {input.fastq}
-               paf : {input.paf}
+               fastq: {input.fastq}
+               paf: {input.paf}
            output:
-               gfa : {output.gfa_miniasm}
+               gfa: {output.gfa_miniasm}
            log:
                error: {log.error}
            """
@@ -210,14 +210,14 @@ rule run_minipolish:
     message:
         """
         Launching {rule}
-        threads : {threads}
+        threads: {threads}
         input:
-            fastq : {input.fastq}
-            gfa : {input.gfa_miniasm}
+            fastq: {input.fastq}
+            gfa: {input.gfa_miniasm}
         output:
-            gfa : {output.gfa_minipolish}
-            fasta : {output.fasta}
-            info : {output.info}
+            gfa: {output.gfa_minipolish}
+            fasta: {output.fasta}
+            info: {output.info}
         params:
             racon_rounds: {params.racon_rounds}
         log:
@@ -284,7 +284,7 @@ rule convert_fastq_to_fasta:
     """
     convert fastq or fastq.gz on fasta. use by shasta and smartdenovo
     """
-    threads: 4
+    threads: 1
     input:
         fastq = get_fastq,
     params:

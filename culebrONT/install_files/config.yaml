@@ -37,6 +37,7 @@ QUALITY:
 #### Others quality soft but illumina reads are required
     FLAGSTATS: true
     KAT: false
+    MERQURY : true
 
 #### Alignment of the various assemblies derived from a fastq file for small genomes (<10-20Mbp);
 MSA:
