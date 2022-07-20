@@ -14,8 +14,8 @@ rule run_racon:
     wildcard_constraints:
         nb = "[0-9]",
     log:
-        output=f"{output_dir}{{fastq}}/LOGS/POLISHING/RACON/{{fastq}}_{{assemblers}}_RACON{{nb}}.o",
-        error = f"{output_dir}{{fastq}}/LOGS/POLISHING/RACON/{{fastq}}_{{assemblers}}_RACON{{nb}}.e"
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/LOGS/{{fastq}}_{{assemblers}}_RACON{{nb}}.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/RACON/LOGS/{{fastq}}_{{assemblers}}_RACON{{nb}}.e"
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/POLISHING/{{assemblers}}_RACON{{nb}}.txt"
     message:

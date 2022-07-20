@@ -18,8 +18,8 @@ rule run_flye:
         options= f"{config['params']['FLYE']['OPTIONS']}",
         mode= f"{config['params']['FLYE']['MODE']}",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE.o",
-        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/FLYE/{{fastq}}_FLYE.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/FLYE/ASSEMBLER/LOGS/{{fastq}}_FLYE.o",
+        error =  f"{output_dir}{{fastq}}/ASSEMBLERS/FLYE/ASSEMBLER/LOGS/{{fastq}}_FLYE.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/FLYE.txt"
     message:
@@ -73,8 +73,8 @@ rule run_canu:
         options = f"{config['params']['CANU']['OPTIONS']}",
         mode= f"{config['params']['CANU']['MODE']}",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.o",
-        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CANU/{{fastq}}_CANU.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/LOGS/{{fastq}}_CANU.o",
+        error =  f"{output_dir}{{fastq}}/ASSEMBLERS/CANU/ASSEMBLER/LOGS/{{fastq}}_CANU.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/CANU.txt"
     message:
@@ -119,7 +119,7 @@ rule run_minimap_for_miniasm:
         paf = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minimap2.paf",
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/MINIMAP2-version.txt"
     log:
-        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM.e",
+        error =  f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/LOGS/{{fastq}}_MINIMAP4MINIASM.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIASM.txt"
     message:
@@ -157,7 +157,7 @@ rule run_miniasm:
         gfa_miniasm = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_miniasm.gfa", # voir si à utiliser par gfapy
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/MINIASM-version.txt"
     log:
-        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM.e",
+        error =  f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/LOGS/{{fastq}}_MINIASM.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIMAP4MINIASM.txt"
     message:
@@ -197,14 +197,13 @@ rule run_minipolish:
         gfa_miniasm = rules.run_miniasm.output.gfa_miniasm
     output:
         gfa_minipolish = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minipolish.gfa",
-        #fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assembly{add_circular_name}.fasta",
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta",
         info = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assembly_info{TMP}.txt",
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/MINIPOLISH-version.txt"
     params:
         racon_rounds = config['params']['RACON']['RACON_ROUNDS'] if config['POLISHING']['RACON'] else 2,
     log:
-        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/MINIASM/{{fastq}}_MINIASM_MINIPOLISH.e"
+        error =  f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/LOGS/{{fastq}}_MINIASM_MINIPOLISH.e"
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIASM_MINIPOLISH.txt"
     message:
@@ -250,8 +249,8 @@ rule run_raven:
         gfa = f"{output_dir}{{fastq}}/ASSEMBLERS/RAVEN/ASSEMBLER/assembly_info.txt",
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/RAVEN/ASSEMBLER/RAVEN-version.txt"
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN.o",
-        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/RAVEN/{{fastq}}_RAVEN.e",
+        error =  f"{output_dir}{{fastq}}/ASSEMBLERS/RAVEN/ASSEMBLER/LOGS/{{fastq}}_RAVEN.e",
+        output =  f"{output_dir}{{fastq}}/ASSEMBLERS/RAVEN/ASSEMBLER/LOGS/{{fastq}}_RAVEN.o"
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/RAVEN.txt"
     message:
@@ -292,8 +291,8 @@ rule convert_fastq_to_fasta:
     output:
         reads_on_fasta = f"{output_dir}{{fastq}}/MISC/FASTQ2FASTA/{{fastq}}.fasta",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/MISC/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.o",
-        error = f"{output_dir}{{fastq}}/LOGS/MISC/FASTQ2FASTA/{{fastq}}_FASTQ2FASTA.e",
+        output = f"{output_dir}{{fastq}}/MISC/FASTQ2FASTA/LOGS/{{fastq}}_FASTQ2FASTA.o",
+        error = f"{output_dir}{{fastq}}/MISC/FASTQ2FASTA/LOGS/{{fastq}}_FASTQ2FASTA.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/FASTQ2FASTA.txt"
     shell:
@@ -322,8 +321,8 @@ rule run_smartdenovo:
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/assembly2Circ.fasta" if config['CIRCULAR'] else f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/assembly.fasta",
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/SMARTDENOVO-version.txt",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO.o",
-        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SMARTDENOVO/{{fastq}}_SMARTDENOVO.e",
+        error =  f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/LOGS/{{fastq}}_SMARTDENOVO.e",
+        output =  f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/LOGS/{{fastq}}_SMARTDENOVO.o"
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/SMARTDENOVO.txt"
     message:
@@ -376,8 +375,9 @@ rule run_shasta:
         gfa = f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/assembly_info.txt",
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/SHASTA-version.txt",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA.o",
-        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/SHASTA/{{fastq}}_SHASTA.e",
+        error =  f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/LOGS/{{fastq}}_SHASTA.e",
+        output =  f"{output_dir}{{fastq}}/ASSEMBLERS/SHASTA/ASSEMBLER/LOGS/{{fastq}}_SHASTA.o"
+
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/SHASTA.txt"
     message:
@@ -409,4 +409,3 @@ rule run_shasta:
         {params.cmd_mv_fasta};
         {params.cmd_mv_gfa} ) 1>{log.output} 2>{log.error}
         """
-

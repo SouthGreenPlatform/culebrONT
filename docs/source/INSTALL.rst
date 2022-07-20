@@ -5,7 +5,7 @@
 Requirements
 ============
 
-CulebrONT requires |PythonVersions| and |graphviz|.
+CulebrONT requires |PythonVersions|, |graphviz| and |RVersions|.
 
 CulebrONT is developed to work mostly on an HPC distributed cluster but a local, single machine, installation is also possible.
 
@@ -36,6 +36,9 @@ Install CulebrONT in a *local* (single machine) mode using ``culebrONT install_l
 
 To create a pipeline, tools used by CulebrONT are wrapped into ``Singularity images``. These images are automatically downloaded and used by the configuration files of the pipeline. Local mode install, without scheduler, is constrains to use these Singularity images.
 
+.. warning::
+   Singularity images are downloaded in the location of the package CulebrONT. Be careful these images need at approximatly 4G of free space. If installed with Pypi with the flag --user (without root), the package is installed in your HOME.
+
 
 Optionally (but recommended), after installing in local, you can check the CulebrONT installation using a dataset scaled for single machine.
 See the section :ref:`Check install` for details.
@@ -56,7 +59,7 @@ We tried to make cluster installation as easy as possible, but it is somehow nec
 
 1. Adapt `profile` and `cluster_config.yaml`
 ---------------------------------------------
-
+f
 Now that CulebrONT is installed, it proposes default configuration files, but they can be modified. Please check and adapt these files to your own system architecture.
 
 1. Adapt the pre-formatted `f –env si`snakemake profile`` to configure your cluster options.
@@ -180,6 +183,12 @@ A list of CulebrONT rules names can be found in the section :ref:`Threading rule
 3. How to configure tools_path.yaml
 -----------------------------------
 
+.. note::
+    About versions of tools, the user can choose themself what version of tools to use with modules or with singularity.
+    HOWEVER, the pipeline was validated with specific versions (check the `singularity def <https://github.com/SouthGreenPlatform/culebrONT/blob/master/culebrONT/containers/Singularity.culebront_tools.def>`_) so it may leads to error due to parameter changes.
+    :ref:`Assembly`
+
+
 In the ``tools_path`` file, you can find two sections: SINGULARITY and ENVMODULES. In order to fill it correctly, you have 2 options:
 
 1. Use only SINGULARITY containers: in this case, fill only this section. Put the path to the built Singularity images you want to use.
@@ -280,7 +289,6 @@ This would save users a painful exploration of the snakefiles of CulebrONT.
    run_assemblytics
    combined_fastq
    run_KAT
-   run_merqury
    run_mauve
    run_bwa_mem2
    run_flagstat
@@ -301,6 +309,10 @@ This would save users a painful exploration of the snakefiles of CulebrONT.
 .. |PythonVersions| image:: https://img.shields.io/badge/python-3.7%2B-blue
    :target: https://www.python.org/downloads
    :alt: Python 3.7+
+
+.. |RVersions| image:: https://img.shields.io/badge/R-%3E%3D4.0-red
+   :target: https://cran.r-project.org/
+   :alt: R 4.0+
 
 .. |SnakemakeVersions| image:: https://img.shields.io/badge/snakemake-≥5.10.0-brightgreen.svg?style=flat
    :target: https://snakemake.readthedocs.io

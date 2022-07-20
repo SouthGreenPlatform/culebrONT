@@ -13,8 +13,8 @@ rule run_makerange:
         segment_len = config['params']['CORRECTION_MAKERANGE']['SEGMENT_LEN'],
         overlap_len = config['params']['CORRECTION_MAKERANGE']['OVERLAP_LEN'],
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MAKERANGE/{{fastq}}_{{assemblers}}_MAKERANGE.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MAKERANGE/{{fastq}}_{{assemblers}}_MAKERANGE.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MAKERANGE/LOGS/{{fastq}}_{{assemblers}}_MAKERANGE.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MAKERANGE/LOGS/{{fastq}}_{{assemblers}}_MAKERANGE.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MAKERANGE/{{assemblers}}.txt",
     message:
@@ -57,8 +57,8 @@ rule run_nanopolish_index:
     output:
         reads_on_fasta = f"{output_dir}{{fastq}}/MISC/NANOPOLISH_INDEX/reads.fasta",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_NANOPOLISH_INDEX.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_NANOPOLISH_INDEX.e",
+        output = f"{output_dir}{{fastq}}/MISC/NANOPOLISH_INDEX/LOGS/{{fastq}}_NANOPOLISH_INDEX.o",
+        error = f"{output_dir}{{fastq}}/MISC/NANOPOLISH_INDEX/LOGS/{{fastq}}_NANOPOLISH_INDEX.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/NANOPOLISH/NANOPOLISH-INDEX.txt"
     message:
@@ -105,8 +105,8 @@ rule preparing_ref_to_nanopolish:
         dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/",
         preset = f"{config['params']['MINIMAP2']['PRESET_OPTION']}" if {config['params']['MINIMAP2']['PRESET_OPTION']}!='' else 'map-ont',
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_PRE_NANOPOLISH.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_PRE_NANOPOLISH.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/LOGS/{{fastq}}_{{assemblers}}_PRE_NANOPOLISH.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/LOGS/{{fastq}}_{{assemblers}}_PRE_NANOPOLISH.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/NANOPOLISH/{{assemblers}}_PRE-NANOPOLISH.txt",
     message:
@@ -180,8 +180,8 @@ rule run_nanopolish_variants:
         options = config['params']['NANOPOLISH']['OPTIONS'],
         dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/")
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_{{segment}}-NANOPOLISH.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_{{segment}}-NANOPOLISH.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/LOGS/{{fastq}}_{{assemblers}}_{{segment}}-NANOPOLISH.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/LOGS/{{fastq}}_{{assemblers}}_{{segment}}-NANOPOLISH.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/NANOPOLISH/{{assemblers}}_{{segment}}-VARIANTS.txt"
     message:
@@ -229,8 +229,8 @@ rule run_nanopolish_merge:
     params:
         vcf_dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/VCFS/",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/NANOPOLISH/{{fastq}}_{{assemblers}}_NANOPOLISH.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/LOGS/{{fastq}}_{{assemblers}}_NANOPOLISH.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/NANOPOLISH/LOGS/{{fastq}}_{{assemblers}}_NANOPOLISH.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/NANOPOLISH/{{assemblers}}.txt"
     message:
@@ -270,8 +270,8 @@ rule index_fasta_to_correction:
         index_mmi = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/FASTA/assembly.fasta.mmi",
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/FASTA/assembly.fasta"
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/INDEXING/{{fastq}}_{{assemblers}}-INDEX-MEDAKA.o",
-        error = f"{output_dir}{{fastq}}/LOGS/INDEXING/{{fastq}}_{{assemblers}}-INDEX-MEDAKA.e"
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}-INDEX-MEDAKA.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}-INDEX-MEDAKA.e"
     singularity:
         tools_config['SINGULARITY']['TOOLS']
     envmodules:
@@ -298,8 +298,8 @@ rule run_minialign_to_medaka:
     params:
         calls2draft = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/calls2draft",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MEDAKA/{{assemblers}}_MINIALIGN.txt",
     message:
@@ -347,8 +347,8 @@ rule run_medaka_train:
         options_features = config['params']['MEDAKA']['MEDAKA_FEATURES_OPTIONS'],
         options_training = config['params']['MEDAKA']['MEDAKA_TRAIN_OPTIONS'],
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}_MEDAKA_TRAIN.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MEDAKA/{{assemblers}}_TRAIN.txt"
     message:
@@ -417,8 +417,8 @@ rule run_medaka_consensus:
         options = config['params']['MEDAKA']['MEDAKA_CONSENSUS_OPTIONS'],
         model = f"{rules.run_medaka_train.output.fasta_val_cat_acc if config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF'] else config['params']['MEDAKA']['MEDAKA_MODEL_PATH']}",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_{{segment}}_MEDAKA_CONSENSUS.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_{{segment}}_MEDAKA_CONSENSUS.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}_{{segment}}_MEDAKA_CONSENSUS.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}_{{segment}}_MEDAKA_CONSENSUS.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MEDAKA/{{assemblers}}_{{segment}}-VARIANTS.txt"
     message:
@@ -467,8 +467,8 @@ rule run_medaka_merge:
     params:
         hdf_dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/HDFS/",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_MERGE.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/MEDAKA/{{fastq}}_{{assemblers}}_MEDAKA_MERGE.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}_MEDAKA_MERGE.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}_MEDAKA_MERGE.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MEDAKA/{{assemblers}}.txt",
     message:
@@ -515,8 +515,8 @@ rule run_pilon_first_round:
         corrected = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_1/assembly.pilon1.fasta",
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/PILON-version.txt",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/PILON/{{fastq}}_{{assemblers}}_PILON1.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/PILON/{{fastq}}_{{assemblers}}_PILON1.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/LOGS/{{fastq}}_{{assemblers}}_PILON1.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/LOGS/{{fastq}}_{{assemblers}}_PILON1.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/PILON/{{assemblers}}_PILON1.txt",
     message:
@@ -573,8 +573,8 @@ rule run_pilon:
     wildcard_constraints:
         nbp = "[2-9]",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/CORRECTION/PILON/{{fastq}}_{{assemblers}}_PILON{{nbp}}.o",
-        error = f"{output_dir}{{fastq}}/LOGS/CORRECTION/PILON/{{fastq}}_{{assemblers}}_PILON{{nbp}}.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/LOGS/{{fastq}}_{{assemblers}}_PILON{{nbp}}.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/LOGS/{{fastq}}_{{assemblers}}_PILON{{nbp}}.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/PILON/{{assemblers}}_PILON{{nbp}}.txt",
     message:

@@ -146,25 +146,23 @@ class CulebrONT(SnakeWrapper):
         last_steps_list = []
         suffix = ""
         if bool(self.config["FIXSTART"]):
-            suffix = "_STARTFIXED"
+            suffix = "sFIX"
         if self.correction_tools_activated:
             step = "CORRECTION"
             for corrector in self.correction_tools_activated:
-                last_steps_list.append(f"STEP_{step}_{corrector}{suffix if step in self.pipeline_stop else ''}")
+                last_steps_list.append(f"{corrector}{suffix if step in self.pipeline_stop else ''}")
             if only_last:
                 return last_steps_list
 
         if self.polishing_tools_activated:
             step = "POLISHING"
             for polisher in self.polishing_tools_activated:
-                last_steps_list.append(f"STEP_{step}_{polisher}{suffix if step in self.pipeline_stop else ''}")
+                last_steps_list.append(f"{polisher}{suffix if step in self.pipeline_stop else ''}")
             if only_last:
                 return last_steps_list
         if self.assembly_tools_activated:
             step = "ASSEMBLY"
-            last_steps_list.append(f"STEP_{step}{suffix if step in self.pipeline_stop else ''}")
-            # for assembler in self.assembly_tools_activated:
-            # last_steps_list.append(f"STEP_{step}_{assembler}{suffix}" )
+            last_steps_list.append(f"ASSEMBLY{suffix if step in self.pipeline_stop else ''}")
             if only_last:
                 return last_steps_list
         return last_steps_list

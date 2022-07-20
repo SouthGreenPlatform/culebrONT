@@ -186,10 +186,10 @@ rule rule_graph:
         tmp = f"{output_dir}FINAL_REPORT/dag.tmp",
         cmd = culebront.string_to_dag
     output:
-        dag = f"{output_dir}FINAL_REPORT/dag.png"
+        dag = f"{output_dir}FINAL_REPORT/dag.png",
     log:
-        output = f"{output_dir}LOGS/Graph.o",
-        error = f"{output_dir}LOGS/Graph.e"
+        output = f"{output_dir}FINAL_REPORT/LOGS/GRAPH.o",
+        error = f"{output_dir}FINAL_REPORT/LOGS/GRAPH.e"
     message:
         """
         making dag ...
@@ -212,8 +212,8 @@ rule run_report_snakemake:
     output:
         report_snakemake = f"{output_dir}FINAL_REPORT/snake_report.html"
     log:
-        output = f"{output_dir}LOGS/run_report_snakemake.o",
-        error = f"{output_dir}LOGS/run_report_snakemake.e"
+        output = f"{output_dir}FINAL_REPORT/LOGS/REPORT-SNAKE.o",
+        error = f"{output_dir}FINAL_REPORT/LOGS/REPORT-SNAKE.e"
     message:
         """
         making report ...
@@ -239,8 +239,8 @@ rule run_flagstats_stats:
         assembly_list = culebront.assembly_tools_activated,
         out_dir = directory(f"{output_dir}{{fastq}}/")
     log:
-        output = f"{output_dir}LOGS/run_flagstats_stats/{{fastq}}.o",
-        error = f"{output_dir}LOGS/run_flagstats_stats/{{fastq}}.e"
+        output = f"{output_dir}{{fastq}}/REPORT/LOGS/run_flagstats_stats/{{fastq}}.o",
+        error = f"{output_dir}{{fastq}}/REPORT/LOGS/run_flagstats_stats/{{fastq}}.e"
     message:
         """
         make stats from flagstats
@@ -262,8 +262,8 @@ rule run_busco_stats:
         assembly_list = culebront.assembly_tools_activated,
         out_dir = directory(f"{output_dir}{{fastq}}/")
     log:
-        output = f"{output_dir}LOGS/run_busco_stats/{{fastq}}.o",
-        error = f"{output_dir}LOGS/run_busco_stats/{{fastq}}.e"
+        output = f"{output_dir}{{fastq}}/REPORT/LOGS/{{fastq}}_BUSCO-STATS.o",
+        error = f"{output_dir}{{fastq}}/REPORT/LOGS/{{fastq}}_BUSCO-STATS.e"
     message:
         """
         make stats
@@ -281,8 +281,8 @@ rule run_racon_version:
     output:
         version = f"{output_dir}{{fastq}}/REPORT/RACON-version.txt"
     log:
-        output = f"{output_dir}LOGS/run_racon_version/{{fastq}}-RACON.o",
-        error = f"{output_dir}LOGS/run_racon_version/{{fastq}}-RACON.e"
+        output =  f"{output_dir}{{fastq}}/REPORT/LOGS/{{fastq}}-RACON-VERSION.o",
+        error =  f"{output_dir}{{fastq}}/REPORT/LOGS/{{fastq}}-RACON-VERSION.e"
     singularity:
         tools_config['SINGULARITY']['TOOLS']
     envmodules:
@@ -305,8 +305,8 @@ rule run_busco_version:
         busco_version = f"{output_dir}{{fastq}}/REPORT/BUSCO-version.txt",
         augustus_version = f"{output_dir}{{fastq}}/REPORT/BUSCO_AUGUSTUS-version.txt"
     log:
-        output = f"{output_dir}LOGS/run_busco_version/{{fastq}}.o",
-        error = f"{output_dir}LOGS/run_busco_version/{{fastq}}.e"
+        output = f"{output_dir}{{fastq}}/REPORT/LOGS/{{fastq}}_BUSCO-VERSION.o",
+        error = f"{output_dir}{{fastq}}/REPORT/LOGS/{{fastq}}_BUSCO-VERSION.e"
     message:
         """
         busco version
@@ -347,12 +347,6 @@ def get_inputs_benchmark(wildcards):
                         assemblers=culebront.assembly_tools_activated,
                         correction=['PILON'],
                         nb = range(1, int(nb_pilon_rounds)+1))
-    # if culebront.quality_tools_activated:
-        # dico_benchmark_inputs["quality_list"] = expand(f"{output_dir}{{{{fastq}}}}/BENCHMARK/POLISHING/{{assemblers}}_{{polishers}}{{nb}}.txt",
-                    # assemblers=culebront.assembly_tools_activated,
-                    # polishers=culebront.polishing_tools_activated,
-                    # nb = range(1, int(nb_racon_rounds)+1))
-    #pprint.pprint(dico_benchmark_inputs)
     return dico_benchmark_inputs
 
 rule run_benchmark_time:
@@ -369,8 +363,8 @@ rule run_benchmark_time:
         sample = f"{{fastq}}",
         dico = get_inputs_benchmark
     log:
-        output = f"{output_dir}LOGS/run_benchmark_time/{{fastq}}.o",
-        error = f"{output_dir}LOGS/run_benchmark_time/{{fastq}}.e"
+        output = f"{output_dir}{{fastq}}/REPORT/LOGS/{{fastq}}_BENCHMARK-TIME.o",
+        error = f"{output_dir}{{fastq}}/REPORT/LOGS/{{fastq}}_BENCHMARK-TIME.e"
     message:
         """
         unpacking final dico and benchmark
@@ -399,8 +393,8 @@ rule run_get_versions:
         picking software versions used by CulebrONT
         """
     log:
-        output=f"{output_dir}LOGS/GETVERSIONS/get_versions.o",
-        error = f"{output_dir}LOGS/GETVERSIONS/get_versions.e"
+        output = f'{output_dir}versions/LOGS/GET-VERSIONS.o',
+        error = f'{output_dir}versions/LOGS/GET-VERSIONS.e'
     script:
         f"{SNAKEMAKE_SCRIPTS}/get_versions.py"
 
@@ -414,8 +408,8 @@ rule stats_assembly:
     params:
         sample = '{fastq}'
     log:
-        output = f"{output_dir}LOGS/stats_assembly/{{fastq}}.o",
-        error = f"{output_dir}LOGS/stats_assembly/{{fastq}}.e"
+        output = f"{output_dir}FINAL_REPORT/LOGS/{{fastq}}_STATS-ASSEMBLIES.o",
+        error = f"{output_dir}FINAL_REPORT/LOGS/{{fastq}}_STATS-ASSEMBLIES.e"
     message:
         """
         Launching {rule}
@@ -442,8 +436,8 @@ rule copy_final_assemblies:
     params:
         sample = '{fastq}'
     log:
-        output = f"{output_dir}LOGS/copy_final_assemblies/{{fastq}}_{{assemblers}}_{{quality_step}}.o",
-        error = f"{output_dir}LOGS/copy_final_assemblies/{{fastq}}_{{assemblers}}_{{quality_step}}.e"
+        output = f"{output_dir}ASSEMBLIES/LOGS/{{fastq}}_{{assemblers}}_{{quality_step}}_CP-FINAL-ASSEMBLIES.o",
+        error = f"{output_dir}ASSEMBLIES/LOGS/{{fastq}}_{{assemblers}}_{{quality_step}}_CP-FINAL-ASSEMBLIES.e"
     message:
         """
         Launching {rule}
@@ -524,8 +518,8 @@ rule run_report:
     output:
         report = f"{output_dir}FINAL_REPORT/CulebrONT_report.html"
     log:
-        output = f"{output_dir}LOGS/run_report.o",
-        error = f"{output_dir}LOGS/run_report.e"
+        output = f"{output_dir}FINAL_REPORT/LOGS/REPORT.o",
+        error = f"{output_dir}FINAL_REPORT/LOGS/REPORT.e"
     message:
         """
         print final CulebrONT_report ...

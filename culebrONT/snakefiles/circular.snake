@@ -16,8 +16,8 @@ rule run_circlator:
         out_dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/CIRCLATOR/"),
         options = f"{config['params']['CIRCLATOR']['OPTIONS']}",
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}.o",
-        error = f"{output_dir}{{fastq}}/LOGS/ASSEMBLER/CIRCLATOR/{{fastq}}_{{assemblers}}.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/LOGS/{{fastq}}_{{assemblers}}_CIRCLATOR.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/LOGS/{{fastq}}_{{assemblers}}_CIRCLATOR.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CIRCULAR/{{assemblers}}_CIRCLATOR.txt"
     message:
@@ -66,8 +66,8 @@ rule tag_circular:
     output:
         tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED_circTag.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/assemblyCIRCULARISED.fasta"
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.o",
-        error = f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/LOGS/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/LOGS/{{fastq}}_{{assemblers}}-TAG-CIRCULAR.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CIRCULAR/{{assemblers}}_TAG-CIRCULAR.txt"
     message:
@@ -99,19 +99,15 @@ rule tag_circular_to_minipolish:
     """
     threads: get_threads('tag_circular_to_minipolish', 1)
     input:
-        #fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assemblyCIRCULARISED_TMP.fasta",
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta",
-        #fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TMP}.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assemblyCIRCULARISED{TMP}.fasta",
         info = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assembly_info{TMP}.txt",
     params:
         assembler = "MINIASM"
     output:
         tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TCM}.fasta"
-        #tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/assembly.racon{nb_racon_rounds}{TCM}.fasta" if config['POLISHING']['RACON'] else f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assemblyCIRCULARISED.fasta",
-        #tagged_fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/assemblyCIRCULARISED.fasta"
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_MINIASM-TAG-CIRCULAR.o",
-        error = f"{output_dir}{{fastq}}/LOGS/TAGGING/{{fastq}}_MINIASM-TAG-CIRCULAR.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/{{fastq}}_MINIASM-TAG-CIRCULAR.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/POLISHING/RACON/racon_{nb_racon_rounds}/{{fastq}}_MINIASM-TAG-CIRCULAR.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CIRCULAR/MINIASM_TAG-CIRCULAR.txt"
     message:
@@ -147,8 +143,8 @@ rule rotate_circular:
     output:
         rotated = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/POLISHING/ROTATE/rotate_{{nb}}/assembly.racon{{nb}}.fasta"
     log:
-        output=f"{output_dir}{{fastq}}/LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}.o",
-        error = f"{output_dir}{{fastq}}/LOGS/ROTATE/{{fastq}}_{{assemblers}}_RACON{{nb}}.e"
+        output=f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/LOGS/{{fastq}}_{{assemblers}}_RACON{{nb}}_ROTATE.o",
+        error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/ASSEMBLER/LOGS/{{fastq}}_{{assemblers}}_RACON{{nb}}_ROTATE.e"
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CIRCULAR/{{assemblers}}_RACON{{nb}}.txt"
     message:
@@ -174,13 +170,14 @@ rule rotate_circular:
 
 
 def fasta_to_fixstart(wildcards):
+    #print (wildcards.quality_step)
     #CORRECTION
     if len(culebront.correction_tools_activated)>=1:
-        if wildcards.quality_step == 'STEP_CORRECTION_NANOPOLISH':
+        if wildcards.quality_step == 'NANOPOLISH':
             return rules.run_nanopolish_merge.output.fasta
-        elif wildcards.quality_step == 'STEP_CORRECTION_MEDAKA':
+        elif wildcards.quality_step == 'MEDAKA':
             return rules.run_medaka_merge.output.fasta
-        elif wildcards.quality_step == f'STEP_CORRECTION_PILON_{culebront.nb_pilon_rounds}':
+        elif wildcards.quality_step == f'PILON-{culebront.nb_pilon_rounds}':
             return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_{culebront.nb_pilon_rounds}/assembly.pilon{culebront.nb_pilon_rounds}.fasta"
     #POLISHING
     elif len(culebront.polishing_tools_activated)>=1:
@@ -205,13 +202,13 @@ rule run_fixstart:
     input:
         assembly_file = fasta_to_fixstart
     output:
-        fix_start_fasta =  f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/{{quality_step}}_STARTFIXED.fasta",
+        fix_start_fasta =  f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/{{quality_step}}-STARTFIXED.fasta",
     params:
         out_dir = lambda wc, output: os.path.dirname(output.fix_start_fasta),
         prefix = lambda wc, output: os.path.splitext(output.fix_start_fasta)[0]
     log:
-        output = f"{output_dir}{{fastq}}/LOGS/FIXSTART/{{fastq}}_{{assemblers}}_{{quality_step}}_STARTFIXED.o",
-        error =  f"{output_dir}{{fastq}}/LOGS/FIXSTART/{{fastq}}_{{assemblers}}_{{quality_step}}_STARTFIXED.e",
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/LOGS/{{fastq}}_{{assemblers}}_{{quality_step}}-STARTFIXED.o",
+        error =  f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/LOGS/{{fastq}}_{{assemblers}}_{{quality_step}}-STARTFIXED.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/CIRCULAR/{{assemblers}}_{{quality_step}}.txt"
     message:
