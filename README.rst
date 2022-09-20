@@ -36,7 +36,8 @@ possible assembly between all possibilities.
 Citation
 ________
 
-https://doi.org/10.1101/2021.07.19.452922
+https://doi.org/10.1101/2021.07.19.452922 (V1)
+https://doi.org/10.24072/pcjournal.153 (V2)
 
 Authors
 _______
