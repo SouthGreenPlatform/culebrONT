@@ -276,6 +276,7 @@ This would save users a painful exploration of the snakefiles of CulebrONT.
    run_medaka_train
    run_medaka_consensus
    run_medaka_merge
+   run_medaka_oneshot
    run_pilon_first_round
    run_pilon
    run_racon

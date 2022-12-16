@@ -111,6 +111,8 @@ You can manage tools parameters on the params section in the ``config.yaml`` fil
 
 ``Medaka`` specific options:
 
+* If 'SEGMENTATION' is false, there is no segmentation of contigs for medaka
+
 * If 'MEDAKA_TRAIN_WITH_REF' is activated, Medaka launchs the training using the reference found in 'DATA/REF' path parameter. Medaka will then not take into account other Medaka model parameters and will use the resulting trained model instead.
 
 * If 'MEDAKA_TRAIN_WITH_REF' is deactivated, Medaka does not launch training, but uses instead the model provided in 'MEDAKA_MODEL_PATH' parameter. Give to CulebrONT the path of the Medaka model *OR* just the model name in order to correct assemblies. This parameter could not be empty.

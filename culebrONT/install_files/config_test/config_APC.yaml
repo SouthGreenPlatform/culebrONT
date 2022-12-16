@@ -74,7 +74,7 @@ params:
 
 
     #### CORRECTION
-    CORRECTION_MAKERANGE:
+    CORRECTION_SEGMENTATION:
         SEGMENT_LEN: 50000              # segment length to split assembly and correct it  default=50000
         OVERLAP_LEN: 200                # overlap length between segments  default=200
 
@@ -82,8 +82,8 @@ params:
         OPTIONS: ''
 
     MEDAKA:
+        SEGMENTATION: true
         MEDAKA_TRAIN_WITH_REF: false    # if 'MEDAKA_TRAIN_WITH_REF' is True, training uses reference found in DATA REF param.
-
         # Medaka does not take in count other parameters below if MEDAKA_TRAIN_WITH_REF is TRUE.
         MEDAKA_MODEL_PATH: 'r941_min_high_g303' # use a path if you have downloaded a model (or you want to use your own trained model) OR a simple string like 'r941_min_high_g303'
         MEDAKA_FEATURES_OPTIONS: '--batch_size 10 --chunk_len 100 --chunk_ovlp 10'

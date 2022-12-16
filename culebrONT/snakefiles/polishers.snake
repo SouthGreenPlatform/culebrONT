@@ -29,6 +29,7 @@ rule run_racon:
             paf: {output.paf}
             fasta: {output.fasta}
         log:
+            output: {log.output}
             error: {log.error}
         """
     singularity:

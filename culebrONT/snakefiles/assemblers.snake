@@ -119,6 +119,7 @@ rule run_minimap_for_miniasm:
         paf = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_minimap2.paf",
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/MINIMAP2-version.txt"
     log:
+        output =  f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/LOGS/{{fastq}}_MINIMAP4MINIASM.o",
         error =  f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/LOGS/{{fastq}}_MINIMAP4MINIASM.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIASM.txt"
@@ -131,6 +132,7 @@ rule run_minimap_for_miniasm:
            output:
                paf: {output.paf}
            log:
+               output: {log.output}
                error: {log.error}
            """
     singularity:
@@ -157,6 +159,7 @@ rule run_miniasm:
         gfa_miniasm = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/output_miniasm.gfa", # voir si à utiliser par gfapy
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/MINIASM-version.txt"
     log:
+        output =  f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/LOGS/{{fastq}}_MINIASM.o",
         error =  f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/LOGS/{{fastq}}_MINIASM.e",
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIMAP4MINIASM.txt"
@@ -170,6 +173,7 @@ rule run_miniasm:
            output:
                gfa: {output.gfa_miniasm}
            log:
+               output: {log.output}
                error: {log.error}
            """
     singularity:
@@ -203,6 +207,7 @@ rule run_minipolish:
     params:
         racon_rounds = config['params']['RACON']['RACON_ROUNDS'] if config['POLISHING']['RACON'] else 2,
     log:
+        output =  f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/LOGS/{{fastq}}_MINIASM_MINIPOLISH.o",
         error =  f"{output_dir}{{fastq}}/ASSEMBLERS/MINIASM/ASSEMBLER/LOGS/{{fastq}}_MINIASM_MINIPOLISH.e"
     benchmark:
         f"{output_dir}{{fastq}}/BENCHMARK/ASSEMBLER/MINIASM_MINIPOLISH.txt"
@@ -220,6 +225,7 @@ rule run_minipolish:
         params:
             racon_rounds: {params.racon_rounds}
         log:
+            output: {log.output}
             error: {log.error}
         """
     singularity:
@@ -316,7 +322,7 @@ rule run_smartdenovo:
         dir = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER",
         kmersize = f"16 " if f"{config['params']['SMARTDENOVO']['KMER_SIZE']}" == '' else f"{config['params']['SMARTDENOVO']['KMER_SIZE']}",
         options = f"{config['params']['SMARTDENOVO']['OPTIONS']}",
-        out_tmp= f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/SMART.dmo.cns"
+        out_tmp = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/SMART.{'zmo' if 'zmo' in config['params']['SMARTDENOVO']['OPTIONS'] else 'dmo'}.cns"
     output:
         fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/assembly2Circ.fasta" if config['CIRCULAR'] else f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/assembly.fasta",
         version = f"{output_dir}{{fastq}}/ASSEMBLERS/SMARTDENOVO/ASSEMBLER/SMARTDENOVO-version.txt",

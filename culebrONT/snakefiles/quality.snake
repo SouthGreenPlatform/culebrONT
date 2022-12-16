@@ -25,7 +25,10 @@ def fasta_to_quality(wildcards):
     elif wildcards.quality_step == 'NANOPOLISHsFIX':
         return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/NANOPOLISH-STARTFIXED.fasta"
     elif wildcards.quality_step == 'MEDAKA':
-        return rules.run_medaka_merge.output.fasta
+        if bool(config['params']['MEDAKA']['SEGMENTATION']):
+            return rules.run_medaka_merge.output.fasta
+        else:
+            return rules.run_medaka_consensus_oneshot.output.fasta
     elif wildcards.quality_step == 'MEDAKAsFIX':
         return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/FIXSTART/MEDAKA-STARTFIXED.fasta"
     elif wildcards.quality_step == 'PILON':
@@ -478,6 +481,7 @@ rule combined_fastq:
         output:
             combined: {output.combined_data}
         log:
+            output: {log.output}
             error: {log.error}
         command:
             {params.command} {input.illumina_rep}/*{culebront.illumina_files_ext} > {output.combined_data}
@@ -495,7 +499,7 @@ rule run_KAT:
     This shows the completeness of an assembly, i.e. are all the reads assembled into contigs representative of the sequence data.
     https://kat.readthedocs.io/en/latest/using.html
     """
-    threads: get_threads('run_KAT', 4)
+    threads: get_threads('run_KAT', 1)
     input:
         fasta = rules.preparing_fasta_to_quality.output.renamed,
         combined_data = rules.combined_fastq.output.combined_data,

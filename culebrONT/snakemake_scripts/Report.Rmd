@@ -1,5 +1,5 @@
 ---
-title: "CulebrONT 2.1.1 report"
+title: "CulebrONT 2.2.0 report"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   rmdformats::readthedown:

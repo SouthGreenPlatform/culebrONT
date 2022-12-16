@@ -236,7 +236,7 @@ properties:
                     RACON_ROUNDS:
                         type: integer
                         description: "number of rounds of racon for polishing"
-            CORRECTION_MAKERANGE:
+            CORRECTION_SEGMENTATION:
                 type: object
                 additionalProperties: false
                 properties:
@@ -257,6 +257,9 @@ properties:
                 type: object
                 additionalProperties: false
                 properties:
+                    SEGMENTATION:
+                        type: boolean
+                        description: "active segmentation or not"
                     MEDAKA_TRAIN_WITH_REF:
                         type: boolean
                         description: "true if medaka should train"

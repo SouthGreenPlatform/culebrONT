@@ -10,8 +10,8 @@ rule run_makerange:
         segments_list = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MAKERANGE/segments.txt"
     params:
         dir = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MAKERANGE/",
-        segment_len = config['params']['CORRECTION_MAKERANGE']['SEGMENT_LEN'],
-        overlap_len = config['params']['CORRECTION_MAKERANGE']['OVERLAP_LEN'],
+        segment_len = config['params']['CORRECTION_SEGMENTATION']['SEGMENT_LEN'],
+        overlap_len = config['params']['CORRECTION_SEGMENTATION']['OVERLAP_LEN'],
     log:
         output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MAKERANGE/LOGS/{{fastq}}_{{assemblers}}_MAKERANGE.o",
         error = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MAKERANGE/LOGS/{{fastq}}_{{assemblers}}_MAKERANGE.e",
@@ -255,7 +255,6 @@ rule run_nanopolish_merge:
         nanopolish vcf2fasta --skip-checks -g {input.draft} {params.vcf_dir}*.nanopolish-segment.vcf 1>{output.fasta} 2>>{log.error}
         """
 
-
 ################################ MEDAKA ###################################
 rule index_fasta_to_correction:
     """
@@ -493,6 +492,55 @@ rule run_medaka_merge:
         [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; medaka --version > {output.version}
         ln -s -f {output.version} {output_dir}versions/MEDAKA-version.txt
         medaka stitch --threads {threads} {params.hdf_dir}/*.medaka-segment.hdf {input.draft} {output.fasta} 1>{log.output} 2>{log.error}
+        """
+
+rule run_medaka_consensus_oneshot:
+    """
+    launching Medaka Consensus (medaka version >=1.2) in oneshot for a fasta
+    """
+    threads: get_threads('run_medaka_consensus', 4)
+    input:
+        draft = rules.index_fasta_to_correction.output.fasta,
+        fastq= get_fastq,
+    output:
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/consensusoneshot.fasta",
+        version= f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/MEDAKA-versiononeshot.txt",
+    params:
+        dir = directory(f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA"),
+        fasta = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/consensus.fasta",
+        options = config['params']['MEDAKA']['MEDAKA_CONSENSUS_OPTIONS'],
+        model = f"{rules.run_medaka_train.output.fasta_val_cat_acc if config['params']['MEDAKA']['MEDAKA_TRAIN_WITH_REF'] else config['params']['MEDAKA']['MEDAKA_MODEL_PATH']}",
+    log:
+        output = f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}_MEDAKA_MERGEoneshot.o",
+        error=f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/MEDAKA/LOGS/{{fastq}}_{{assemblers}}_MEDAKA_MERGEoneshot.e",
+    benchmark:
+        f"{output_dir}{{fastq}}/BENCHMARK/CORRECTION/MEDAKA/{{assemblers}}oneshot.txt",
+    message:
+        """
+        Launching {rule}.
+        threads: {threads}
+        input:
+            draft: {input.draft}
+            fastq: {input.fastq}
+        output:
+            consensus: {output.fasta}
+        params:
+            model: {params.model}
+        log:
+            output: {log.output}
+            error: {log.error}
+        """
+    singularity:
+        tools_config['SINGULARITY']['TOOLS']
+    envmodules:
+        tools_config["ENVMODULE"]["MEDAKA"]
+    shell:
+        """
+        [ ! -f {output.version} ] &&  [ ! -d versions ] && mkdir -p versions; medaka --version > {output.version}
+        ln -s -f {output.version} {output_dir}versions/MEDAKA-version.txt
+        (cd {params.dir};
+        medaka_consensus -i {input.fastq} -d {input.draft} -o {params.dir} -t {threads} -m {params.model}
+        mv {params.fasta} {output.fasta}) 1>{log.output} 2>{log.error}
         """
 
 ################################ PILON ###################################

@@ -74,7 +74,7 @@ params:
 
 
     #### CORRECTION
-    CORRECTION_MAKERANGE:
+    CORRECTION_SEGMENTATION:
         SEGMENT_LEN: 50000              # segment length to split assembly and correct it  default=50000
         OVERLAP_LEN: 200                # overlap length between segments  default=200
 
@@ -82,6 +82,7 @@ params:
         OPTIONS: ''
 
     MEDAKA:
+        SEGMENTATION: true
         MEDAKA_TRAIN_WITH_REF: false    # if 'MEDAKA_TRAIN_WITH_REF' is True, training uses reference found in DATA REF param.
 
         # Medaka does not take in count other parameters below if MEDAKA_TRAIN_WITH_REF is TRUE.

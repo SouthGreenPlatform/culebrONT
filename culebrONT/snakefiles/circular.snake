@@ -176,7 +176,10 @@ def fasta_to_fixstart(wildcards):
         if wildcards.quality_step == 'NANOPOLISH':
             return rules.run_nanopolish_merge.output.fasta
         elif wildcards.quality_step == 'MEDAKA':
-            return rules.run_medaka_merge.output.fasta
+            if bool(config['params']['MEDAKA']['SEGMENTATION']):
+                return rules.run_medaka_merge.output.fasta
+            else:
+                return rules.run_medaka_consensus_oneshot.output.fasta
         elif wildcards.quality_step == f'PILON-{culebront.nb_pilon_rounds}':
             return f"{output_dir}{{fastq}}/ASSEMBLERS/{{assemblers}}/CORRECTION/PILON/pilon_{culebront.nb_pilon_rounds}/assembly.pilon{culebront.nb_pilon_rounds}.fasta"
     #POLISHING
