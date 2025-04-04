@@ -1,21 +1,15 @@
-# Required
 version: 2
 
-# Set the version of Python and other tools you might need
 build:
   os: ubuntu-22.04
   tools:
     python: "3.9"
     apt_packages:
-    - r-base-core
+      - r-base-core
 
-# Build documentation in the docs/ directory with Sphinx
 sphinx:
-   configuration: docs/source/conf.py
+  configuration: docs/source/conf.py
 
-# Optionally declare the Python requirements required to build your docs
 python:
-   install:
-   - requirements: docs/requirements.txt
-
-
+  install:
+    - requirements: docs/requirements.txt
